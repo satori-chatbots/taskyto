@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from langchain import OpenAI
 from langchain.agents import ConversationalAgent, AgentExecutor
@@ -25,8 +25,11 @@ class State:
     def current_module(self):
         return self.active_modules[-1]
 
-    def is_module_active(self, cls):
-        return isinstance(self.active_modules[-1], cls)
+    def is_module_active(self, cls_or_obj):
+        import inspect
+        if inspect.isclass(cls_or_obj):
+            return isinstance(self.active_modules[-1], cls_or_obj)
+        return self.active_modules[-1] == cls_or_obj
 
     def log_user(self, name: str):
         self.logged_user = name
@@ -38,6 +41,14 @@ class State:
 class ChatbotModule(ABC):
     def __init__(self, state: State):
         self.state = state
+
+    @abstractmethod
+    def get_prompt(self):
+        pass
+
+    @abstractmethod
+    def get_tools(self):
+        pass
 
     def get_chain(self):
         prefix = self.get_prompt()

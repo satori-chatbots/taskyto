@@ -1,0 +1,24 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users of a bike shop.
+      fallback: |
+          For any question not related to these aspects you have to answer:
+          "I'm sorry it's a little loud in my shop, can you say that again?"
+
+      items:
+          - title: Hours. To answer questions about the opening hours.
+            kind: answer
+            answer: every weekday from 9am to 5:30pm
+          - title: Make Appointment
+            kind: module
+            reference: make_appointment
+          - title: Bike Q&A
+            kind: module
+            reference: bike_qa
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Welcome to my bike shop. I'm the owner and I'm happy to help you.
+              What can I do for you?

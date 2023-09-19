@@ -1,0 +1,19 @@
+name: bike_qa
+kind: question_answering
+description: Useful for answering general questions about bikes.
+questions:
+  - question: Which is the price of a new tire?
+    answer: 20$
+  - question: Which is the price of a tune-up?
+    answer: 150$
+  - question: Which is the price of a new seat?
+    answer: Between 50$ and 100$
+  - question: What can I do to take care of my bike?
+    answer: |
+      You should clean it regularly, check the tire pressure, and lubricate the chain.
+
+# Maybe it makes sense to have a module named: conversation flow
+# ej.,
+# - which is the best bike for me?
+# - it depends, which is your budget?
+# - etc.

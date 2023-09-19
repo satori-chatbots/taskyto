@@ -1,0 +1,23 @@
+name: make_appointment
+kind: data_gathering
+description: Useful for registering appointments.
+data:
+  - date: date
+  - time: time
+  - service:
+      type: enum
+      values:
+        - repair
+        - tune-up
+
+on-success:
+  execute: |
+    print("Save appointment")
+    #app.save('appointment', {
+    #  date: date,
+    #  time: time,
+    #  service: service
+    #})
+  response: | 
+    Ok, I have scheduled your appointment for {{date}} at {{time}} for a {{service}}.
+    See you then!
