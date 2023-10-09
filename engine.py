@@ -9,7 +9,7 @@ from pydantic import computed_field
 
 import modules
 import spec
-from eval import eval_python
+from eval import eval_code
 from spec import ChatbotModel, Visitor
 
 
@@ -72,7 +72,7 @@ class RuntimeDataGatheringTool(BaseTool):
                     self.state.pop_module()
 
                 if self.module.on_success is not None and self.module.on_success.execute is not None:
-                    eval_python(self.module.on_success.execute, data)
+                    eval_code(self.module.on_success.execute, data)
 
                 # TODO: Store the data somehow
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
@@ -145,7 +145,10 @@ class Engine(Visitor):
         handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(module.items)])
 
         # Specify the fallback
-        fallback = '\nFallback:\n' + module.fallback
+        if module.fallback is None:
+            fallback = ''
+        else:
+            fallback = '\nFallback:\n' + module.fallback
 
         prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
 

@@ -11,13 +11,15 @@ data:
         - tune-up
 
 on-success:
-  execute: |
-    print("Save appointment")
-    #app.save('appointment', {
-    #  date: date,
-    #  time: time,
-    #  service: service
-    #})
+  execute:
+    language: python
+    code: |
+      print("Save appointment")
+      #app.save('appointment', {
+      #  date: date,
+      #  time: time,
+      #  service: service
+      #})
   response: | 
     Ok, I have scheduled your appointment for {{date}} at {{time}} for a {{service}}.
     See you then!

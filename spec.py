@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 import pydantic
 from pydantic import BaseModel, Field
-from typing import List, Any
+from typing import List, Any, Optional
 from typing import Literal, Union, Annotated
 import networkx as nx
 
@@ -73,7 +73,7 @@ class MenuModule(BaseModule):
     kind: Literal["menu"] = "menu"
 
     presentation: str
-    fallback: str
+    fallback: Optional[str] = None
     items: List[Item]
 
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
@@ -100,9 +100,12 @@ class DataProperty(BaseModel):
 class DataSpecification(BaseModel):
     properties: List[DataProperty]
 
+class ExecuteElement(BaseModel):
+    language: str
+    code: str
 
 class Action(BaseModel):
-    execute: str
+    execute: Optional[ExecuteElement] = None
     response: str
 
 
