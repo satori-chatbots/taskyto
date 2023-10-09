@@ -30,6 +30,10 @@ def main(chatbot_folder: str, module_path):
     from spec import parse_yaml
     import glob
 
+    if not os.path.exists(chatbot_folder):
+        print("Chatbot folder does not exist: " + chatbot_folder)
+        exit(1)
+
     # Read yaml files in chatbot_folder
     modules = []
     for yaml_path in glob.glob(os.path.join(chatbot_folder, '*.yaml')):
