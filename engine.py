@@ -49,6 +49,45 @@ class RuntimeChatbotModule(modules.ChatbotModule):
         return self.tools
 
 
+def get_property_value(p: spec.DataProperty, data):
+    value = data.get(p.name)
+    if value is None:
+        return None
+
+    # If type is string but the value is not str, we should somehow tell the chatbot that there is an issue
+    # or perhaps we may need to convert the value to str
+    if p.type == 'string':
+        if isinstance(value, str):
+            value = value.strip()
+        elif isinstance(value, int) or isinstance(value, float) or isinstance(value, bool):
+            value = str(value)
+        else:
+            return None
+
+        if value == "":
+            return None
+    elif p.type == 'int' or p.type == 'integer':
+        if isinstance(value, int):
+            return value
+        elif isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                return None
+        else:
+            return None
+
+    return value
+
+
+def replace_values(response, data):
+    for k, v in data.items():
+        # Handle both {{ }} and { }
+        response = response.replace("{{" + k + "}}", str(v))
+        response = response.replace("{" + k + "}", str(v))
+    return response
+
+
 class RuntimeDataGatheringTool(BaseTool):
     module: spec.DataGatheringModule
     runtime_module: RuntimeChatbotModule
@@ -64,19 +103,26 @@ class RuntimeDataGatheringTool(BaseTool):
         try:
             json_query = json.loads(query)
             for p in self.module.data_model.properties:
-                if p.name in json_query and json_query[p.name] is not None and json_query[p.name].strip() != "":
-                    data[p.name] = json_query[p.name]
+                value = get_property_value(p, json_query)
+                if value is not None:
+                    data[p.name] = value
 
             if len(data) == len(self.module.data_model.properties):
                 if self.state.is_module_active(self.runtime_module):
                     self.state.pop_module()
 
+                result = None
                 if self.module.on_success is not None and self.module.on_success.execute is not None:
-                    eval_code(self.module.on_success.execute, data)
+                    result = eval_code(self.module.on_success.execute, data)
+                    print("Result: ", result)
 
-                # TODO: Store the data somehow
-                collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-                return "The following data has been collected: " + collected_data
+                if self.module.on_success is not None and self.module.on_success.response is not None:
+                    data['result'] = result
+                    return replace_values(self.module.on_success.response, data)
+                else:
+                    collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
+                    return "Stop using the tool. The following data has been collected: " + collected_data
+
         except json.JSONDecodeError:
             pass
 

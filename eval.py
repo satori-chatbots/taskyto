@@ -14,7 +14,7 @@ class Stay:
 def eval_code(execution: ExecuteElement, data: dict):
     lang = execution.language.lower()
     if lang == "python":
-        eval_python(execution.code, data)
+        return eval_python(execution.code, data)
     else:
         raise ValueError(f"Unknown language: {lang}")
 
@@ -25,10 +25,11 @@ def eval_python(code: str, data: dict):
     params = ", ".join(data.keys())
     code = f"""
 def _eval({params}):
-    {code}
+{code}
 
 globals()['chatbot_llm_action_result_'] = _eval({params})
     """
+
     compiled = compile(code, "<string>", "exec")
     global_vars = globals().copy()
     eval(compiled, global_vars, data.copy())
