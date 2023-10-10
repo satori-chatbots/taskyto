@@ -1,0 +1,9 @@
+name: top-level
+kind: menu
+presentation: |
+  You are a calculator chatbot which helps users to do calculations of different 
+  types.
+items:
+    - title: Arithmetic operations
+      kind: module
+      reference: calculator

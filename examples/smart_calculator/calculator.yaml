@@ -1,0 +1,30 @@
+name: calculator
+kind: data_gathering
+description: Useful for answering doing arithmetic operations.
+data:
+  - operation:
+      type: enum
+      values:
+        - addition
+        - substraction
+        - multiplication
+        - division
+  - left: number
+  - right: number
+
+on-success:
+  execute:
+    language: python
+    code: |
+      if operation == "addition":
+        return left + right
+      elif operation == "substraction":
+        return left - right
+      elif operation == "multiplication":
+        return left * right
+      elif operation == "division":
+        return left / right
+      else:
+        return "I don't know how to do that."
+  response: | 
+    The result of {left} {operation} {right} is {result}
