@@ -1,0 +1,17 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users in obtaining recommendations about songs of the genre they like.
+      fallback: |
+          For any question not related to these aspects you have to answer:
+          "hey?I can recommend you some musics. You just need to tell me what genre of music you like, and the language of the song"
+
+      items:
+          - title: Select a music genre and the song language
+            kind: module
+            reference: genres
+          - title: Welcome. To say hello to the users.
+            kind: answer
+            answer: |
+              Hello! How can I help you?

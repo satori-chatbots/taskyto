@@ -1,0 +1,246 @@
+Chatbot Homie language : en
+
+intents :
+
+	"blinds.close" :
+		inputs in en {
+			"Close the " ( blinds ) [ device ] " it the " ( bedroom ) [ room ]
+		}
+		parameters :
+			device : entity device ;
+			room : entity room , required ;
+
+	"brightness.check" :
+		inputs in en {
+			"what about brightness"
+	}
+
+	"brightness.off" :
+		inputs in en {
+			"switch it off" ,
+			"switch off the " ( light ) [ device ] " in " ( bedroom ) [ room ] ,
+			"please turn off the " ( lights ) [ device ] " in the " ( bathroom ) [ room ] ,
+			"turn the " ( device ) [ device ] " off" ,
+			"switch off the light in the " ( kitchen ) [ room ]
+		}
+		parameters :
+			device : entity device ;
+			room : entity room , required ;
+
+	"Default Welcome Intent" :
+		inputs in en {
+			"just going to say hi" ,
+			heya ,
+			"hello hi" ,
+			howdy ,
+			"hey there" ,
+			"hi there" ,
+			greetings ,
+			hey ,
+			"long time no see" ,
+			hello ,
+			"lovely day isn\'t it" ,
+			"I greet you" ,
+			"hello again" ,
+			^hi ,
+			"hello there" ,
+			"a good day"
+	}
+
+	help :
+		inputs in en {
+			"say me what to do" ,
+			"what can you do" ,
+			"help me" ,
+			help
+	}
+
+	"brightness.all" :
+		inputs in en {
+			"Switch off"
+	}
+
+	"temperature.set" :
+		inputs in en {
+			"Set my home temperature to " ( "13" ) [ "number-integer" ] ,
+			"Set my home temperature to " ( "20" ) [ "number-integer" ] " degree"
+		}
+		parameters :
+			"number-integer" : entity number , required ;
+
+	"temperature.check" :
+		inputs in en {
+			"tell me the current temperature" ,
+			"What is my home temperature" ,
+			"What is the temperature"
+	}
+
+	coffee :
+		inputs in en {
+			"I want an espresso" ,
+			"Make me a " ( coffee ) [ device ]
+		}
+		parameters :
+			device : entity device , required ;
+
+	"blinds.open" :
+		inputs in en {
+			"Open " ( blinds ) [ device ] " in the " ( kitchen ) [ room ]
+		}
+		parameters :
+			device : entity device ;
+			room : entity room , required ;
+
+	"temperature.reset" :
+		inputs in en {
+			"Undo action" ,
+			undo
+	}
+
+	"Default Fallback Intent" Fallback :
+
+	"brightness.on" :
+		inputs in en {
+			"turn it on" ,
+			"turn my " ( light ) [ device ] " on" ,
+			"turn on the " ( lights ) [ device ] ,
+			"switch on the " ( lights ) [ device ] " in " ( bedroom ) [ room ] ,
+			"switch the " ( kitchen ) [ room ] " " ( lights ) [ device ] " on"
+		}
+		parameters :
+			room : entity room , required ;
+			device : entity device ;
+
+entities :
+	Simple entity condition :
+		inputs in en {
+			sunrise synonyms sunrise , "when the sun rises" , "early the morning"
+			come synonyms come , coming , came , arrived , arrive , arriving , "get in" , "gets in"
+			leave synonyms leave , left , leaving
+			rain synonyms rain , "it\'s raining" , raining , rains
+			sunset synonyms sunset , dawn
+			warm synonyms warm , hot
+			cold synonyms cold , cool
+	}
+	Simple entity device :
+		inputs in en {
+			decorations synonyms decorations
+			thermostat synonyms thermostat , heater
+			light synonyms light
+			"cofee machine" synonyms "cofee machine" , coffee
+			alarm synonyms alarm
+			blinds synonyms blinds
+	}
+	Simple entity lights :
+		inputs in en {
+			"table lamp" synonyms "table lamp"
+			decorations synonyms decorations
+	}
+	Simple entity room :
+		inputs in en {
+			kitchen synonyms chamber , kitchen
+			bedroom synonyms bedroom
+			bathroom synonyms bathroom , bath
+			outdoor synonyms outdoor
+			"kids rooms" synonyms "kids rooms" , children , kids
+			"dining room" synonyms "dining room"
+			studio synonyms studio
+			stairs synonyms stairs
+			garden synonyms garden
+	}
+
+actions :
+	Request post HttpRequest :
+		URL : "" ;
+	Response HttpResponse :
+		Request : HttpRequest ;
+		inputs in en {
+			request. text
+	}
+	text response "blinds.closeTxtResp1" :
+		inputs in en {
+			"Ok, I\'m opening the " [ "blinds.close.device" ] "in the " [ "blinds.close.room" ]
+	}
+	text response "brightness.checkTxtResp1" :
+		inputs in en {
+			"Yes, "
+	}
+	text response "brightness.offTxtResp1" :
+		inputs in en {
+			"Ok, I\'m doing! " ,
+			"Ok, let\'s switching it off " ,
+			"I just switched off " [ "brightness.off.room" ] "lights " ,
+			"Ok, " [ "brightness.off.room" ] "lights are now off "
+	}
+	text response "Default Welcome IntentTxtResp1" :
+		inputs in en {
+			"Hi! How are you doing? " ,
+			"Hello! How can I help you? " ,
+			"Good day! What can I do for you today? " ,
+			"Greetings! How can I assist? "
+	}
+	text response helpTxtResp1 :
+		inputs in en {
+			"These are all my powers:\n Tune the lights ?, Regulate the blinds ?, Control your alarm ?, Regulate the temperature ??, Make an espresso ?... And many more! "
+	}
+	text response "brightness.allTxtResp1" :
+		inputs in en {
+			"foo "
+	}
+	text response "temperature.setTxtResp1" :
+		inputs in en {
+			"Ok, your home temperature will be " "soon " ,
+			"Let\'s regulate it to " "soon "
+	}
+	text response "temperature.checkTxtResp1" :
+		inputs in en {
+			"Your home temperature is 20 C "
+	}
+	text response coffeeTxtResp1 :
+		inputs in en {
+			"Ok, coffe is almost ready! " ,
+			"I\'m preparing it ? "
+	}
+	text response "blinds.openTxtResp1" :
+		inputs in en {
+			"Ok, I\'m opening the " [ "blinds.open.device" ] "in the " [ "blinds.open.room" ]
+	}
+	text response "temperature.resetTxtResp1" :
+		inputs in en {
+			"Ok, i reset the temperature to the previous value "
+	}
+	text response "Default Fallback IntentTxtResp1" :
+		inputs in en {
+			"I didn\'t get that. Can you say it again? " ,
+			"I missed what you said. What was that? " ,
+			"Sorry, could you say that again? " ,
+			"Sorry, can you say that again? " ,
+			"Can you say that again? " ,
+			"Sorry, I didn\'t get that. Can you rephrase? " ,
+			"Sorry, what was that? " ,
+			"One more time? " ,
+			"What was that? " ,
+			"Say that one more time? " ,
+			"I didn\'t get that. Can you repeat? " ,
+			"I missed that, say that again? "
+	}
+	text response "brightness.onTxtResp1" :
+		inputs in en {
+			"Ok, " [ "brightness.on.room" ] "lights are now on "
+	}
+
+flows :
+	- user "blinds.close" => chatbot "blinds.closeTxtResp1" ;
+	- user "brightness.check" => chatbot "brightness.checkTxtResp1" ;
+	- user "brightness.off" => chatbot "brightness.offTxtResp1" ;
+	- user "Default Welcome Intent" => chatbot "Default Welcome IntentTxtResp1" ;
+	- user help => chatbot helpTxtResp1 ;
+	- user "brightness.all" => chatbot "brightness.allTxtResp1" ;
+	- user "temperature.set" => chatbot "temperature.setTxtResp1" ;
+	- user "temperature.check" => chatbot "temperature.checkTxtResp1" ;
+	- user coffee => chatbot coffeeTxtResp1 ;
+	- user "blinds.open" => chatbot "blinds.openTxtResp1" ;
+	- user "temperature.reset" => chatbot "temperature.resetTxtResp1" ;
+	- user "Default Fallback Intent" => chatbot "Default Fallback IntentTxtResp1" ;
+	- user "brightness.on" => chatbot "brightness.onTxtResp1" ;
+
