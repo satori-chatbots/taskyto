@@ -13,7 +13,9 @@ class LangChainConfiguration(engine.Configuration):
         from langchain.chat_models import ChatOpenAI
 
         utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
-        llm = ChatOpenAI(temperature=0., model_name="gpt-3.5-turbo-0301", verbose=True)
+        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
+
+
 
         #Doesn't work
         #llm = ChatOpenAI(temperature=0., model_name="gpt-3.5-turbo", verbose=True)
