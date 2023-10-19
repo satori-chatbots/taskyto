@@ -9,17 +9,18 @@ class State:
 
     def __init__(self, llm):
         self.logged_user = None
-        self.current_chain = None
+        self.active_chains = []
         self.active_modules = []
 
         self.memory = ConversationBufferMemory(memory_key="chat_history")
         self.llm = llm
 
     def push_module(self, a_module):
-        self.current_chain = a_module.get_chain()
+        self.active_chains.append(a_module.get_chain())
         self.active_modules.append(a_module)
 
     def pop_module(self):
+        self.active_chains.pop()
         self.active_modules.pop()
 
     def current_module(self):
@@ -35,7 +36,7 @@ class State:
         self.logged_user = name
 
     def get_chain(self):
-        return self.current_chain
+        return self.active_chains[-1]
 
 
 class ChatbotModule(ABC):
