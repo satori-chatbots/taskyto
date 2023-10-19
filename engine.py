@@ -76,6 +76,12 @@ def get_property_value(p: spec.DataProperty, data):
                 return None
         else:
             return None
+    else:
+        # TODO: Handle more types explicitly like date, enum, etc.
+        # For the moment, just convert them to strings and check that at least they are not empty
+        value = str(value)
+        if len(value.strip()) == 0:
+            return None
 
     return value
 
