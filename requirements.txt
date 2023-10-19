@@ -18,8 +18,7 @@ iniconfig==2.0.0
 itsdangerous==2.1.2
 Jinja2==3.1.2
 joblib==1.1.0
-langchain==0.0.286
-langsmith==0.0.35
+langchain==0.0.317
 MarkupSafe==2.1.1
 marshmallow==3.20.1
 multidict==6.0.4
@@ -27,7 +26,6 @@ mypy-extensions==1.0.0
 networkx==3.1
 nltk==3.7
 numexpr==2.8.5
-numpy==1.25.2
 openai==0.28.0
 packaging==23.1
 pluggy==1.3.0
