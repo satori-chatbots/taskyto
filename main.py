@@ -61,7 +61,18 @@ if __name__ == '__main__':
                         help='Path to the chatbot specification')
     parser.add_argument('--module-path', default='.',
                         help='List of paths to chatbot modules, separated by :')
+    parser.add_argument('--verbose', default=False, action='store_true',
+                        help='Show the intermediate prompts')
+    parser.add_argument('--debug', default=False, action='store_true',
+                        help='Show all intermediate processing information')
 
     args = parser.parse_args()
+    if args.verbose:
+        import langchain.globals
+        langchain.globals.set_verbose(True)
+
+    if args.debug:
+        import langchain.globals
+        langchain.globals.set_debug(True)
 
     main(args.chatbot, args.module_path)
