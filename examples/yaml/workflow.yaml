@@ -1,0 +1,14 @@
+
+menu:
+  presentation:
+    - menu.yaml
+  items:
+    - sequence:
+        steps:
+          - make_appointment.yaml 
+            -> date, time, service
+          - if service == 'repair'
+            - bike_selection.yaml
+            else
+            - bike_selection2.yaml
+    - bike_qa.yaml
