@@ -1,9 +1,12 @@
 import os.path
-from argparse import ArgumentParser
-
 import engine
 import utils
+import glob
+
+from argparse import ArgumentParser
 from spec import ChatbotModel
+from spec import parse_yaml
+from engine import Engine
 
 
 class LangChainConfiguration(engine.Configuration):
@@ -15,8 +18,6 @@ class LangChainConfiguration(engine.Configuration):
         utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
         llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
 
-
-
         #Doesn't work
         #llm = ChatOpenAI(temperature=0., model_name="gpt-3.5-turbo", verbose=True)
 
@@ -27,23 +28,23 @@ class LangChainConfiguration(engine.Configuration):
         return state
 
 
-def main(chatbot_folder: str, module_path):
-    from engine import Engine
-    from spec import parse_yaml
-    import glob
-
-    if not os.path.exists(chatbot_folder):
-        print("Chatbot folder does not exist: " + chatbot_folder)
-        exit(1)
-
+def load_chatbot_model(chatbot_folder):
     # Read yaml files in chatbot_folder
     modules = []
     for yaml_path in glob.glob(os.path.join(chatbot_folder, '*.yaml')):
         with open(yaml_path) as yaml_file:
             parsed_modules = parse_yaml(yaml_file.read())
             modules.extend(parsed_modules)
-
     model = ChatbotModel(modules=modules)
+    return model
+
+
+def main(chatbot_folder: str, module_path):
+    if not os.path.exists(chatbot_folder):
+        print("Chatbot folder does not exist: " + chatbot_folder)
+        exit(1)
+
+    model = load_chatbot_model(chatbot_folder)
     engine = Engine(model, configuration=LangChainConfiguration())
     result = engine.first_action()
     while True:
