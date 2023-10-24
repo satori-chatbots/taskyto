@@ -13,8 +13,10 @@ class UserSays(InteractionElement):
 
 
 class ChatbotAnswer(InteractionElement):
-    message: str
+    answers: List[str] = []
 
 
 class Interaction(BaseModel):
-    interaction: List[InteractionElement]
+    interactions: List[InteractionElement]
+
+

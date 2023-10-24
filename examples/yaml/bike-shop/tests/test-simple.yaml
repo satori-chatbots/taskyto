@@ -1,4 +1,10 @@
 
 interaction:
   - user: Hi
-  - chatbot: Hello
+  - chatbot:
+      - Hello
+      - Welcome to my bike shop. I'm the owner and I'm happy to help you. What
+        can I do for you?
+  - user: What are your opening hours?
+
+

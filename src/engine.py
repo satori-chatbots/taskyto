@@ -1,15 +1,14 @@
 from abc import abstractmethod
 from typing import Optional
 
-import langchain
 import networkx as nx
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain.tools import BaseTool
-from pydantic import computed_field
 
 import modules
 import spec
 from eval import eval_code
+from recording import RecordedInteraction
 from spec import ChatbotModel, Visitor
 
 
@@ -174,16 +173,24 @@ class Engine(Visitor):
         self._init_module = compute_init_module(chatbot_model)
         self.configuration = configuration
         self._current_state = None
+        self.recorded_interaction = RecordedInteraction()
 
     def first_action(self) -> ChatbotResult:
         self._current_state = self.configuration.new_state()
         module: modules.ChatbotModule = self._init_module.accept(self)
         self._current_state.push_module(module)
-        return ChatbotResult("Hello", DebugInfo(current_module=self._init_module.name))
+
+        initial_msg = "Hello"
+        self.recorded_interaction.append(type="chatbot", message=initial_msg)
+        return ChatbotResult(initial_msg, DebugInfo(current_module=self._init_module.name))
 
     def run_step(self, query: str) -> ChatbotResult:
+        self.recorded_interaction.append(type="user", message=query)
+
         agent_chain = self._current_state.get_chain()
         ans = agent_chain.run(input=query)
+        self.recorded_interaction.append(type="chatbot", message=ans)
+
         module_name = self._current_state.current_module().name  # type(self._current_state.current_module()).__name__
         return ChatbotResult(ans, DebugInfo(current_module=module_name))
 

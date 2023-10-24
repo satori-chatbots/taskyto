@@ -12,20 +12,31 @@ def to_model(data) -> Interaction:
         if 'user' in element:
             elements.append(UserSays(message=element['user']))
         elif 'chatbot' in element:
-            elements.append(ChatbotAnswer(message=element['chatbot']))
+            chatbot_answer = element['chatbot']
+            if isinstance(chatbot_answer, str):
+                elements.append(ChatbotAnswer(answers=[chatbot_answer]))
+            elif isinstance(chatbot_answer, list):
+                elements.append(ChatbotAnswer(answers=chatbot_answer))
+            else:
+                raise ValueError('Unknown chatbot answer', chatbot_answer)
         else:
             raise ValueError('Unknown element type', element)
 
-    return Interaction(interaction=elements)
+    return Interaction(interactions=elements)
 
 
-def load_test_model(path):
+def load_test_model(filename):
+    data = read(filename)
+    return to_model(data)
+
+
+def load_test_set(path):
     # Read files in path
     files = glob.glob(os.path.join(path, '*.yaml'))
     for file in files:
-        data = read(file)
         # TODO: Merge
-        return to_model(data)
+        return load_test_model(file)
+
 
 def read(filename):
     # Open the yaml file
@@ -37,4 +48,3 @@ def read(filename):
             return data
         except yaml.YAMLError as exc:
             print(exc)
-    
