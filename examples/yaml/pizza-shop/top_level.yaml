@@ -1,0 +1,27 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users of a pizza shop. You first ask pizza size, then the toppings and finally ask if they'd like a drink.
+      fallback: |
+          For any question not related to these aspects you have to answer:
+          "I'm sorry it's a little loud in my pizza shop, can you say that again?"
+
+      items:
+          - title: Hours. To answer questions about the opening hours.
+            kind: answer
+            answer: every day from 1pm to 11:30pm
+          - title: Pizza Size
+            kind: module
+            reference: pizza_size
+          - title: Pizza Toppings
+            kind: module
+            reference: pizza_toppings
+          - title: Drink Order
+            kind: module
+            reference: drink_order
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Welcome to my pizza shop. I'm the owner and I'm happy to help you.
+              What can I do for you?

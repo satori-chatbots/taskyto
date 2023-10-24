@@ -1,0 +1,19 @@
+name: drink_order
+kind: data_gathering
+description: Useful for asking one drink of a pizza previously ordered.
+data:
+  - drinks:
+      type: enum
+      values:
+        - coke
+        - sprite
+        - water
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("Ordered drink")
+  response: | 
+    Ok, I have received your order for this drink: {{drinks}}.
+    Enjoy both Pizza and drink!

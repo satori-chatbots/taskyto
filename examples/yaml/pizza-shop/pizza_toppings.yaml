@@ -1,0 +1,25 @@
+name: pizza_toppings
+kind: data_gathering
+description: Useful for asking the toppings of a pizza previously ordered.
+data:
+  - toppings:
+      type: enum
+      values:
+        - cheese
+        - mushrooms
+        - pepper
+        - ham
+        - bacon
+        - pepperoni
+        - olives
+        - corn
+        - chicken
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("Ordered toppings")
+  response: | 
+    Ok, I have received your order for these {{toppings}}.
+    Pizza with toppings on its way!

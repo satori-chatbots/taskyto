@@ -1,0 +1,19 @@
+name: pizza_size
+kind: data_gathering
+description: Useful for asking the size of a pizza.
+data:
+  - size:
+      type: enum
+      values:
+        - small
+        - medium
+        - big
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("Order pizza")
+  response: | 
+    Ok, I have received your order for a {{size}} pizza.
+    Pizza on its way!
