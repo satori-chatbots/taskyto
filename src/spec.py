@@ -192,9 +192,14 @@ def parse_yaml(yaml_str) -> List[Module]:
     import yaml
     data = yaml.safe_load(yaml_str)
     if "modules" in data:
-        return [pydantic.parse_obj_as(Module, m) for m in data["modules"]]
+        return [parse_obj_as_(Module, m) for m in data["modules"]]
     else:
-        return [pydantic.parse_obj_as(Module, data)]
+        return [parse_obj_as_(Module, data)]
+
+
+# This is to imitate parse_obj_as but without warnings
+def parse_obj_as_(type_: type, obj: Any):
+    return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
 
 
 # Example YAML data

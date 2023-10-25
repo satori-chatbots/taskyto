@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from langchain import OpenAI
 from langchain.agents import ConversationalAgent, AgentExecutor
 from langchain.memory import ConversationBufferMemory
 
