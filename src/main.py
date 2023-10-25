@@ -100,7 +100,7 @@ if __name__ == '__main__':
                         help='Show the intermediate prompts')
     parser.add_argument('--debug', default=False, action='store_true',
                         help='Show all intermediate processing information')
-    parser.add_argument('--test', required=True,
+    parser.add_argument('--test', required=False,
                         help='Test file to run')
     parser.add_argument('--dry-run', default=False, action='store_true',
                         help='In test mode, do not check the chatbot answers')
