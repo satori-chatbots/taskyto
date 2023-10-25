@@ -8,9 +8,11 @@ modules:
           "hey?I can recommend you some musics. You just need to tell me what genre of music you like, and the language of the song"
 
       items:
-          - title: Select a music genre and the song language
-            kind: module
-            reference: genres
+          - title: Recommend a song
+            kind: sequence
+            references:
+              - genres
+              - recommend
           - title: Welcome. To say hello to the users.
             kind: answer
             answer: |

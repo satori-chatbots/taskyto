@@ -2,7 +2,7 @@ name: genres
 kind: data_gathering
 description: Useful for getting song genres and the language.
 data:
-  - genre: genre
+  - genre: string
   - language:
       type: enum
       values:

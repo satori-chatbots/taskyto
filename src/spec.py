@@ -47,7 +47,23 @@ class ToolItem(BaseItem):
         return visitor.visit_tool_item(self)
 
 
-Item = Annotated[Union[ToolItem, AnswerItem], Field(discriminator='kind')]
+class SequenceItem(BaseItem):
+    kind: Literal["sequence"] = "sequence"
+    references: List[str]
+
+    impl_module: "SequenceModule" = None
+
+    def get_sequence_module(self):
+        if self.impl_module is None:
+            module_name = f"sequence-{'-'.join(self.references)}"
+            self.impl_module = SequenceModule(name=module_name, description=self.title, references=self.references)
+        return self.impl_module
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_sequence_item(self)
+
+
+Item = Annotated[Union[ToolItem, AnswerItem, SequenceItem], Field(discriminator='kind')]
 
 
 # https://typethepipe.com/post/pydantic-discriminated-union/
@@ -82,11 +98,29 @@ class MenuModule(BaseModule):
             if isinstance(item_, ToolItem):
                 resolved_module = chatbot_model.resolve_module(item_.reference)
                 g.add_edge(self, resolved_module)
+            elif isinstance(item_, SequenceItem):
+                seq = item_.get_sequence_module()
+                seq.to_graph(g, chatbot_model)
+                g.add_edge(self, seq)
 
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_menu_module(self)
 
 
+class SequenceModule(BaseModule):
+    kind: Literal["sequence"] = "sequence"
+    references: List[str]
+    description: str = None  # should this be merged with presentation?
+
+    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
+        g.add_node(self)
+        for reference in self.references:
+            resolved_module = chatbot_model.resolve_module(reference)
+            g.add_edge(self, resolved_module)
+        # This is not exactly correct, because we should generate a sequence of edges...
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_sequence_module(self)
 
 class DataProperty(BaseModel):
     name: str
@@ -100,9 +134,11 @@ class DataProperty(BaseModel):
 class DataSpecification(BaseModel):
     properties: List[DataProperty]
 
+
 class ExecuteElement(BaseModel):
     language: str
     code: str
+
 
 class Action(BaseModel):
     execute: Optional[ExecuteElement] = None
@@ -140,14 +176,25 @@ class DataGatheringModule(BaseModule):
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 
-
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_data_gathering_module(self)
 
 
+class ActionModule(BaseModule):
+    kind: Literal["action"] = "action"
+    data: list
+    data_model: DataSpecification = None
+
+    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
+        pass
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_action_module(self)
+
 class QuestionAnswer(BaseModel):
     question: str
     answer: str
+
 
 class QuestionAnsweringModule(BaseModule):
     kind: Literal["question_answering"] = "question_answering"
@@ -157,12 +204,13 @@ class QuestionAnsweringModule(BaseModule):
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 
-
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_question_answering_module(self)
 
 
-Module = Annotated[Union[MenuModule, DataGatheringModule, QuestionAnsweringModule], Field(discriminator='kind')]
+Module = Annotated[
+    Union[MenuModule, DataGatheringModule, QuestionAnsweringModule, SequenceModule, ActionModule], Field(
+        discriminator='kind')]
 
 
 class ChatbotModel(BaseModel):

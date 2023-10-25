@@ -99,8 +99,10 @@ class RuntimeDataGatheringTool(BaseTool):
     description: str
     state: object
 
-    def __init__(self, module: spec.DataGatheringModule, runtime_module: RuntimeChatbotModule, description: str, state: object):
-        super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description, state=state)
+    def __init__(self, module: spec.DataGatheringModule, runtime_module: RuntimeChatbotModule, description: str,
+                 state: object):
+        super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description,
+                         state=state)
 
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         import json
@@ -135,7 +137,8 @@ class RuntimeDataGatheringTool(BaseTool):
             self.state.push_module(self.runtime_module)
 
         return "Do not use the " + self.name + " tool and ask the user the following:" \
-                                               "Please provide " + ", ".join([p.name for p in self.module.data_model.properties])
+                                               "Please provide " + ", ".join(
+            [p.name for p in self.module.data_model.properties])
 
 
 class RuntimeQuestionAnsweringTool(BaseTool):
@@ -144,8 +147,10 @@ class RuntimeQuestionAnsweringTool(BaseTool):
     description: str
     state: object
 
-    def __init__(self, module: spec.QuestionAnsweringModule, runtime_module: RuntimeChatbotModule, description: str, state: object):
-        super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description, state=state)
+    def __init__(self, module: spec.QuestionAnsweringModule, runtime_module: RuntimeChatbotModule, description: str,
+                 state: object):
+        super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description,
+                         state=state)
 
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
         print("QA: ", query)
@@ -154,10 +159,26 @@ class RuntimeQuestionAnsweringTool(BaseTool):
             agent_chain = self.runtime_module.get_chain()
             ans = agent_chain.run(input=question)
             return ans
-            #return "Answer the question: " + question
+            # return "Answer the question: " + question
         else:
             raise ValueError("The query should start with \"Question:\"")
 
+
+class RuntimeSequenceTool(BaseTool):
+    module: spec.SequenceModule
+    runtime_module: RuntimeChatbotModule
+    description: str
+    state: object
+
+    def __init__(self, module: spec.SequenceModule, runtime_module: RuntimeChatbotModule, description: str,
+                 state: object):
+        super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description,
+                         state=state)
+
+    def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        # print("Query: ", query)
+        self.state.push_module(self.runtime_module)
+        return "Invoke the " + self.module.references[0] + " tool"
 
 def compute_init_module(chatbot_model: ChatbotModel) -> spec.Item:
     g = nx.DiGraph()
@@ -212,7 +233,7 @@ class Engine(Visitor):
         prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
 
         generator = ToolGenerator(self._chatbot_model, self._current_state)
-        tools = [i.accept(generator) for i in module.items if isinstance(i, spec.ToolItem)]
+        tools = [i.accept(generator) for i in module.items if isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
         # tools=[] # TODO: remove
         return RuntimeChatbotModule(module, self._current_state, prompt, tools=tools)
 
@@ -225,6 +246,10 @@ class Engine(Visitor):
     def visit_tool_item(self, item: spec.Item) -> str:
         return f'You have to use the tool "{item.reference}"'
 
+    def visit_sequence_item(self, item: spec.SequenceItem) -> str:
+        seq = item.get_sequence_module()
+        return f'You have to use the tool "{seq.name}"'
+
 
 class ToolGenerator(Visitor):
     def __init__(self, chatbot_model: ChatbotModel, state: "State"):
@@ -233,6 +258,10 @@ class ToolGenerator(Visitor):
 
     def visit_tool_item(self, item: spec.ToolItem):
         return self.chatbot_model.resolve_module(item.reference).accept(self)
+
+    def visit_sequence_item(self, item: spec.SequenceItem):
+        seq = item.get_sequence_module()
+        return seq.accept(self)
 
     def visit_data_gathering_module(self, module: spec.DataGatheringModule):
         prompt = module.description
@@ -251,13 +280,14 @@ class ToolGenerator(Visitor):
 
         module_prompt = f"Ask the following data all the time: {property_names}.\n"
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=[])
-        tool = RuntimeDataGatheringTool(module=module, runtime_module=runtime_module, description=prompt, state=self.state)
+        tool = RuntimeDataGatheringTool(module=module, runtime_module=runtime_module, description=prompt,
+                                        state=self.state)
         runtime_module.tools = [tool]
         return tool
 
     def visit_question_answering_module(self, module: spec.QuestionAnsweringModule):
         tool_description = (module.description +
-        # The list of questions is not needed in GPT-4
+                            # The list of questions is not needed in GPT-4
                             "\nThe tool is able to answer the following questions:\n" +
                             "\n".join([f"- Question: {q.question}" for q in module.questions]) +
                             "\n"
@@ -270,7 +300,24 @@ class ToolGenerator(Visitor):
         module_prompt = "\n".join(module_prompt) + "\n"
 
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=[])
-        tool = RuntimeQuestionAnsweringTool(module=module, runtime_module=runtime_module, description=tool_description, state=self.state)
+        tool = RuntimeQuestionAnsweringTool(module=module, runtime_module=runtime_module, description=tool_description,
+                                            state=self.state)
         # The module doesn't have the tool because we don't want it to recurse
         # runtime_module.tools = [tool]
         return tool
+
+    def visit_sequence_module(self, module: spec.SequenceModule):
+        tool_description = module.description
+
+        module_prompt = ''
+
+        called_modules = [self.chatbot_model.resolve_module(ref) for ref in module.references]
+        seq_tools = [t for m in called_modules if (t := m.accept(self)) is not None]
+
+        runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=seq_tools)
+        tool = RuntimeSequenceTool(module=module, runtime_module=runtime_module, description=tool_description,
+                                   state=self.state)
+        return tool
+
+    def visit_action_module(self, module: spec.ActionModule):
+        return None

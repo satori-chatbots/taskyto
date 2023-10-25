@@ -1,0 +1,6 @@
+name: recommend
+kind: action
+data:
+  - genre: string
+  - language: string
+
