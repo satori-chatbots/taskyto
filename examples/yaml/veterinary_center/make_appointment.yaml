@@ -1,0 +1,36 @@
+name: make_appointment
+kind: data_gathering
+description: Useful for registering appointments.
+data:
+  - date: date
+  - time: time
+  - service:
+      type: enum
+      values:
+        - Physical examination
+        - Vaccination
+        - Dental health and cleaning
+        - Lab or diagnostic testing
+
+on-success:
+  execute:
+    language: python
+    code: |
+      import os, pandas as pd
+      current_dir = os.getcwd()
+      file_path = os.path.join(current_dir, "examples", "veterinary_center", "agenda.csv")
+    
+      new_record = pd.DataFrame({'date': [date], 'time': [time], 'service': [service]})
+      agenda = pd.read_csv(file_path)
+      existing_cita = agenda[(agenda['date'] == date) & (agenda['time'] == time)]
+
+      if existing_cita.empty:
+            agenda = pd.concat([agenda, new_record], ignore_index=True)
+            agenda.to_csv(file_path, index=False)
+            print("The appointment was created successfully.")
+      else:
+            print("An appointment with the same date and time already exists. Please enter new data.")
+
+  response: | 
+    Ok, I have received your request to schedule an appointment for {{date}} at {{time}} for {{service}}.
+    See you then!

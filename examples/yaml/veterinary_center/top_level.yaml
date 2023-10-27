@@ -1,0 +1,24 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users of a veterinary center.
+      fallback: |
+          For any question not related to these aspects you have to answer:
+          "I'm sorry it's a little loud in here, can you say that again?"
+
+      items:
+          - title: Hours. To answer questions about the opening hours.
+            kind: answer
+            answer: every weekday from 9am to 6pm
+          - title: Make Appointment
+            kind: module
+            reference: make_appointment
+          - title: Veterinary center Q&A
+            kind: module
+            reference: vetcen_qa
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Welcome to my veterinary center. I'm the owner and I'm happy to help you.
+              What can I do for you?
