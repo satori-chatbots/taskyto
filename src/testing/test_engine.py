@@ -1,7 +1,7 @@
 import sys
 
 import utils
-from engine import Engine
+from engine.common import Engine
 from testing.test_model import Interaction, UserSays, ChatbotAnswer
 
 

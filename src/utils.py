@@ -1,7 +1,7 @@
 import os
 import configparser
 
-from engine import ChatbotResult
+from engine.common import ChatbotResult
 
 
 def check_keys(key_list: list):

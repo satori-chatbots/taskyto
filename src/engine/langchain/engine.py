@@ -1,34 +1,16 @@
 from abc import abstractmethod
-from typing import Optional, List, Callable
+from typing import Optional
 
-import langchain
 import networkx as nx
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain.tools import BaseTool
 
-import modules
 import spec
+from engine.common import ChatbotResult, DebugInfo, Configuration, get_property_value, replace_values
+from engine.langchain import modules
 from eval import eval_code
 from recording import RecordedInteraction
 from spec import ChatbotModel, Visitor
-
-
-class Configuration:
-    @abstractmethod
-    def new_state(self):
-        pass
-
-
-class DebugInfo:
-    def __init__(self, current_module: str):
-        self.current_module = current_module
-
-
-class ChatbotResult:
-    def __init__(self, chatbot_msg: str, debug_info: DebugInfo):
-        self.chatbot_msg = chatbot_msg
-        self.debug_info = debug_info
-
 
 class RuntimeChatbotModule(modules.ChatbotModule):
 
@@ -47,51 +29,6 @@ class RuntimeChatbotModule(modules.ChatbotModule):
 
     def get_tools(self):
         return self.tools
-
-
-def get_property_value(p: spec.DataProperty, data):
-    value = data.get(p.name)
-    if value is None:
-        return None
-
-    # If type is string but the value is not str, we should somehow tell the chatbot that there is an issue
-    # or perhaps we may need to convert the value to str
-    if p.type == 'string':
-        if isinstance(value, str):
-            value = value.strip()
-        elif isinstance(value, int) or isinstance(value, float) or isinstance(value, bool):
-            value = str(value)
-        else:
-            return None
-
-        if value == "":
-            return None
-    elif p.type == 'int' or p.type == 'integer':
-        if isinstance(value, int):
-            return value
-        elif isinstance(value, str):
-            try:
-                return int(value)
-            except ValueError:
-                return None
-        else:
-            return None
-    else:
-        # TODO: Handle more types explicitly like date, enum, etc.
-        # For the moment, just convert them to strings and check that at least they are not empty
-        value = str(value)
-        if len(value.strip()) == 0:
-            return None
-
-    return value
-
-
-def replace_values(response, data):
-    for k, v in data.items():
-        # Handle both {{ }} and { }
-        response = response.replace("{{" + k + "}}", str(v))
-        response = response.replace("{" + k + "}", str(v))
-    return response
 
 
 class RuntimeDataGatheringTool(BaseTool):
@@ -207,7 +144,7 @@ def compute_init_module(chatbot_model: ChatbotModel) -> spec.Item:
     return init
 
 
-class Engine(Visitor):
+class LangchainEngine(Visitor):
     def __init__(self, chatbot_model: ChatbotModel, configuration: Configuration):
         self._chatbot_model = chatbot_model
         self._init_module = compute_init_module(chatbot_model)
@@ -300,10 +237,11 @@ class ToolGenerator(Visitor):
         prompt = prompt + f'\nProvide the values as JSON with the following fields: {property_names}.\n'
         prompt = prompt + f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
-        module_prompt = (f"Your task is collecting the following data from the user: {property_names}. Pass this information to the corresponding tool.\n"
-                         f"If there is missing data, ask for it politely.\n"
-                         # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
-                         f"\n")
+        module_prompt = (
+            f"Your task is collecting the following data from the user: {property_names}. Pass this information to the corresponding tool.\n"
+            f"If there is missing data, ask for it politely.\n"
+            # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
+            f"\n")
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=[])
         tool = RuntimeDataGatheringTool(module=module, runtime_module=runtime_module, description=prompt,
                                         state=self.state)
@@ -343,8 +281,8 @@ class ToolGenerator(Visitor):
         tool = RuntimeSequenceTool(module=module, runtime_module=runtime_module, description=tool_description,
                                    state=self.state)
 
-        #current = runtime_module
-        #for t in seq_tools[1:-1]:
+        # current = runtime_module
+        # for t in seq_tools[1:-1]:
         #   current.on_finish(lambda response: tool.module_finished(t.runtime_module))
         return tool
 

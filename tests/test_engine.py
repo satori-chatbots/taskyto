@@ -1,6 +1,6 @@
 import base_test
+from engine.common import get_property_value
 
-from engine import get_property_value
 from spec import DataProperty
 
 

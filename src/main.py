@@ -5,18 +5,22 @@ import glob
 
 from argparse import ArgumentParser
 
+from engine.common import Configuration, Engine
 from recording import dump_test_recording
 from spec import ChatbotModel
 from spec import parse_yaml
-from engine import Engine
+from engine.langchain import LangchainEngine
 from testing.reader import load_test_model
 from testing.test_engine import TestEngineConfiguration, run_test
 
 
-class LangChainConfiguration(engine.Configuration):
+class LangChainConfiguration(Configuration):
+
+    def new_engine(self, model: ChatbotModel) -> Engine:
+        return LangchainEngine(model, configuration=self)
 
     def new_state(self):
-        from modules import State
+        from engine.langchain.modules import State
         from langchain.chat_models import ChatOpenAI
 
         utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
@@ -54,7 +58,7 @@ def initialize_engine(chatbot_folder):
         print("Chatbot folder does not exist: " + chatbot_folder)
         exit(1)
     model = load_chatbot_model(chatbot_folder)
-    engine = Engine(model, configuration=LangChainConfiguration())
+    engine = LangChainConfiguration().new_engine(model)
     return engine
 
 

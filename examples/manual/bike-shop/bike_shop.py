@@ -2,7 +2,7 @@ from langchain.chat_models import ChatOpenAI
 
 import utils
 from bike_modules import TopLevel
-from modules import State
+from engine.langchain.modules import State
 
 utils.check_keys(["OPENAI_API_KEY"])
 

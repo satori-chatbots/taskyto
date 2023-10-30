@@ -3,7 +3,7 @@ from typing import Optional
 from langchain.callbacks.manager import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
 from langchain.tools import BaseTool
 
-from modules import ChatbotModule, State
+from engine.langchain.modules import ChatbotModule, State
 
 
 class TopLevel(ChatbotModule):

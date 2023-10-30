@@ -6,7 +6,7 @@ from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from langchain.tools import BaseTool, Tool
 from langchain.utilities import SerpAPIWrapper
 
-from modules import ChatbotModule, State
+from engine.langchain.modules import ChatbotModule, State
 
 
 class TopLevel(ChatbotModule):
