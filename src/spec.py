@@ -174,7 +174,7 @@ class DataGatheringModule(BaseModule):
         return DataSpecification(properties=properties)
 
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
-        pass
+        g.add_node(self)
 
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_data_gathering_module(self)

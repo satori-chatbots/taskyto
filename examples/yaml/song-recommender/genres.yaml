@@ -16,4 +16,4 @@ on-success:
     code: |
       print(f"Chosen song genre {genre}, in {language}")
   response: | 
-    Ok, you have selected a song of genre {{genre}} in {{language}}. Let's see what do I have!
+    The data {{genre}} in {{language}} has been collected.

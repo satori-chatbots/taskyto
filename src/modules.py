@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Callable, Optional
 
 from langchain.agents import ConversationalAgent, AgentExecutor
 from langchain.memory import ConversationBufferMemory
@@ -18,9 +19,12 @@ class State:
         self.active_chains.append(a_module.get_chain())
         self.active_modules.append(a_module)
 
-    def pop_module(self):
+    def pop_module(self, response: Optional[str] = None) -> Optional[str]:
         self.active_chains.pop()
-        self.active_modules.pop()
+        mod = self.active_modules.pop()
+        if response is not None:
+            return mod.finished(response)
+        return None
 
     def current_module(self):
         return self.active_modules[-1]
@@ -39,8 +43,10 @@ class State:
 
 
 class ChatbotModule(ABC):
+
     def __init__(self, state: State):
         self.state = state
+        self.on_finish = []  # List[Callable[[str], str]] = []
 
     @abstractmethod
     def get_prompt(self):
@@ -68,3 +74,11 @@ class ChatbotModule(ABC):
         )
 
         return chain
+
+    def on_finish(self, handler: Callable[[str], str]):
+        self.on_finish.append(handler)
+
+    def finished(self, result: str) -> str:
+        for handler in self.on_finish:
+            result = handler(result)
+        return result

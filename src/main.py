@@ -32,13 +32,19 @@ class LangChainConfiguration(engine.Configuration):
         return state
 
 
-def load_chatbot_model(chatbot_folder):
-    # Read yaml files in chatbot_folder
+def load_chatbot_model(chatbot_folder_or_file: str):
     modules = []
-    for yaml_path in glob.glob(os.path.join(chatbot_folder, '*.yaml')):
-        with open(yaml_path) as yaml_file:
+    if chatbot_folder_or_file.endswith(".yaml"):
+        with open(chatbot_folder_or_file) as yaml_file:
             parsed_modules = parse_yaml(yaml_file.read())
             modules.extend(parsed_modules)
+    else:
+        # Read yaml files in chatbot_folder
+        for yaml_path in glob.glob(os.path.join(chatbot_folder_or_file, '*.yaml')):
+            with open(yaml_path) as yaml_file:
+                parsed_modules = parse_yaml(yaml_file.read())
+                modules.extend(parsed_modules)
+
     model = ChatbotModel(modules=modules)
     return model
 

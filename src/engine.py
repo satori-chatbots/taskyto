@@ -1,6 +1,7 @@
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, List, Callable
 
+import langchain
 import networkx as nx
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain.tools import BaseTool
@@ -173,12 +174,30 @@ class RuntimeSequenceTool(BaseTool):
     def __init__(self, module: spec.SequenceModule, runtime_module: RuntimeChatbotModule, description: str,
                  state: object):
         super().__init__(name=module.name, module=module, runtime_module=runtime_module, description=description,
-                         state=state)
+                         state=state, return_direct=True)
 
     def _run(self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        # print("Query: ", query)
-        self.state.push_module(self.runtime_module)
-        return "Invoke the " + self.module.references[0] + " tool"
+        seq_modules = [t.runtime_module for t in self.runtime_module.tools]
+
+        if not self.state.is_module_active(self.runtime_module):
+            self.state.push_module(self.runtime_module)
+            self.runtime_module.current_seq = 0
+
+        self.state.push_module(seq_modules[self.runtime_module.current_seq])
+
+        try:
+            res = self.state.get_chain().run(input=query)
+        except:
+            # This is likely because of the query got from the upper module is not well-formed
+            res = self.state.get_chain().run(input="Do your task")
+
+        self.runtime_module.current_seq = self.runtime_module.current_seq + 1
+
+        if self.state.is_module_active(self.runtime_module) and self.runtime_module.current_seq == len(seq_modules):
+            self.state.pop_module()
+
+        return res
+
 
 def compute_init_module(chatbot_model: ChatbotModel) -> spec.Item:
     g = nx.DiGraph()
@@ -233,12 +252,15 @@ class Engine(Visitor):
         prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
 
         generator = ToolGenerator(self._chatbot_model, self._current_state)
-        tools = [i.accept(generator) for i in module.items if isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
+        tools = [i.accept(generator) for i in module.items if
+                 isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
         # tools=[] # TODO: remove
         return RuntimeChatbotModule(module, self._current_state, prompt, tools=tools)
 
-    def visit_data_gathering_module(self, module: spec.Item):
-        pass
+    def visit_data_gathering_module(self, module: spec.DataGatheringModule) -> modules.ChatbotModule:
+        generator = ToolGenerator(self._chatbot_model, self._current_state)
+        tool = module.accept(generator)
+        return tool.runtime_module
 
     def visit_answer_item(self, item: spec.Item) -> str:
         return f'You have to answer "{item.answer}"'
@@ -278,7 +300,10 @@ class ToolGenerator(Visitor):
         prompt = prompt + f'\nProvide the values as JSON with the following fields: {property_names}.\n'
         prompt = prompt + f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
-        module_prompt = f"Ask the following data all the time: {property_names}.\n"
+        module_prompt = (f"Your task is collecting the following data from the user: {property_names}. Pass this information to the corresponding tool.\n"
+                         f"If there is missing data, ask for it politely.\n"
+                         # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
+                         f"\n")
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=[])
         tool = RuntimeDataGatheringTool(module=module, runtime_module=runtime_module, description=prompt,
                                         state=self.state)
@@ -317,6 +342,10 @@ class ToolGenerator(Visitor):
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=seq_tools)
         tool = RuntimeSequenceTool(module=module, runtime_module=runtime_module, description=tool_description,
                                    state=self.state)
+
+        #current = runtime_module
+        #for t in seq_tools[1:-1]:
+        #   current.on_finish(lambda response: tool.module_finished(t.runtime_module))
         return tool
 
     def visit_action_module(self, module: spec.ActionModule):
