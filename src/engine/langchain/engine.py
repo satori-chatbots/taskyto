@@ -1,12 +1,12 @@
 from abc import abstractmethod
 from typing import Optional
 
-import networkx as nx
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain.tools import BaseTool
 
 import spec
-from engine.common import ChatbotResult, DebugInfo, Configuration, get_property_value, replace_values
+from engine.common import ChatbotResult, DebugInfo, Configuration, get_property_value, replace_values, \
+    compute_init_module, prompts
 from engine.langchain import modules
 from eval import eval_code
 from recording import RecordedInteraction
@@ -136,14 +136,6 @@ class RuntimeSequenceTool(BaseTool):
         return res
 
 
-def compute_init_module(chatbot_model: ChatbotModel) -> spec.Item:
-    g = nx.DiGraph()
-    chatbot_model.to_graph(g)
-    sorted_modules = list(nx.topological_sort(g))
-    init = sorted_modules[0]
-    return init
-
-
 class LangchainEngine(Visitor):
     def __init__(self, chatbot_model: ChatbotModel, configuration: Configuration):
         self._chatbot_model = chatbot_model
@@ -172,21 +164,12 @@ class LangchainEngine(Visitor):
         return ChatbotResult(ans, DebugInfo(current_module=module_name))
 
     def visit_menu_module(self, module: spec.Module) -> modules.ChatbotModule:
-        # Describe the menu
-        options = '\nYou are able to assist only in these tasks:\n'
-        options = options + '\n'.join([f'{i}: {item.title}' for i, item in enumerate(module.items)])
+        def handle_item(mod):
+            handling = '\nThe following items specify how to handle each task:\n'
+            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
+            return handling
 
-        # Describe how to handle each option
-        handling = '\nThe following items specify how to handle each task:\n'
-        handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(module.items)])
-
-        # Specify the fallback
-        if module.fallback is None:
-            fallback = ''
-        else:
-            fallback = '\nFallback:\n' + module.fallback
-
-        prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
+        prompt = prompts.menu_prompt(module, handle_item)
 
         generator = ToolGenerator(self._chatbot_model, self._current_state)
         tools = [i.accept(generator) for i in module.items if
@@ -257,10 +240,7 @@ class ToolGenerator(Visitor):
                             "\nProvide the question given by the user using the JSON format "
                             "\"'Question: <question>'\".\n")
 
-        module_prompt = [f"Use the following to answer the questions:\n"]
-        module_prompt = module_prompt + [f"- Question: {q.question}\n  Answer: {q.answer}\n" for q in module.questions]
-        module_prompt = module_prompt + [f"\nOnly provide an answer if the question is in the list.\n"]
-        module_prompt = "\n".join(module_prompt) + "\n"
+        module_prompt = prompts.question_answering_prompt(module)
 
         runtime_module = RuntimeChatbotModule(module, self.state, module_prompt, tools=[])
         tool = RuntimeQuestionAnsweringTool(module=module, runtime_module=runtime_module, description=tool_description,

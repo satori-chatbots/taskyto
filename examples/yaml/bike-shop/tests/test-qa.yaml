@@ -1,0 +1,4 @@
+interaction:
+  - user: which is the best way to ensure that my bike doesn't get old?
+  - chatbot:
+      - You should clean it regularly, check the tire pressure, and lubricate the chain.

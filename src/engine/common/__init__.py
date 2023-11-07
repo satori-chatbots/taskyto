@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import networkx as nx
+
 import spec
 
 
@@ -72,3 +74,11 @@ def replace_values(response, data):
         response = response.replace("{{" + k + "}}", str(v))
         response = response.replace("{" + k + "}", str(v))
     return response
+
+
+def compute_init_module(chatbot_model: spec.ChatbotModel) -> spec.Item:
+    g = nx.DiGraph()
+    chatbot_model.to_graph(g)
+    sorted_modules = list(nx.topological_sort(g))
+    init = sorted_modules[0]
+    return init

@@ -6,6 +6,7 @@ import glob
 from argparse import ArgumentParser
 
 from engine.common import Configuration, Engine
+from engine.custom.engine import CustomPromptEngine
 from recording import dump_test_recording
 from spec import ChatbotModel
 from spec import parse_yaml
@@ -13,6 +14,27 @@ from engine.langchain import LangchainEngine
 from testing.reader import load_test_model
 from testing.test_engine import TestEngineConfiguration, run_test
 
+
+class CustomConfiguration(Configuration):
+
+    def new_engine(self, model: ChatbotModel) -> Engine:
+        return CustomPromptEngine(model, configuration=self)
+
+    def new_state(self):
+        from engine.custom.runtime import StateManager
+        from langchain.chat_models import ChatOpenAI
+
+        state = StateManager()
+        return state
+
+    def llm(self):
+        from langchain.chat_models import ChatOpenAI
+
+        utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
+        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
+        # llm = ChatOpenAI(temperature=0, model_name="gpt-4", verbose=True)
+
+        return llm
 
 class LangChainConfiguration(Configuration):
 
@@ -53,12 +75,12 @@ def load_chatbot_model(chatbot_folder_or_file: str):
     return model
 
 
-def initialize_engine(chatbot_folder):
+def initialize_engine(chatbot_folder, configuration):
     if not os.path.exists(chatbot_folder):
         print("Chatbot folder does not exist: " + chatbot_folder)
         exit(1)
     model = load_chatbot_model(chatbot_folder)
-    engine = LangChainConfiguration().new_engine(model)
+    engine = configuration.new_engine(model)
     return engine
 
 
@@ -75,8 +97,9 @@ def run_with_engine(engine: Engine):
         result = engine.run_step(inp)
         utils.print_chatbot_answer(result)
 
-def main(chatbot_folder: str, recording_file_dump: str = None, module_path = None):
-    engine = initialize_engine(chatbot_folder)
+
+def main(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):
+    engine = initialize_engine(chatbot_folder, configuration)
 
     # Run the first action which is typically a greeting
     result = engine.first_action()
@@ -86,8 +109,8 @@ def main(chatbot_folder: str, recording_file_dump: str = None, module_path = Non
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
 
-def test(chatbot, test_file, dry_run, replay=None, recording_file_dump: str = None, module_path=None):
-    engine = initialize_engine(chatbot)
+def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file_dump: str = None, module_path=None):
+    engine = initialize_engine(chatbot, configuration)
     test_model = load_test_model(test_file)
     config = TestEngineConfiguration(dry_run=dry_run)
     if replay:
@@ -99,13 +122,14 @@ def test(chatbot, test_file, dry_run, replay=None, recording_file_dump: str = No
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
 
-
 if __name__ == '__main__':
     parser = ArgumentParser(description='Runner for a chatbot')
     parser.add_argument('--chatbot', required=True,
                         help='Path to the chatbot specification')
     parser.add_argument('--module-path', default='.',
                         help='List of paths to chatbot modules, separated by :')
+    parser.add_argument('--engine', required=False, default="custom",
+                        help='Engine to use')
     parser.add_argument('--verbose', default=False, action='store_true',
                         help='Show the intermediate prompts')
     parser.add_argument('--debug', default=False, action='store_true',
@@ -130,7 +154,12 @@ if __name__ == '__main__':
 
         langchain.globals.set_debug(True)
 
-    if args.test:
-        test(args.chatbot, args.test, args.dry_run, args.replay, args.dump, args.module_path)
+    if args.engine == "langchain":
+        configuration = LangChainConfiguration()
     else:
-        main(args.chatbot, args.dump, args.module_path)
+        configuration = CustomConfiguration()
+
+    if args.test:
+        test(args.chatbot, args.test, configuration, args.dry_run, args.replay, args.dump, args.module_path)
+    else:
+        main(args.chatbot, configuration, args.dump, args.module_path)
