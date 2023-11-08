@@ -10,4 +10,4 @@ def debug(msg):
 
 
 def debug_prompt(formatted_prompt: List[BaseMessage]):
-    debug("\n".join([str(x.content) for x in formatted_prompt]))
+    debug("Prompt:\n" + "\n".join([str(x.content) for x in formatted_prompt]))

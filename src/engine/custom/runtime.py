@@ -60,9 +60,19 @@ class StateManager:
 
 
 class ChatbotOutputParser(ConvoOutputParser):
-    pass
 
     # Make sure that it uses the proper format_instructions
+    def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        if f"{self.ai_prefix}:" in text:
+            return super().parse(text)
+
+        expected = "Thought: Do I need to use a tool? No"
+        if expected in text:
+            return AgentFinish(
+                {"output": text.split(expected)[-1].strip()}, text
+            )
+        return super().parse(text)
+
 
     @staticmethod
     def parse_observation(text):
@@ -177,8 +187,8 @@ class RuntimeChatbotModule(BaseModel):
 
         formatted_prompt = template.format_messages(input=prompt_input,
                                                     history=RuntimeChatbotModule.to_messages(_memory_prompts),
-                                                    #agent_scratchpad="")
-                                                    agent_scratchpad="Thought: ")
+                                                    agent_scratchpad="")
+                                                    #agent_scratchpad="Thought: ")
         logger.debug_prompt(formatted_prompt)
 
         result = llm(formatted_prompt, stop=["\nObservation:"])
