@@ -4,3 +4,9 @@ data:
   - genre: string
   - language: string
 
+on-success:
+  execute:
+    language: python
+    code: recommender.py
+  response: | 
+    I recommend {{result}}.

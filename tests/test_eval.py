@@ -1,5 +1,4 @@
-import base_test
-from eval import eval_python, Stay
+from engine.common.eval import eval_python, Stay
 
 
 def test_simple_return_value():

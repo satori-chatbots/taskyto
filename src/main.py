@@ -6,6 +6,7 @@ import glob
 from argparse import ArgumentParser
 
 from engine.common import Configuration, Engine
+from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
 from recording import dump_test_recording
 from spec import ChatbotModel
@@ -17,6 +18,9 @@ from testing.test_engine import TestEngineConfiguration, run_test
 
 class CustomConfiguration(Configuration):
 
+    def __init__(self, root_folder):
+        self.root_folder = root_folder
+
     def new_engine(self, model: ChatbotModel) -> Engine:
         return CustomPromptEngine(model, configuration=self)
 
@@ -26,6 +30,9 @@ class CustomConfiguration(Configuration):
 
         state = StateManager()
         return state
+
+    def new_evaluator(self):
+        return Evaluator(load_path=[self.root_folder])
 
     def llm(self):
         from langchain.chat_models import ChatOpenAI
@@ -157,7 +164,8 @@ if __name__ == '__main__':
     if args.engine == "langchain":
         configuration = LangChainConfiguration()
     else:
-        configuration = CustomConfiguration()
+        # TODO: Check if args.chatbot is file, in which case take the parent folder
+        configuration = CustomConfiguration(args.chatbot)
 
     if args.test:
         test(args.chatbot, args.test, configuration, args.dry_run, args.replay, args.dump, args.module_path)

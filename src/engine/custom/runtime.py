@@ -1,18 +1,17 @@
 import re
 from abc import ABC
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from langchain.agents.conversational.output_parser import ConvoOutputParser
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain.prompts.chat import MessageLike
-from langchain.schema import AgentAction, OutputParserException, HumanMessage, AIMessage
+from langchain.schema import AgentAction, OutputParserException, HumanMessage, AIMessage, AgentFinish
 from pydantic import BaseModel, ConfigDict
 
 import spec
-from engine.common import Configuration, logger, get_property_value, replace_values, prompts
+from engine.common import Configuration, logger, get_property_value, replace_values
 from engine.common.prompts import FORMAT_INSTRUCTIONS
-from eval import eval_code
 
 
 class State:
@@ -20,6 +19,10 @@ class State:
         self.module = module
         self.data = {}
         self.memory = ConversationBufferMemory(memory_key="chat_history")
+
+        # This is a hack to tell the engine that the current state has be executed
+        # by passing the last response (or data).
+        self.linked_to_previous_response = False
 
     def add_memory(self, memory_piece: "MemoryPiece"):
         if memory_piece.input is not None:
@@ -34,11 +37,33 @@ class State:
         self.memory.chat_memory.add_ai_message(message)
 
 
+class Instruction(ABC):
+    pass
+
+
+class AskUser(Instruction):
+    pass
+
+
+class RunModule(Instruction, BaseModel):
+    module: "RuntimeChatbotModule"
+
+
 class StateManager:
 
     def __init__(self):
+        self.stack = []
         self.active_states = []
         # self.memory = ConversationBufferMemory(memory_key="chat_history")
+
+    def push_instruction(self, instruction: Instruction):
+        self.stack.append(instruction)
+
+    def pop_instruction(self):
+        self.stack.pop()
+
+    def current_instruction(self):
+        return self.stack[-1]
 
     def push_module(self, a_module):
         self.push_state(State(a_module))
@@ -73,7 +98,6 @@ class ChatbotOutputParser(ConvoOutputParser):
             )
         return super().parse(text)
 
-
     @staticmethod
     def parse_observation(text):
         regex = r"Observation: (.*?)[\n]"
@@ -94,17 +118,21 @@ class TaskSuccessResponse(ModuleResponse):
 
 
 class TaskInProgressResponse(ModuleResponse):
-    def __init__(self, message):
+    module: Optional["RuntimeChatbotModule"] = None
+
+    def __init__(self, message, module=None):
         super().__init__(message)
+        self.module = module
 
 
 class MemoryPiece(BaseModel):
-    input: str
+    input: Optional[str] = None
     output: Optional[str] = None
 
 
 # HUMAN_MESSAGE_TEMPLATE = "{input}\n\n{agent_scratchpad}"
 HUMAN_MESSAGE_TEMPLATE = "Begin!\n\nPrevious conversation history:\n{history}\n\n{input}\n\n{agent_scratchpad}\n"
+
 
 class RuntimeChatbotModule(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -151,7 +179,11 @@ class RuntimeChatbotModule(BaseModel):
         elif isinstance(response, TaskInProgressResponse):
             previous_answer.output += "\nObservation: " + response.message
             state.current_state().add_memory(previous_answer)
-            #new_input = "Observation: " + response.message
+            # new_input = "Observation: " + response.message
+
+            if response.module is not None:
+                module = response.module
+
             return module.run(state, None)
         else:
             raise ValueError(f"Unknown response type {response}")
@@ -179,7 +211,6 @@ class RuntimeChatbotModule(BaseModel):
 
         llm = self.configuration.llm()
 
-
         if input is None or input.strip() == "":
             prompt_input = ""
         else:
@@ -188,7 +219,7 @@ class RuntimeChatbotModule(BaseModel):
         formatted_prompt = template.format_messages(input=prompt_input,
                                                     history=RuntimeChatbotModule.to_messages(_memory_prompts),
                                                     agent_scratchpad="")
-                                                    #agent_scratchpad="Thought: ")
+        # agent_scratchpad="Thought: ")
         logger.debug_prompt(formatted_prompt)
 
         result = llm(formatted_prompt, stop=["\nObservation:"])
@@ -214,7 +245,7 @@ class RuntimeChatbotModule(BaseModel):
                 # prefixed.append(message.content)
                 prefixed.append("Human: " + message.content)
             elif isinstance(message, AIMessage):
-                #prefixed.append("AI: " + message.content)
+                # prefixed.append("AI: " + message.content)
                 prefixed.append(message.content)
             else:
                 raise ValueError(f"Unknown message type {message}")
@@ -243,7 +274,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
 
                 result = None
                 if self.module.on_success is not None and self.module.on_success.execute is not None:
-                    result = eval_code(self.module.on_success.execute, data)
+                    evaluator = self.configuration.new_evaluator()
+                    result = evaluator.eval_code(self.module.on_success.execute, data)
                     print("Result: ", result)
 
                 if self.module.on_success is not None and self.module.on_success.response is not None:
@@ -263,7 +295,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
         instruction = "Do not use the " + self.name() + " tool and ask the user the following:" \
                                                         "Please provide " + ", ".join(missing_properties)
-        return TaskInProgressResponse(instruction)
+        return TaskInProgressResponse(instruction, module=self)
         # return "Do not use the " + self.name + " tool and ask the user the following:" \
         #                                       "Please provide " + ", ".join(
         #    [p.name for p in self.module.data_model.properties])
@@ -295,3 +327,39 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
                 return json_query["question"].strip()
 
         raise ValueError("The query should start with \"Question:\" but it was: " + tool_input)
+
+
+class SequenceChatbotModule(RuntimeChatbotModule):
+    def run_as_tool(self, state_manager: StateManager, tool_input: str):
+        # traverse self.tools in reverse order and add each tool to state.push_state
+        for tool in reversed(self.tools[1:]):
+            new_state = State(tool)
+            new_state.linked_to_previous_response = True
+            state_manager.push_state(new_state)
+
+        initial_tool = self.tools[0]
+        # state.push_module(self)
+        state_manager.push_state(State(initial_tool))
+
+        postfix = ""
+        if tool_input is not None and tool_input.strip() != "":
+            postfix = "following this request: " + tool_input
+
+        return TaskInProgressResponse("Do your task " + postfix, module=initial_tool)
+
+
+class ActionChatbotModule(RuntimeChatbotModule):
+    # This is overriding run to avoid launching the LLM. Probably we need another super-class to split behaviors.
+
+    def run(self, state: StateManager, input: str) -> ModuleResponse:
+        data = {}
+        if self.module.on_success is not None and self.module.on_success.execute is not None:
+            evaluator = self.configuration.new_evaluator()
+            result = evaluator.eval_code(self.module.on_success.execute, data)
+
+            state.pop_module()
+
+            data['result'] = result
+            return TaskSuccessResponse(replace_values(self.module.on_success.response, data))
+        else:
+            raise ValueError("Action module should have an on_success.execute")

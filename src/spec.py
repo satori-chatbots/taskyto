@@ -185,6 +185,8 @@ class ActionModule(BaseModule):
     data: list
     data_model: DataSpecification = None
 
+    on_success: Action = Field(alias="on-success", default=None)
+
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 

@@ -21,6 +21,9 @@ class Configuration:
     def new_state(self):
         pass
 
+    @abstractmethod
+    def new_evaluator(self):
+        raise NotImplementedError()
 
 class Engine(ABC):
     @abstractmethod

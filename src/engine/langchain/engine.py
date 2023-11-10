@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Optional
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
@@ -7,8 +6,8 @@ from langchain.tools import BaseTool
 import spec
 from engine.common import ChatbotResult, DebugInfo, Configuration, get_property_value, replace_values, \
     compute_init_module, prompts
+from engine.common.evaluator import Evaluator
 from engine.langchain import modules
-from eval import eval_code
 from recording import RecordedInteraction
 from spec import ChatbotModel, Visitor
 
@@ -58,7 +57,7 @@ class RuntimeDataGatheringTool(BaseTool):
 
                 result = None
                 if self.module.on_success is not None and self.module.on_success.execute is not None:
-                    result = eval_code(self.module.on_success.execute, data)
+                    result = Evaluator().eval_code(self.module.on_success.execute, data)
                     print("Result: ", result)
 
                 if self.module.on_success is not None and self.module.on_success.response is not None:
