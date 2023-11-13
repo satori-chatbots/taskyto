@@ -21,7 +21,7 @@ def eval_python_file(filename: str, data: dict):
 
         compiled = compile(code_to_execute, filename, "exec")
         global_vars = globals().copy()
-        eval(compiled, global_vars, data.copy())
+        exec(compiled, global_vars, data.copy())
         result = global_vars["chatbot_llm_action_result_"]
         return result
 

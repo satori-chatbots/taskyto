@@ -1,4 +1,5 @@
 import re
+import uuid
 from abc import ABC
 from typing import List, Optional, Union
 
@@ -53,6 +54,7 @@ class StateManager:
 
     def __init__(self):
         self.stack = []
+        self.data = {}
         self.active_states = []
         # self.memory = ConversationBufferMemory(memory_key="chat_history")
 
@@ -146,8 +148,18 @@ class RuntimeChatbotModule(BaseModel):
     ai_prefix: str = "AI"
     parser: ChatbotOutputParser = ChatbotOutputParser()
 
+    # Handling of data dependencies
+    id: str = uuid.uuid4()
+    previous_tool: Optional["RuntimeChatbotModule"] = None
+
     def name(self):
         return self.module.name
+
+    def set_data(self, state: StateManager, data):
+        """
+        To be used by sub-classes
+        """
+        state.data[self.id] = data
 
     def get_tool_names(self):
         return ", ".join([tool.name() for tool in self.tools])
@@ -278,6 +290,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     result = evaluator.eval_code(self.module.on_success.execute, data)
                     print("Result: ", result)
 
+                self.set_data(state, data)
                 if self.module.on_success is not None and self.module.on_success.response is not None:
                     data['result'] = result
                     return TaskSuccessResponse(replace_values(self.module.on_success.response, data))
@@ -352,7 +365,19 @@ class ActionChatbotModule(RuntimeChatbotModule):
     # This is overriding run to avoid launching the LLM. Probably we need another super-class to split behaviors.
 
     def run(self, state: StateManager, input: str) -> ModuleResponse:
+        available_data = state.data[self.previous_tool.id]
+        if available_data is None:
+            raise ValueError(
+                "Data is None. Expected data for module " + self.previous_tool.name() + " - " + self.previous_tool.id)
+
+        # Extract the data needed
         data = {}
+        for p in self.module.data_model.properties:
+            if p.name not in available_data:
+                raise ValueError("Data is missing the property " + p.name)
+
+            data[p.name] = available_data[p.name]
+
         if self.module.on_success is not None and self.module.on_success.execute is not None:
             evaluator = self.configuration.new_evaluator()
             result = evaluator.eval_code(self.module.on_success.execute, data)

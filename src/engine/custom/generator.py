@@ -75,6 +75,9 @@ class ModuleGenerator(Visitor):
         called_modules = [self.chatbot_model.resolve_module(ref) for ref in module.references]
         seq_tools = [t for m in called_modules if (t := m.accept(self)) is not None]
 
+        for i, tool in enumerate(seq_tools[:-1]):
+            seq_tools[i + 1].previous_tool = tool
+
         return SequenceChatbotModule(module=module, prompt=prompt, activation_prompt=activation_prompt, tools=seq_tools,
                                      configuration=self.configuration)
 

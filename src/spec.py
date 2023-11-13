@@ -145,18 +145,7 @@ class Action(BaseModel):
     response: str
 
 
-class DataGatheringModule(BaseModule):
-    kind: Literal["data_gathering"] = "data_gathering"
-    data: list
-    data_model: DataSpecification = None
-
-    description: str = None  # should this be merged with presentation?
-
-    on_success: Action = Field(alias="on-success", default=None)
-
-    def __init__(self, **data: Any):
-        super().__init__(**data)
-        self.data_model = self.parse_data_model()
+class WithDataModel(abc.ABC):
 
     def parse_data_model(self):
         properties = []
@@ -173,6 +162,20 @@ class DataGatheringModule(BaseModule):
 
         return DataSpecification(properties=properties)
 
+
+class DataGatheringModule(BaseModule, WithDataModel):
+    kind: Literal["data_gathering"] = "data_gathering"
+    data: list
+    data_model: DataSpecification = None
+
+    description: str = None  # should this be merged with presentation?
+
+    on_success: Action = Field(alias="on-success", default=None)
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        self.data_model = self.parse_data_model()
+
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         g.add_node(self)
 
@@ -180,12 +183,17 @@ class DataGatheringModule(BaseModule):
         return visitor.visit_data_gathering_module(self)
 
 
-class ActionModule(BaseModule):
+class ActionModule(BaseModule, WithDataModel):
     kind: Literal["action"] = "action"
     data: list
     data_model: DataSpecification = None
 
     on_success: Action = Field(alias="on-success", default=None)
+
+    def __init__(self, **data: Any):
+        super().__init__(**data)
+        self.data_model = self.parse_data_model()
+
 
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
