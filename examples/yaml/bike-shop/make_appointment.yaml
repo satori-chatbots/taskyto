@@ -1,6 +1,6 @@
 name: make_appointment
 kind: data_gathering
-description: Useful for registering appointments.
+description: Useful for registering appointments for repairing bikes.
 data:
   - date: date
   - time: time
