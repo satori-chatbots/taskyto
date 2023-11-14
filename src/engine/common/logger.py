@@ -1,8 +1,10 @@
 from typing import List
 
+import langchain.globals
 from langchain.schema import BaseMessage
 
-DEBUG=True
+DEBUG = True
+
 
 def debug(msg):
     if DEBUG:
@@ -10,4 +12,5 @@ def debug(msg):
 
 
 def debug_prompt(formatted_prompt: List[BaseMessage]):
-    debug("Prompt:\n" + "\n".join([str(x.content) for x in formatted_prompt]))
+    if langchain.globals.get_verbose():
+        debug("Prompt:\n" + "\n".join([str(x.content) for x in formatted_prompt]))
