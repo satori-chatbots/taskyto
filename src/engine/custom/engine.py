@@ -27,17 +27,20 @@ class CustomPromptEngine(Visitor):
 
     def run_step(self, query: str) -> ChatbotResult:
         self.recorded_interaction.append(type="user", message=query)
+        return self.__run_step(query)
 
+    def __run_step(self, query: str) -> ChatbotResult:
         current = self.state_manager.current_state()
         response = current.module.run(self.state_manager, input=query)
 
         ans = response.message
-        self.recorded_interaction.append(type="chatbot", message=ans)
 
         # Now, state might have changed
         current = self.state_manager.current_state()
         if current.linked_to_previous_response:
-            return self.run_step(ans)
+            return self.__run_step(ans)
+
+        self.recorded_interaction.append(type="chatbot", message=ans)
 
         module_name = current.module.name()  # type(self._current_state.current_module()).__name__
         return ChatbotResult(ans, DebugInfo(current_module=module_name))
