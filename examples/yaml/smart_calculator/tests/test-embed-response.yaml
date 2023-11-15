@@ -1,0 +1,6 @@
+interaction:
+- chatbot:
+  - Hello
+- user: Compute 2.0 + 4.0, then say the resulting number in plain english
+- chatbot:
+  - The resulting number is six.

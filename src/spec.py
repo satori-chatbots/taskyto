@@ -142,7 +142,14 @@ class ExecuteElement(BaseModel):
 
 class ResponseElement(BaseModel):
     text: str
-    rephrase: bool = False
+    rephrase: Optional[str] = None
+
+    def is_simple_rephrase(self):
+        return self.rephrase == "simple"
+
+    def is_in_caller_rephrase(self):
+        return self.rephrase == "in-caller" or self.rephrase == "in_caller"
+
 
 class Action(BaseModel):
     execute: Optional[ExecuteElement] = None
@@ -150,9 +157,10 @@ class Action(BaseModel):
 
     def get_response_element(self):
         if isinstance(self.response, str):
-            return ResponseElement(text=self.response, rephrase=False)
+            return ResponseElement(text=self.response, rephrase=None)
         else:
             return self.response
+
 
 class WithDataModel(abc.ABC):
 

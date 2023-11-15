@@ -10,4 +10,4 @@ on-success:
     code: recommender.py
   response:
     text: "{{result}}"
-    rephrase: true
+    rephrase: simple

@@ -62,7 +62,8 @@ class RuntimeDataGatheringTool(BaseTool):
 
                 if self.module.on_success is not None and self.module.on_success.response is not None:
                     data['result'] = result
-                    return replace_values(self.module.on_success.response, data)
+                    response_element = self.module.on_success.get_response_element()
+                    return replace_values(response_element.text, data)
                 else:
                     collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
                     return "Stop using the tool. The following data has been collected: " + collected_data

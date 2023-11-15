@@ -1,11 +1,8 @@
-from typing import Optional
-
 from langchain.prompts import ChatPromptTemplate
 
-from engine.common import get_property_value, replace_values
+from engine.common import get_property_value
 from engine.custom.runtime import RuntimeChatbotModule, StateManager, TaskSuccessResponse, State, \
     TaskInProgressResponse, ModuleResponse
-from spec import Action
 
 
 class DataGatheringChatbotModule(RuntimeChatbotModule):
@@ -29,11 +26,11 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     state.pop_module()
 
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-                result = self.execute_action(self.module.on_success, data,
-                                      default_response=f"The following data has been collected: {collected_data}")
+                result, embed = self.execute_action(self.module.on_success, data,
+                                                    default_response=f"The following data has been collected: {collected_data}")
 
                 self.set_data(state, data)
-                return TaskSuccessResponse(result)
+                return TaskSuccessResponse(result, embed_response=embed)
         except json.JSONDecodeError:
             pass
 
@@ -116,6 +113,6 @@ class ActionChatbotModule(RuntimeChatbotModule):
         if self.module.on_success.execute is None:
             raise ValueError("Action module should have an on_success.execute")
 
-        result = self.execute_action(self.module.on_success, data)
+        result, embed = self.execute_action(self.module.on_success, data)
         state.pop_module()
-        return TaskSuccessResponse(result)
+        return TaskSuccessResponse(result, embed_response=embed)

@@ -1,0 +1,9 @@
+
+interaction:
+  - user: Hi
+  - chatbot:
+      - Hello
+      - Welcome to my pizza shop. I'm the owner and I'm happy to help you. What can I do for you?
+  - user: I want a veggie pizza with toppings fish and octopus, and I also want beer to drink
+
+

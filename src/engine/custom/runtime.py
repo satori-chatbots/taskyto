@@ -118,8 +118,9 @@ class ModuleResponse(ABC):
 
 
 class TaskSuccessResponse(ModuleResponse):
-    def __init__(self, message):
+    def __init__(self, message, embed_response=False):
         super().__init__(message)
+        self.embed_response = embed_response
 
 
 class TaskInProgressResponse(ModuleResponse):
@@ -185,7 +186,7 @@ class RuntimeChatbotModule(BaseModel):
 
         return "Tools:\n" + "\n\n".join(activations)
 
-    def run_as_tool(self, state: StateManager, tool_input: str):
+    def run_as_tool(self, state: StateManager, tool_input: str) -> ModuleResponse:
         raise NotImplementedError("This module cannot be run as a tool")
 
     def find_tool_by_name(self, tool_name: str):
@@ -199,6 +200,12 @@ class RuntimeChatbotModule(BaseModel):
         response = module.run_as_tool(state, tool_input)
 
         if isinstance(response, TaskSuccessResponse):
+            if response.embed_response:
+                previous_answer.output += "\nObservation: " + response.message
+                state.current_state().add_memory(previous_answer)
+                # TODO: here do something to avoid infinite looping
+                return state.current_state().module.run(state, None)
+
             # TODO: Here we need to decide if we want to add something to the memory like a summary of what the tool has performed
             state.current_state().executed_tool = tool_name    # trace executed tool
             return response
@@ -214,7 +221,7 @@ class RuntimeChatbotModule(BaseModel):
         else:
             raise ValueError(f"Unknown response type {response}")
 
-    def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None):
+    def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None) -> (str, bool):
         if action is not None and action.execute is not None:
             evaluator = self.configuration.new_evaluator()
             result = evaluator.eval_code(action.execute, data)
@@ -223,11 +230,12 @@ class RuntimeChatbotModule(BaseModel):
                 data['result'] = result
                 response_element = action.get_response_element()
                 response = replace_values(response_element.text, data)
-                return self.configuration.new_rephraser()(response) if response_element.rephrase else response
+                response = self.configuration.new_rephraser()(response) if response_element.is_simple_rephrase() else response
+                return response, response_element.is_in_caller_rephrase()
             else:
                 return result
         elif default_response is not None:
-            return default_response
+            return default_response, False
         else:
             raise ValueError("No response available")
 
