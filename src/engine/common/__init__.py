@@ -1,4 +1,6 @@
+import abc
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import networkx as nx
 
@@ -26,6 +28,19 @@ class Configuration:
     def new_evaluator(self):
         raise NotImplementedError()
 
+
+class Rephraser(abc.ABC):
+    def __init__(self, configuration: Configuration):
+        self.configuration = configuration
+
+    def __call__(self, *args, **kwargs):
+        return self.rephrase(*args, **kwargs)
+
+    @abstractmethod
+    def rephrase(self, message: str, context: Optional[str] = None):
+        raise NotImplementedError()
+
+
 class Engine(ABC):
     @abstractmethod
     def first_action(self) -> ChatbotResult:
@@ -34,6 +49,7 @@ class Engine(ABC):
     @abstractmethod
     def run_step(self, message: str) -> ChatbotResult:
         pass
+
 
 def get_property_value(p: spec.DataProperty, data):
     value = data.get(p.name)

@@ -1,6 +1,7 @@
 import spec
 from engine.common import prompts, Configuration
-from engine.custom.runtime import RuntimeChatbotModule, DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
+from engine.custom.runtime import RuntimeChatbotModule
+from engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
     SequenceChatbotModule, ActionChatbotModule
 from spec import Visitor
 

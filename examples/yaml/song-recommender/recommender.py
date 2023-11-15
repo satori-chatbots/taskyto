@@ -17,6 +17,6 @@ def main(genre, language):
 
     key = language.lower() + '-' + genre.lower()
     if key in SONGS:
-        return "Recommend one of these songs: " + ",".join(SONGS[key])
+        return "Suggestions: " + ",".join(SONGS[key])
     else:
         return f"I don't have any recommendations for your preferences: language={language} and genre={genre}"

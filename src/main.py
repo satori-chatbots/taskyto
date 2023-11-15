@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 from engine.common import Configuration, Engine, ChatbotResult, DebugInfo
 from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
+from engine.custom.runtime import CustomRephraser
 from recording import dump_test_recording
 from spec import ChatbotModel
 from spec import parse_yaml
@@ -46,6 +47,10 @@ class CustomConfiguration(Configuration):
         # llm = ChatOpenAI(temperature=0, model_name="gpt-4", verbose=True)
 
         return llm
+
+    def new_rephraser(self):
+        return CustomRephraser(self)
+
 
 class LangChainConfiguration(Configuration):
 

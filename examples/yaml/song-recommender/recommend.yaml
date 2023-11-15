@@ -8,5 +8,6 @@ on-success:
   execute:
     language: python
     code: recommender.py
-  response: | 
-    I recommend {{result}}.
+  response:
+    text: "{{result}}"
+    rephrase: true

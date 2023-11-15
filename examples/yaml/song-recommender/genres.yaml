@@ -1,6 +1,6 @@
 name: genres
 kind: data_gathering
-description: Useful for getting song genres and the language.
+description: Useful for getting song genres and the language of a song.
 data:
   - genre: string
   - language:

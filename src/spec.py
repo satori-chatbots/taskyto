@@ -140,11 +140,19 @@ class ExecuteElement(BaseModel):
     language: str
     code: str
 
+class ResponseElement(BaseModel):
+    text: str
+    rephrase: bool = False
 
 class Action(BaseModel):
     execute: Optional[ExecuteElement] = None
-    response: str
+    response: Union[str, ResponseElement]
 
+    def get_response_element(self):
+        if isinstance(self.response, str):
+            return ResponseElement(text=self.response, rephrase=False)
+        else:
+            return self.response
 
 class WithDataModel(abc.ABC):
 

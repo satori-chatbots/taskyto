@@ -11,7 +11,7 @@ from langchain.schema import AgentAction, OutputParserException, HumanMessage, A
 from pydantic import BaseModel, ConfigDict
 
 import spec
-from engine.common import Configuration, logger, get_property_value, replace_values
+from engine.common import Configuration, logger, get_property_value, replace_values, Rephraser
 from engine.common.prompts import FORMAT_INSTRUCTIONS
 from engine.common.validator import Formatter, FallbackFormatter
 from utils import get_unparsed_output
@@ -139,6 +139,16 @@ class MemoryPiece(BaseModel):
 HUMAN_MESSAGE_TEMPLATE = "Begin!\n\nPrevious conversation history:\n{history}\n\n{input}\n\n{agent_scratchpad}\n"
 
 
+class CustomRephraser(Rephraser):
+    def rephrase(self, message: str, context: Optional[str] = None) -> str:
+        prompt = "Please rephrase the following message:\n" + message
+        if context is not None:
+            prompt = "Context: " + context + "\n" + prompt
+
+        formatted_message = HumanMessagePromptTemplate.from_template(prompt).format()
+        return self.configuration.llm()([formatted_message]).content
+
+
 class RuntimeChatbotModule(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -203,6 +213,23 @@ class RuntimeChatbotModule(BaseModel):
             return module.run(state, None)
         else:
             raise ValueError(f"Unknown response type {response}")
+
+    def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None):
+        if action is not None and action.execute is not None:
+            evaluator = self.configuration.new_evaluator()
+            result = evaluator.eval_code(action.execute, data)
+
+            if action.response is not None:
+                data['result'] = result
+                response_element = action.get_response_element()
+                response = replace_values(response_element.text, data)
+                return self.configuration.new_rephraser()(response) if response_element.rephrase else response
+            else:
+                return result
+        elif default_response is not None:
+            return default_response
+        else:
+            raise ValueError("No response available")
 
     def run(self, state: StateManager, input: str) -> ModuleResponse:
         # From ConversationalAgent, but modified
