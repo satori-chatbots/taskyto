@@ -1,11 +1,14 @@
 import os.path
+
+from langchain.schema import OutputParserException
+
 import engine
 import utils
 import glob
 
 from argparse import ArgumentParser
 
-from engine.common import Configuration, Engine
+from engine.common import Configuration, Engine, ChatbotResult, DebugInfo
 from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
 from recording import dump_test_recording
@@ -101,7 +104,12 @@ def run_with_engine(engine: Engine):
         except EOFError as e:
             return
 
-        result = engine.run_step(inp)
+        try:
+            result = engine.run_step(inp)
+        except OutputParserException as ope:
+            print("Could not parse LLM output")
+            result = ChatbotResult("Could not parse LLM output", DebugInfo("top_level"))
+
         utils.print_chatbot_answer(result)
 
 
