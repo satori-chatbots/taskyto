@@ -78,6 +78,16 @@ def get_property_value(p: spec.DataProperty, data):
                 return None
         else:
             return None
+    elif p.type == 'number' or p.type == 'float' or p.type == 'double':
+        if isinstance(value, float):
+            return value
+        elif isinstance(value, str) or isinstance(value, int):
+            try:
+                return float(value)
+            except ValueError:
+                return None
+        else:
+            return None
     else:
         # TODO: Handle more types explicitly like date, enum, etc.
         # For the moment, just convert them to strings and check that at least they are not empty

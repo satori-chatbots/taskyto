@@ -14,6 +14,8 @@ def test_get_property_simple_and_coercions():
     assert get_property_value(DataProperty(name="age", type="int"),
                               {"age": 12}) == 12
 
+    assert get_property_value(DataProperty(name="left", type="number"),
+                              {"left": "28"}) == 28
 
 def test_get_property_not_found():
     assert get_property_value(DataProperty(name="name_not_found", type="string"),
