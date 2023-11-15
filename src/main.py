@@ -1,14 +1,16 @@
 import os.path
 
 from langchain.schema import OutputParserException
+from typing import Optional
 
-import engine
 import utils
 import glob
 
 from argparse import ArgumentParser
 
 from engine.common import Configuration, Engine, ChatbotResult, DebugInfo
+from engine.common import Configuration, Engine
+from engine.common.configuration import ConfigurationModel, read_configuration
 from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
 from engine.custom.runtime import CustomRephraser
@@ -23,8 +25,9 @@ from utils import get_unparsed_output
 
 class CustomConfiguration(Configuration):
 
-    def __init__(self, root_folder):
+    def __init__(self, root_folder, model: ConfigurationModel):
         self.root_folder = root_folder
+        self.model = model
 
     def new_engine(self, model: ChatbotModel) -> Engine:
         return CustomPromptEngine(model, configuration=self)
@@ -39,15 +42,11 @@ class CustomConfiguration(Configuration):
     def new_evaluator(self):
         return Evaluator(load_path=[self.root_folder])
 
-    def llm(self):
+    def llm(self, module_name: Optional[str] = None):
         from langchain.chat_models import ChatOpenAI
+        model = self.model.get_llm_for_module_or_default(module_name)
 
-        utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
-        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
-        #llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-1106", verbose=True)
-
-        #llm = ChatOpenAI(temperature=0, model_name="gpt-4", verbose=True)
-
+        llm = ChatOpenAI(temperature=0, model_name=model.id, verbose=True)
         return llm
 
     def new_rephraser(self):
@@ -63,7 +62,6 @@ class LangChainConfiguration(Configuration):
         from engine.langchain.modules import State
         from langchain.chat_models import ChatOpenAI
 
-        utils.check_keys(["SERPAPI_API_KEY", "OPENAI_API_KEY"])
         llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
 
         # Doesn't work
@@ -91,6 +89,15 @@ def load_chatbot_model(chatbot_folder_or_file: str):
 
     model = ChatbotModel(modules=modules)
     return model
+
+
+def load_configuration_model(chatbot_folder, configuration_file: Optional[str] = None) -> ConfigurationModel:
+    if configuration_file is None:
+        configuration_file = os.path.join(chatbot_folder, "configuration", "default.yaml")
+        if not os.path.isfile(configuration_file):
+            return ConfigurationModel(default_llm="gpt-3.5-turbo-0301")
+
+    return read_configuration(configuration_file)
 
 
 def initialize_engine(chatbot_folder, configuration):
@@ -180,9 +187,14 @@ if __name__ == '__main__':
     if args.engine == "langchain":
         configuration = LangChainConfiguration()
     else:
-        # TODO: Check if args.chatbot is file, in which case take the parent folder
-        configuration = CustomConfiguration(args.chatbot)
+        chatbot_folder = args.chatbot
+        if os.path.isfile(chatbot_folder):
+            chatbot_folder = os.path.dirname(chatbot_folder)
 
+        config_model = load_configuration_model(chatbot_folder)
+        configuration = CustomConfiguration(chatbot_folder, config_model)
+
+    utils.check_keys(["OPENAI_API_KEY"]) # "SERPAPI_API_KEY"
     if args.test:
         test(args.chatbot, args.test, configuration, args.dry_run, args.replay, args.dump, args.module_path)
     else:

@@ -1,5 +1,5 @@
-import os
 import configparser
+import os
 
 from engine.common import ChatbotResult
 
@@ -30,7 +30,6 @@ def get_user_prompt():
 
 
 def print_user_request(message: str):
-
     print(get_user_prompt() + message)
 
 

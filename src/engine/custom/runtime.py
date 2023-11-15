@@ -260,7 +260,7 @@ class RuntimeChatbotModule(BaseModel):
         ]
         template = ChatPromptTemplate(input_variables=input_variables, messages=messages)
 
-        llm = self.configuration.llm()
+        llm = self.configuration.llm(module_name=self.name())
 
         if input is None or input.strip() == "":
             prompt_input = ""

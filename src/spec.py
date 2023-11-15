@@ -140,6 +140,7 @@ class ExecuteElement(BaseModel):
     language: str
     code: str
 
+
 class ResponseElement(BaseModel):
     text: str
     rephrase: Optional[str] = None
@@ -211,12 +212,12 @@ class ActionModule(BaseModule, WithDataModel):
         super().__init__(**data)
         self.data_model = self.parse_data_model()
 
-
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_action_module(self)
+
 
 class QuestionAnswer(BaseModel):
     question: str
@@ -263,6 +264,11 @@ class ChatbotModel(BaseModel):
         return resolved_module
 
 
+# This is to imitate parse_obj_as but without warnings
+def parse_obj_as_(type_: type, obj: Any):
+    return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
+
+
 def parse_yaml(yaml_str) -> List[Module]:
     import yaml
     data = yaml.safe_load(yaml_str)
@@ -270,44 +276,3 @@ def parse_yaml(yaml_str) -> List[Module]:
         return [parse_obj_as_(Module, m) for m in data["modules"]]
     else:
         return [parse_obj_as_(Module, data)]
-
-
-# This is to imitate parse_obj_as but without warnings
-def parse_obj_as_(type_: type, obj: Any):
-    return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
-
-
-# Example YAML data
-yaml_data = """
-module:
-    name: top-level
-    kind: menu
-    presentation: |
-        You are a chatbot which helps users of a bike shop.
-    fallback: |
-        For any question not related to these aspects you have to answer:
-        "I'm sorry it's a little loud in my shop, can you say that again?"
-    items:
-        - title: Hours
-          answer: every weekday from 9am to 5:30pm
-        - title: Make Appointment
-          tool: make-appointment
-        - title: Welcome
-"""
-
-if __name__ == '__main__':
-    # Parse YAML data into Python objects
-    module = parse_yaml(yaml_data)
-
-    # Access the parsed data
-    print(f"Module Name: {module.name}")
-    print(f"Module Kind: {module.kind}")
-    print(f"Module Presentation: {module.presentation}")
-    print(f"Module Fallback: {module.fallback}")
-
-    for item in module.items:
-        print(f"Item Title: {item.title}")
-        if item.answer:
-            print(f"Item Answer: {item.answer}")
-        if item.tool:
-            print(f"Item Tool: {item.tool}")
