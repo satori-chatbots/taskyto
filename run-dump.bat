@@ -1,0 +1,1 @@
+python src/main.py --chatbot=examples/yaml/%1 --dump=%2
