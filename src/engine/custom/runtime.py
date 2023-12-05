@@ -263,22 +263,69 @@ class RuntimeChatbotModule(BaseModel):
                 raise ValueError(f"Unknown message type {message}")
         return "\n".join(prefixed)
 
-
 class DataGatheringChatbotModule(RuntimeChatbotModule):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.tools.append(self)
 
+    def convert_date(self, input_date):
+        from dateutil import parser
+        import datetime
+        try:
+            date_obj = parser.parse(input_date, dayfirst=True, yearfirst=False)
+            formatted_date = date_obj.strftime("%d/%m/%Y")
+            return formatted_date
+        except ValueError:
+            return "Invalid date"
+
+    def formatting_dict_dates(dateindict):
+        from datetime import datetime
+        # Parse the timestamp string to a datetime object
+        timestamp = datetime.fromisoformat(dateindict)
+
+        # Format the datetime object as a string in the desired format
+        formatted_date = timestamp.strftime('%d/%m/%Y')
+        return formatted_date
+
+    def extract_time(timestamp_str):
+        from datetime import datetime
+        #    inner_dict = timestamp_str['value']['value']
+        timestamp = datetime.fromisoformat(timestamp_str)
+        time_str = timestamp.strftime('%H:%M')
+        return time_str
+
     def run_as_tool(self, state: StateManager, tool_input: str):
         import json
+        import datetime
+        from duckling import DucklingWrapper
+
         data = {}
         try:
             json_query = json.loads(tool_input)
+
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
+
                 if value is not None:
-                    data[p.name] = value
+                    if p.name == 'date':
+                        # Create a DucklingWrapper instance
+                        duckling_wrapper = DucklingWrapper()
+#                        print(value)
+                        parsed_date = duckling_wrapper.parse_time(value)
+                        #print(parsed_date)
+#                        print(parsed_date[0]['value']['value'])
+                        data[p.name] = DataGatheringChatbotModule.formatting_dict_dates(parsed_date[0]['value']['value'])
+                    elif p.name == 'time':
+                        # Create a DucklingWrapper instance
+                        duckling_wrapper = DucklingWrapper()
+#                        print(value)
+                        parsed_time = duckling_wrapper.parse_time(value)
+                        #print(parsed_time)
+#                        print(parsed_time[0]['value']['value'])
+                        data[p.name] = DataGatheringChatbotModule.extract_time(parsed_time[0]['value']['value'])
+                    else:
+                        data[p.name] = value
 
             if len(data) == len(self.module.data_model.properties):
                 if state.is_module_active(self):
@@ -288,7 +335,6 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                 if self.module.on_success is not None and self.module.on_success.execute is not None:
                     evaluator = self.configuration.new_evaluator()
                     result = evaluator.eval_code(self.module.on_success.execute, data)
-                    print("Result: ", result)
 
                 self.set_data(state, data)
                 if self.module.on_success is not None and self.module.on_success.response is not None:
