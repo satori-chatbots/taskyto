@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict
 import spec
 from engine.common import Configuration, logger, get_property_value, replace_values
 from engine.common.prompts import FORMAT_INSTRUCTIONS
-from engine.common import validator
+from engine.common.validator import DateFormatter, TimeFormatter
 
 
 class State:
@@ -272,23 +272,17 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
 
     def run_as_tool(self, state: StateManager, tool_input: str):
         import json
-        from duckling import DucklingWrapper
-
         data = {}
-        validators = {
-            'date': validator.DateFormatter.do_format,
-            'time': validator.TimeFormatter.do_format,
-        }
+
         try:
             json_query = json.loads(tool_input)
 
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
+                validators = DateFormatter.get_validator()
 
                 if value is not None and p.name in validators:
-                    duckling_wrapper = DucklingWrapper()
-                    parsed_value = duckling_wrapper.parse_time(value)
-                    data[p.name] = validators[p.name](self, parsed_value[0]['value']['value'])
+                    data[p.name] = validators[p.name](self, value)
                 else:
                     data[p.name] = value
 
