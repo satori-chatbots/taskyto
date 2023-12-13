@@ -273,14 +273,13 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
     def run_as_tool(self, state: StateManager, tool_input: str):
         import json
         data = {}
+        validators = DateFormatter.get_validator()
 
         try:
             json_query = json.loads(tool_input)
 
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
-                validators = DateFormatter.get_validator()
-
                 if value is not None and p.name in validators:
                     data[p.name] = validators[p.name](self, value)
                 else:
