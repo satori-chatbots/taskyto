@@ -1,7 +1,9 @@
+import abc
 import re
 import uuid
 from abc import ABC
 from typing import List, Optional, Union
+from engine.custom.events import ActivateModuleEvent, AIResponseEvent
 
 from langchain.agents.conversational.output_parser import ConvoOutputParser
 from langchain.memory import ConversationBufferMemory
@@ -28,65 +30,91 @@ class State:
         # by passing the last response (or data).
         self.linked_to_previous_response = False
 
-    def add_memory(self, memory_piece: "MemoryPiece"):
-        if memory_piece.input is not None:
-            self.memory.chat_memory.add_user_message(memory_piece.input)
-        if memory_piece.output is not None:
-            self.memory.chat_memory.add_ai_message(memory_piece.output)
 
-    def add_user_memory(self, message):
-        self.memory.chat_memory.add_user_message(message)
+class ExecutionState:
 
-    def add_ai_memory(self, message):
-        self.memory.chat_memory.add_ai_message(message)
+    def __init__(self, initial, channel: "Channel"):
+        self.current = initial
+        self.channel = channel
+        self.action_listeners = []
+        self.event_stack = []
+        self.memory = {}
 
-
-class Instruction(ABC):
-    pass
-
-
-class AskUser(Instruction):
-    pass
-
-
-class RunModule(Instruction, BaseModel):
-    module: "RuntimeChatbotModule"
-
-
-class StateManager:
-
-    def __init__(self):
-        self.stack = []
+        # To pass data between modules
         self.data = {}
-        self.active_states = []
-        # self.memory = ConversationBufferMemory(memory_key="chat_history")
 
-    def push_instruction(self, instruction: Instruction):
-        self.stack.append(instruction)
+    def add_action_listener(self, listener):
+        self.action_listeners.append(listener)
 
-    def pop_instruction(self):
-        self.stack.pop()
+    def notify_action_listeners(self, action):
+        for listener in self.action_listeners:
+            listener(action)
 
-    def current_instruction(self):
-        return self.stack[-1]
+    def update_memory(self, module, memory_piece: "MemoryPiece"):
+        module_id = module.name
+        if module_id not in self.memory:
+            self.memory[module_id] = ConversationBufferMemory(memory_key="chat_history")
 
-    def push_module(self, a_module):
-        self.push_state(State(a_module))
+        memory_messages = self.memory[module_id].chat_memory.messages
+        if len(memory_messages) > 0 and isinstance(memory_messages[-1],
+                                                   AIMessage) and memory_piece.output is not None and memory_piece.input is None:
+            # This is a nasty trick to make sure that we append "Observation:" in an AI block and avoid having two AI blocks in a row
+            memory_messages[-1].content += "\n" + memory_piece.output
+        else:
+            ExecutionState.add_memory(self.memory[module_id], memory_piece)
 
-    def push_state(self, state):
-        self.active_states.append(state)
+    def get_memory(self, module):
+        module_id = module.name
+        if module_id not in self.memory:
+            self.memory[module_id] = ConversationBufferMemory(memory_key="chat_history")
 
-    def pop_module(self):
-        self.active_states.pop()
+        return self.memory[module_id]
 
-    def current_state(self):
-        return self.active_states[-1]
+    def pop_event(self):
+        return self.event_stack.pop()
 
-    def is_module_active(self, cls_or_obj):
-        import inspect
-        if inspect.isclass(cls_or_obj):
-            return isinstance(self.active_modules[-1].module, cls_or_obj)
-        return self.active_states[-1].module == cls_or_obj
+    def more_events(self):
+        return len(self.event_stack) > 0
+
+    def push_event(self, event):
+        self.event_stack.append(event)
+
+    ## Private
+    @staticmethod
+    def add_memory(memory, memory_piece: "MemoryPiece"):
+        if memory_piece.input is not None:
+            memory.chat_memory.add_user_message(memory_piece.input)
+        if memory_piece.output is not None:
+            memory.chat_memory.add_ai_message(memory_piece.output)
+
+    @staticmethod
+    def add_user_memory(memory, message):
+        memory.chat_memory.add_user_message(message)
+
+    @staticmethod
+    def add_ai_memory(memory, message):
+        memory.chat_memory.add_ai_message(message)
+
+
+class Channel(abc.ABC):
+    pass
+
+
+class ConsoleChannel(Channel):
+
+    def input(self):
+        import utils
+        user_prompt = utils.get_user_prompt()
+        try:
+            inp = input(user_prompt)
+            if inp == 'exit':
+                return None
+            return inp
+        except EOFError as e:
+            return None
+
+    def output(self, msg, who=None):
+        print("Chatbot [" + who + "]: " + msg)
 
 
 class ChatbotOutputParser(ConvoOutputParser):
@@ -110,25 +138,6 @@ class ChatbotOutputParser(ConvoOutputParser):
         if not match:
             raise OutputParserException(f"Could not parse Observation from LLM output: `{text}`")
         return match.group(1)
-
-
-class ModuleResponse(ABC):
-    def __init__(self, message):
-        self.message = message
-
-
-class TaskSuccessResponse(ModuleResponse):
-    def __init__(self, message, embed_response=False):
-        super().__init__(message)
-        self.embed_response = embed_response
-
-
-class TaskInProgressResponse(ModuleResponse):
-    module: Optional["RuntimeChatbotModule"] = None
-
-    def __init__(self, message, module=None):
-        super().__init__(message)
-        self.module = module
 
 
 class MemoryPiece(BaseModel):
@@ -164,12 +173,14 @@ class RuntimeChatbotModule(BaseModel):
 
     # Handling of data dependencies
     id: str = uuid.uuid4()
-    previous_tool: Optional["RuntimeChatbotModule"] = None
+
+    # Not needed anymore
+    # previous_tool: Optional["RuntimeChatbotModule"] = None
 
     def name(self):
         return self.module.name
 
-    def set_data(self, state: StateManager, data):
+    def set_data(self, state: ExecutionState, data):
         """
         To be used by sub-classes
         """
@@ -186,7 +197,8 @@ class RuntimeChatbotModule(BaseModel):
 
         return "Tools:\n" + "\n\n".join(activations)
 
-    def run_as_tool(self, state: StateManager, tool_input: str) -> ModuleResponse:
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
+        # Activating event is here just for sequence module...
         raise NotImplementedError("This module cannot be run as a tool")
 
     def find_tool_by_name(self, tool_name: str):
@@ -195,33 +207,12 @@ class RuntimeChatbotModule(BaseModel):
                 return tool
         raise ValueError(f"Unknown tool {tool_name}")
 
-    def execute_tool(self, state: StateManager, tool_name: str, tool_input: str, previous_answer: MemoryPiece):
+    def execute_tool(self, state: ExecutionState, tool_name: str, tool_input: str, previous_answer: MemoryPiece):
         module = self.find_tool_by_name(tool_name)
-        response = module.run_as_tool(state, tool_input)
+        event = ActivateModuleEvent(module, tool_input, previous_answer)
+        state.push_event(event)
 
-        if isinstance(response, TaskSuccessResponse):
-            if response.embed_response:
-                previous_answer.output += "\nObservation: " + response.message
-                state.current_state().add_memory(previous_answer)
-                # TODO: here do something to avoid infinite looping
-                return state.current_state().module.run(state, None)
-
-            # TODO: Here we need to decide if we want to add something to the memory like a summary of what the tool has performed
-            state.current_state().executed_tool = tool_name    # trace executed tool
-            return response
-        elif isinstance(response, TaskInProgressResponse):
-            previous_answer.output += "\nObservation: " + response.message
-            state.current_state().add_memory(previous_answer)
-            # new_input = "Observation: " + response.message
-
-            if response.module is not None:
-                module = response.module
-
-            return module.run(state, None)
-        else:
-            raise ValueError(f"Unknown response type {response}")
-
-    def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None) -> (str, bool):
+    def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None) -> str:
         if action is not None and action.execute is not None:
             evaluator = self.configuration.new_evaluator()
             result = evaluator.eval_code(action.execute, data)
@@ -230,16 +221,17 @@ class RuntimeChatbotModule(BaseModel):
                 data['result'] = result
                 response_element = action.get_response_element()
                 response = replace_values(response_element.text, data)
-                response = self.configuration.new_rephraser()(response) if response_element.is_simple_rephrase() else response
-                return response, response_element.is_in_caller_rephrase()
+                response = self.configuration.new_rephraser()(
+                    response) if response_element.is_simple_rephrase() else response
+                return response
             else:
                 return result
         elif default_response is not None:
-            return default_response, False
+            return default_response
         else:
             raise ValueError("No response available")
 
-    def run(self, state: StateManager, input: str) -> ModuleResponse:
+    def run(self, state: ExecutionState, input: str):
         # From ConversationalAgent, but modified
         prefix = self.prompt
         format_instructions = FORMAT_INSTRUCTIONS.format(tool_names=self.get_tool_names(), ai_prefix=self.ai_prefix)
@@ -252,7 +244,7 @@ class RuntimeChatbotModule(BaseModel):
                                 suffix])
 
         input_variables = ["input", "history", "agent_scratchpad"]
-        _memory_prompts = state.current_state().memory.buffer_as_messages
+        _memory_prompts = state.get_memory(self.module).buffer_as_messages
         messages = [
             SystemMessagePromptTemplate.from_template(template),
             # *_memory_prompts,
@@ -284,13 +276,10 @@ class RuntimeChatbotModule(BaseModel):
 
         if isinstance(parsed_result, AgentAction):
             previous_answer = MemoryPiece(input=input, output=parsed_result.log)
-            return self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
+            self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
         else:
             output = parsed_result.return_values['output']
-
-            state.current_state().add_memory(MemoryPiece(input=input, output=output))
-
-            return TaskSuccessResponse(output)
+            state.push_event(AIResponseEvent(output))
 
     @staticmethod
     def to_messages(messages: [MessageLike]):

@@ -1,8 +1,28 @@
 import sys
 
 import utils
+
 from engine.common import Engine
 from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert
+from engine.common import Engine, DebugInfo
+from engine.custom.runtime import Channel
+from testing.test_model import Interaction, UserSays, ChatbotAnswer
+
+class TestChannel(Channel):
+
+    def __init__(self):
+        self.last_response = None
+
+    def input(self):
+        raise NotImplementedError()
+
+    def output(self, msg, who=None):
+        self.last_response = ChatbotResult(msg, DebugInfo(who))
+
+class ChatbotResult:
+    def __init__(self, chatbot_msg: str, debug_info: DebugInfo):
+        self.chatbot_msg = chatbot_msg
+        self.debug_info = debug_info
 
 
 class TestEngineConfiguration:
@@ -10,6 +30,8 @@ class TestEngineConfiguration:
         self.dry_run = dry_run
         self.replay = None
 
+    def new_channel(self):
+        return TestChannel()
 
 def assert_chatbot_answer(i: ChatbotAnswer, response):
     message = response.chatbot_msg
@@ -40,8 +62,8 @@ def run_test(interaction: Interaction, engine: Engine,
         if isinstance(interaction.interactions[0], ChatbotAnswer) \
         else interaction.interactions
 
-    response = engine.first_action()
-    utils.print_chatbot_answer(response)
+    channel = config.new_channel()
+    engine.start(channel)
 
     user_interactions = 0
     for i in interactions:
@@ -52,6 +74,14 @@ def run_test(interaction: Interaction, engine: Engine,
         if result is not None:
             response = result
             user_interactions +=1
+
+        if isinstance(i, UserSays):
+            utils.print_user_request(i.message)
+
+            engine.execute_with_input(i.message)
+            response = channel.last_response
+            utils.print_chatbot_answer(response)
+
 
         # if isinstance(i, UserSays):
         #     utils.print_user_request(i.message)

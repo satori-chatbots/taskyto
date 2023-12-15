@@ -145,6 +145,9 @@ class ResponseElement(BaseModel):
     text: str
     rephrase: Optional[str] = None
 
+    def is_direct_response(self):
+        return self.rephrase is None or self.rephrase == "direct"
+
     def is_simple_rephrase(self):
         return self.rephrase == "simple"
 
@@ -156,7 +159,7 @@ class Action(BaseModel):
     execute: Optional[ExecuteElement] = None
     response: Union[str, ResponseElement]
 
-    def get_response_element(self):
+    def get_response_element(self) -> ResponseElement:
         if isinstance(self.response, str):
             return ResponseElement(text=self.response, rephrase=None)
         else:
@@ -255,7 +258,7 @@ class ChatbotModel(BaseModel):
             m.to_graph(g, self)
 
     def accept(self, visitor: Visitor) -> object:
-        visitor.visit_chatbot_model(self)
+        return visitor.visit_chatbot_model(self)
 
     def resolve_module(self, reference) -> Module:
         resolved_module = self.modules_by_name()[reference]

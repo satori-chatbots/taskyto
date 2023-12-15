@@ -1,8 +1,8 @@
 from langchain.prompts import ChatPromptTemplate
 
 from engine.common import get_property_value
-from engine.custom.runtime import RuntimeChatbotModule, StateManager, TaskSuccessResponse, State, \
-    TaskInProgressResponse, ModuleResponse
+from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
+from engine.custom.runtime import RuntimeChatbotModule, ExecutionState
 
 
 class DataGatheringChatbotModule(RuntimeChatbotModule):
@@ -11,7 +11,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         super().__init__(**kwargs)
         self.tools.append(self)
 
-    def run_as_tool(self, state: StateManager, tool_input: str):
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         import json
         data = {}
         try:
@@ -22,28 +22,22 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     data[p.name] = value
 
             if len(data) == len(self.module.data_model.properties):
-                if state.is_module_active(self):
-                    state.pop_module()
-
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-                result, embed = self.execute_action(self.module.on_success, data,
+                result = self.execute_action(self.module.on_success, data,
                                                     default_response=f"The following data has been collected: {collected_data}")
 
+                # TODO: This is probably not needed anymore
                 self.set_data(state, data)
-                return TaskSuccessResponse(result, embed_response=embed)
+
+                state.push_event(TaskFinishEvent(result, data=data))
+                return None
         except json.JSONDecodeError:
             pass
-
-        if not state.is_module_active(self):
-            state.push_state(State(self))
 
         missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
         instruction = "Do not use the " + self.name() + " tool and ask the user the following:" \
                                                         "Please provide " + ", ".join(missing_properties)
-        return TaskInProgressResponse(instruction, module=self)
-        # return "Do not use the " + self.name + " tool and ask the user the following:" \
-        #                                       "Please provide " + ", ".join(
-        #    [p.name for p in self.module.data_model.properties])
+        state.push_event(TaskInProgressEvent(instruction))
 
 
 class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
@@ -51,7 +45,7 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         super().__init__(**kwargs)
         self.tools.append(self)
 
-    def run_as_tool(self, state: StateManager, tool_input: str):
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         new_llm = self.configuration.llm(module_name=self.name())
         question = self.get_question(tool_input)
 
@@ -60,7 +54,7 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         prompt_template.append(question)
 
         result = new_llm(prompt_template.format_messages())
-        return TaskSuccessResponse(result.content)
+        state.push_event(TaskFinishEvent(result.content))
 
     def get_question(self, tool_input):
         if tool_input.startswith("Question:"):
@@ -75,29 +69,24 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
 
 
 class SequenceChatbotModule(RuntimeChatbotModule):
-    def run_as_tool(self, state_manager: StateManager, tool_input: str):
-        # traverse self.tools in reverse order and add each tool to state.push_state
-        for tool in reversed(self.tools[1:]):
-            new_state = State(tool)
-            new_state.linked_to_previous_response = True
-            state_manager.push_state(new_state)
+    def run_as_tool(self, state_manager: ExecutionState, tool_input: str, activating_event=None):
+        assert activating_event is not None
 
-        initial_tool = self.tools[0]
-        # state.push_module(self)
-        state_manager.push_state(State(initial_tool))
-
-        postfix = ""
-        if tool_input is not None and tool_input.strip() != "":
-            postfix = "following this request: " + tool_input
-
-        return TaskInProgressResponse("Do your task " + postfix, module=initial_tool)
+        if isinstance(activating_event, TaskFinishEvent):
+            # To exit
+            state_manager.push_event(activating_event)
+        else:
+            # To enter
+            state_manager.push_event(ActivateModuleEvent(self.tools[0], tool_input, activating_event.previous_answer))
 
 
 class ActionChatbotModule(RuntimeChatbotModule):
-    # This is overriding run to avoid launching the LLM. Probably we need another super-class to split behaviors.
+    def run(self, state: ExecutionState, input: str):
+        raise NotImplementedError("ActionChatbotModule should not be run")
 
-    def run(self, state: StateManager, input: str) -> ModuleResponse:
-        available_data = state.data[self.previous_tool.id]
+    def run_as_tool(self, state_manager: ExecutionState, tool_input: str, activating_event=None):
+        available_data = activating_event.get_property_value("data")
+        # available_data = state.data[self.previous_tool.id]
         if available_data is None:
             raise ValueError(
                 "Data is None. Expected data for module " + self.previous_tool.name() + " - " + self.previous_tool.id)
@@ -113,6 +102,5 @@ class ActionChatbotModule(RuntimeChatbotModule):
         if self.module.on_success.execute is None:
             raise ValueError("Action module should have an on_success.execute")
 
-        result, embed = self.execute_action(self.module.on_success, data)
-        state.pop_module()
-        return TaskSuccessResponse(result, embed_response=embed)
+        result = self.execute_action(self.module.on_success, data)
+        state_manager.push_event(TaskFinishEvent(result))

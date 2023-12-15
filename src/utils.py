@@ -24,7 +24,6 @@ def print_chatbot_answer(response: ChatbotResult):
     module_name = response.debug_info.current_module
     print("Chatbot [" + module_name + "]: " + response.chatbot_msg)
 
-
 def get_user_prompt():
     return "You: "
 

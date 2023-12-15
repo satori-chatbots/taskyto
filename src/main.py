@@ -13,7 +13,7 @@ from engine.common import Configuration, Engine
 from engine.common.configuration import ConfigurationModel, read_configuration
 from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
-from engine.custom.runtime import CustomRephraser
+from engine.custom.runtime import CustomRephraser, ConsoleChannel
 from recording import dump_test_recording
 from spec import ChatbotModel
 from spec import parse_yaml
@@ -29,15 +29,12 @@ class CustomConfiguration(Configuration):
         self.root_folder = root_folder
         self.model = model
 
+    def new_channel(self):
+        from engine.custom.runtime import ConsoleChannel
+        return ConsoleChannel()
+
     def new_engine(self, model: ChatbotModel) -> Engine:
         return CustomPromptEngine(model, configuration=self)
-
-    def new_state(self):
-        from engine.custom.runtime import StateManager
-        from langchain.chat_models import ChatOpenAI
-
-        state = StateManager()
-        return state
 
     def new_evaluator(self):
         return Evaluator(load_path=[self.root_folder])
@@ -131,11 +128,18 @@ def run_with_engine(engine: Engine):
 def main(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):
     engine = initialize_engine(chatbot_folder, configuration)
 
-    # Run the first action which is typically a greeting
-    result = engine.first_action()
-    utils.print_chatbot_answer(result)
+    # check if engine has method first_action
+    if not hasattr(engine, 'first_action'):
+        channel = configuration.new_channel()
+        engine.run_all(channel)
 
-    run_with_engine(engine)
+    else:
+        # This is an engine which uses an externally input loop
+        # Run the first action which is typically a greeting
+        result = engine.first_action()
+        utils.print_chatbot_answer(result)
+        run_with_engine(engine)
+
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
 
