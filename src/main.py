@@ -155,7 +155,7 @@ if __name__ == '__main__':
                         help='In test mode, do not check the chatbot answers')
     parser.add_argument('--replay', default=False, type=int,
                         help='Replay a test case up to n user steps')
-    parser.add_argument('--dump', default=False, type=str,
+    parser.add_argument('--dump', default=None, type=str,
                         help='A file to dump the interaction in a test case format')
 
     args = parser.parse_args()

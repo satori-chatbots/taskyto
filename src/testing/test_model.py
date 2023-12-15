@@ -15,6 +15,8 @@ class UserSays(InteractionElement):
 class ChatbotAnswer(InteractionElement):
     answers: List[str] = []
 
+class ModuleAssert(InteractionElement):
+    assert_module: str = None
 
 class Interaction(BaseModel):
     interactions: List[InteractionElement]

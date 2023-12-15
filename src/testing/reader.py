@@ -2,7 +2,7 @@ import glob
 import os
 
 import yaml
-from testing.test_model import Interaction, UserSays, ChatbotAnswer
+from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert
 
 
 def to_model(data) -> Interaction:
@@ -19,6 +19,8 @@ def to_model(data) -> Interaction:
                 elements.append(ChatbotAnswer(answers=chatbot_answer))
             else:
                 raise ValueError('Unknown chatbot answer', chatbot_answer)
+        elif 'assert_module' in element:
+            elements.append(ModuleAssert(assert_module=element['assert_module']))
         else:
             raise ValueError('Unknown element type', element)
 

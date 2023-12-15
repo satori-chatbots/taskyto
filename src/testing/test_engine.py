@@ -2,7 +2,7 @@ import sys
 
 import utils
 from engine.common import Engine
-from testing.test_model import Interaction, UserSays, ChatbotAnswer
+from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert
 
 
 class TestEngineConfiguration:
@@ -22,10 +22,19 @@ def assert_chatbot_answer(i: ChatbotAnswer, response):
 
         raise ValueError(f"Expected chatbot answer '{message}' not found in {i.answers}")
 
+def assert_chatbot_module(i: ModuleAssert, response):
+    current_module = response.debug_info.current_module
+    if i.assert_module != current_module:
+        print(f"Expecting chatbot in module {i.assert_module}", file=sys.stderr)
+        print(f"But chatbot was in module {current_module}", file=sys.stderr)
+
+        raise ValueError(f"Expected module {i.assert_module}, but was {current_module}")
 
 def run_test(interaction: Interaction, engine: Engine,
              config: TestEngineConfiguration = TestEngineConfiguration()):
-    interactions = interaction.interactions[1:-1] \
+
+    #interactions = interaction.interactions
+    interactions = interaction.interactions[1:] \
         if isinstance(interaction.interactions[0], ChatbotAnswer) \
         else interaction.interactions
 
@@ -47,6 +56,9 @@ def run_test(interaction: Interaction, engine: Engine,
         elif isinstance(i, ChatbotAnswer):
             if not config.dry_run:
                 assert_chatbot_answer(i, response)
+        elif isinstance(i, ModuleAssert):
+            if not config.dry_run:
+                assert_chatbot_module(i, response)
         else:
             raise ValueError("Unknown interaction element", i)
 
