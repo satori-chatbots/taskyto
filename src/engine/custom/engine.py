@@ -43,7 +43,9 @@ class CustomPromptEngine(Visitor):
         self.recorded_interaction.append(type="chatbot", message=ans)
 
         module_name = current.module.name()  # type(self._current_state.current_module()).__name__
-        return ChatbotResult(ans, DebugInfo(current_module=module_name))
+        debug_info = DebugInfo(current_module=module_name)
+        debug_info.executed_tool = current.executed_tool
+        return ChatbotResult(ans, debug_info)
 
     def run_step_with_actions(self, query: str) -> ChatbotResult:
         self.recorded_interaction.append(type="user", message=query)

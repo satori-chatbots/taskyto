@@ -8,6 +8,7 @@ import spec
 class DebugInfo:
     def __init__(self, current_module: str):
         self.current_module = current_module
+        self.executed_tool = None
 
 
 class ChatbotResult:

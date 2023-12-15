@@ -1,8 +1,9 @@
 interaction:
 - chatbot:
   - Hello
-- user: I want an appointment for vaccination tomorrow at 15:00
 - assert_module: top-level
+- user: I want an appointment for vaccination tomorrow at 15:00
+- assert_module: make_appointment
 - chatbot:
   - 'Ok, I have received your request to schedule an appointment for 16/12/2023 at
     15:00:00 for Vaccination.

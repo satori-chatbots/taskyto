@@ -21,6 +21,7 @@ class State:
         self.module = module
         self.data = {}
         self.memory = ConversationBufferMemory(memory_key="chat_history")
+        self.executed_tool = None
 
         # This is a hack to tell the engine that the current state has be executed
         # by passing the last response (or data).
@@ -188,6 +189,7 @@ class RuntimeChatbotModule(BaseModel):
 
         if isinstance(response, TaskSuccessResponse):
             # TODO: Here we need to decide if we want to add something to the memory like a summary of what the tool has performed
+            state.current_state().executed_tool = tool_name    # trace executed tool
             return response
         elif isinstance(response, TaskInProgressResponse):
             previous_answer.output += "\nObservation: " + response.message

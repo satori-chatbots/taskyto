@@ -23,12 +23,14 @@ def assert_chatbot_answer(i: ChatbotAnswer, response):
         raise ValueError(f"Expected chatbot answer '{message}' not found in {i.answers}")
 
 def assert_chatbot_module(i: ModuleAssert, response):
-    current_module = response.debug_info.current_module
-    if i.assert_module != current_module:
-        print(f"Expecting chatbot in module {i.assert_module}", file=sys.stderr)
-        print(f"But chatbot was in module {current_module}", file=sys.stderr)
+    module_exec = response.debug_info.current_module
+    if response.debug_info.executed_tool is not None:
+        module_exec = response.debug_info.executed_tool
 
-        raise ValueError(f"Expected module {i.assert_module}, but was {current_module}")
+    if i.assert_module != module_exec:
+        print(f"Expecting chatbot in module {i.assert_module}", file=sys.stderr)
+        print(f"But chatbot was executing module {module_exec} ", file=sys.stderr)
+        raise ValueError(f"Expected module {i.assert_module}, but was {module_exec}")
 
 def run_test(interaction: Interaction, engine: Engine,
              config: TestEngineConfiguration = TestEngineConfiguration()):
