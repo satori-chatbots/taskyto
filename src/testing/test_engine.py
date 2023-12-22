@@ -48,20 +48,25 @@ def run_test(interaction: Interaction, engine: Engine,
         if config.replay is not None and user_interactions >= config.replay:
             return False
 
-        if isinstance(i, UserSays):
-            utils.print_user_request(i.message)
+        result = i.check(engine, config, response)
+        if result is not None:
+            response = result
+            user_interactions +=1
 
-            response = engine.run_step(i.message)
-            utils.print_chatbot_answer(response)
-
-            user_interactions += 1
-        elif isinstance(i, ChatbotAnswer):
-            if not config.dry_run:
-                assert_chatbot_answer(i, response)
-        elif isinstance(i, ModuleAssert):
-            if not config.dry_run:
-                assert_chatbot_module(i, response)
-        else:
-            raise ValueError("Unknown interaction element", i)
+        # if isinstance(i, UserSays):
+        #     utils.print_user_request(i.message)
+        #
+        #     response = engine.run_step(i.message)
+        #     utils.print_chatbot_answer(response)
+        #
+        #     user_interactions += 1
+        # elif isinstance(i, ChatbotAnswer):
+        #     if not config.dry_run:
+        #         assert_chatbot_answer(i, response)
+        # elif isinstance(i, ModuleAssert):
+        #     if not config.dry_run:
+        #         assert_chatbot_module(i, response)
+        #else:
+        #    raise ValueError("Unknown interaction element", i)
 
     return True

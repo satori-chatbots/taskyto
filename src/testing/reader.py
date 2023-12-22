@@ -1,8 +1,9 @@
 import glob
 import os
+#from plistlib import Data
 
 import yaml
-from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert
+from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert, DataAssert
 
 
 def to_model(data) -> Interaction:
@@ -21,6 +22,8 @@ def to_model(data) -> Interaction:
                 raise ValueError('Unknown chatbot answer', chatbot_answer)
         elif 'assert_module' in element:
             elements.append(ModuleAssert(assert_module=element['assert_module']))
+        elif 'assert_data' in element:
+            elements.append(DataAssert(data_asserts=element['assert_data']))
         else:
             raise ValueError('Unknown element type', element)
 

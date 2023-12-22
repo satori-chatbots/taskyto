@@ -122,6 +122,7 @@ class SequenceModule(BaseModule):
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_sequence_module(self)
 
+
 class DataProperty(BaseModel):
     name: str
     type: str
