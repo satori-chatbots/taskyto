@@ -13,6 +13,7 @@ from langchain.schema import AgentAction, OutputParserException, HumanMessage, A
 from pydantic import BaseModel, ConfigDict
 
 import spec
+import utils
 from engine.common import Configuration, logger, get_property_value, replace_values, Rephraser
 from engine.common.prompts import FORMAT_INSTRUCTIONS
 from engine.common.validator import Formatter, FallbackFormatter
@@ -114,7 +115,7 @@ class ConsoleChannel(Channel):
             return None
 
     def output(self, msg, who=None):
-        print("Chatbot [" + who + "]: " + msg)
+        utils.print_chatbot_answer2(msg, who)
 
 
 class ChatbotOutputParser(ConvoOutputParser):

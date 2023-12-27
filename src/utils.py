@@ -24,16 +24,23 @@ def print_chatbot_answer(response: ChatbotResult):
     module_name = response.debug_info.current_module
     print("Chatbot [" + module_name + "]: " + response.chatbot_msg)
 
+
+def print_chatbot_answer2(msg, who):
+    from colorama import Fore, Style
+    print(Fore.LIGHTRED_EX + "Chatbot [" + who + "]: " + Style.RESET_ALL + msg)
+
+
 def get_user_prompt():
-    return "You: "
+    from colorama import Fore, Style
+    return Fore.GREEN + "You: " + Style.RESET_ALL
 
 
 def print_user_request(message: str):
     print(get_user_prompt() + message)
 
 
-def get_unparsed_output(message : str) -> str:
+def get_unparsed_output(message: str) -> str:
     msg = message.split("Could not parse LLM output: ")
-    if len(msg)>1:
+    if len(msg) > 1:
         return msg[1].strip("`")
     return message

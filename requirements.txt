@@ -52,3 +52,4 @@ Werkzeug==2.1.2
 yarl==1.9.2
 pylint==3.0.2
 pydot==1.4.2
+colorama==0.4.6
