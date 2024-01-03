@@ -72,14 +72,19 @@ class DataAssert(InteractionElement):
         print(f"Need to check the following assertions {self.data_asserts} in {data}")
         for attr in self.data_asserts:
             if attr in data:
-                if data[attr] != self.data_asserts[attr]:
-                    print(f"Expecting value {self.data_asserts[attr]} for {attr}, but got {data[attr]}", file=sys.stderr)
-                    raise ValueError(f"Expecting value {self.data_asserts[attr]} for {attr}, but got {data[attr]}")
+                if data[attr] is None:
+                    if self.data_asserts[attr] != 'None':
+                        self.fail_no_equal(attr, actual = 'None', expected=self.data_asserts[attr])
+                elif data[attr] != self.data_asserts[attr]:
+                    self.fail_no_equal(attr, actual=data[attr], expected=self.data_asserts[attr])
             else:
                 print(f"Did not find field {attr}", file=sys.stderr)
                 raise ValueError(f"Did not find field {attr}")
         return None
 
+    def fail_no_equal(self, attr: str, actual: str, expected: str):
+        print(f"Expecting value {expected} for {attr}, but got {actual}", file=sys.stderr)
+        raise ValueError(f"Expecting value {expected} for {attr}, but got {actual}")
 
 class Interaction(BaseModel):
     interactions: List[InteractionElement]
