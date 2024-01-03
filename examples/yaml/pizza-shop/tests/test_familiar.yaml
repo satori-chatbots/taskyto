@@ -4,16 +4,20 @@ interaction:
 - user: Hello
 - chatbot:
   - Welcome to my pizza shop. I'm the owner and I'm happy to help you. What can I do for you?
-- user: I want a familiar pizza
+- user: I want a pizza
 - chatbot:
   - Sure, what size would you like your pizza to be? We have small, medium, and large sizes available.
   - Sure, what size would you like your pizza to be? We have small, medium, and big sizes available.
-- user: familiar
+  - Sure, what size pizza would you like? We have small, medium, and large sizes available.
+- user: Frecking
 - assert_module: pizza_size
-- assert_data:
-    size: None
 - chatbot:
-  - 'Ok, I have received your order for a None pizza.
+  - Sure, I'd be happy to help you order a pizza! Just to confirm, what size pizza would you like? We have small, medium, and large sizes available.
+- user: big
+- assert_data:
+    size: 'big'
+- chatbot:
+  - 'Ok, I have received your order for a big pizza.
 
     Pizza on its way!
 

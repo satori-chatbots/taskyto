@@ -1,0 +1,17 @@
+interaction:
+- chatbot:
+  - Hello
+- user: I want a pizza
+- chatbot:
+  - Sure, what size of pizza would you like? We have small, medium, and big sizes available.
+  - Sure, what size would you like your pizza to be? We have small, medium, and big sizes available.
+- user: Huge
+- assert_module: pizza_size
+- assert_data:
+    size: 'big'
+- chatbot:
+  - 'Ok, I have received your order for a big pizza.
+
+    Pizza on its way!
+
+    '

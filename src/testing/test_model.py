@@ -68,7 +68,10 @@ class DataAssert(InteractionElement):
     def check(self, engine, config, response):
         if engine.state_manager.data is None:
             raise ValueError(f"Found no data, but asked to assert {self.data_asserts}")
-        data = next(iter(engine.state_manager.data.values()))
+        if not bool(engine.state_manager.data):  # test for empty dict
+            data = {}
+        else:
+            data = next(iter(engine.state_manager.data.values()))
         print(f"Need to check the following assertions {self.data_asserts} in {data}")
         for attr in self.data_asserts:
             if attr in data:

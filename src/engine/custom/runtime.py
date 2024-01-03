@@ -14,6 +14,7 @@ import spec
 from engine.common import Configuration, logger, get_property_value, replace_values
 from engine.common.prompts import FORMAT_INSTRUCTIONS
 from engine.common.validator import Formatter
+from utils import get_unparsed_output
 
 
 class State:
@@ -240,7 +241,11 @@ class RuntimeChatbotModule(BaseModel):
         result = llm(formatted_prompt, stop=["\nObservation:"])
 
         # TODO: Handle langchain.schema.output_parser.OutputParserException smoothly
-        parsed_result = self.parser.parse(result.content)
+        try:
+            parsed_result = self.parser.parse(result.content)
+        except OutputParserException as ope:
+            # for the moment, just try to continue
+            return TaskSuccessResponse(get_unparsed_output(str(ope)))
 
         if isinstance(parsed_result, AgentAction):
             previous_answer = MemoryPiece(input=input, output=parsed_result.log)
@@ -283,7 +288,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
                 if value is not None and p.type in validators:
-                    formatted_value = validators[p.type].do_format(value, p)
+                    formatted_value = validators[p.type].do_format(value, p, self.configuration)
                     if formatted_value is not None:
                         data[p.name] = formatted_value
                 else:

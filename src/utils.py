@@ -32,3 +32,10 @@ def get_user_prompt():
 def print_user_request(message: str):
 
     print(get_user_prompt() + message)
+
+
+def get_unparsed_output(message : str) -> str:
+    msg = message.split("Could not parse LLM output: ")
+    if len(msg)>1:
+        return msg[1].strip("`")
+    return message
