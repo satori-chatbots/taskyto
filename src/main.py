@@ -107,10 +107,18 @@ def run_with_engine(engine: Engine):
         try:
             result = engine.run_step(inp)
         except OutputParserException as ope:
-            print("Could not parse LLM output")
-            result = ChatbotResult("Could not parse LLM output", DebugInfo("top_level"))
+            #print("Could not parse LLM output")
+            #result = ChatbotResult("Could not parse LLM output", DebugInfo("top_level"))
+            result = ChatbotResult(get_unparsed_output(str(ope)), DebugInfo("top_level"))
 
         utils.print_chatbot_answer(result)
+
+
+def get_unparsed_output(message : str) -> str:
+    msg = message.split("Could not parse LLM output: ")
+    if len(msg)>1:
+        return msg[1].strip("`")
+    return message
 
 
 def main(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):

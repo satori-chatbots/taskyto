@@ -275,7 +275,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
     def run_as_tool(self, state: StateManager, tool_input: str):
         import json
         data = {}
-        validators = Formatter.get_validator()
+        validators = Formatter.get_validators()
 
         try:
             json_query = json.loads(tool_input)
@@ -283,7 +283,9 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
                 if value is not None and p.type in validators:
-                    data[p.name] = validators[p.type](self, value)
+                    formatted_value = validators[p.type].do_format(value, p)
+                    if formatted_value is not None:
+                        data[p.name] = formatted_value
                 else:
                     data[p.name] = value
 

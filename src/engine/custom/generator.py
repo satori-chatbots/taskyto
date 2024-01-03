@@ -53,12 +53,13 @@ class ModuleGenerator(Visitor):
             if p.is_simple_type():
                 activation_prompt += f'- {p.name} which is of type {p.type}\n'
             elif p.type == 'enum':
-                activation_prompt += f'- {p.name} which can be one of the following values: {",".join(p.values)}\n'
+                activation_prompt += f'- {p.name} which can be one of the following values: {",".join(p.values)}, do not accept any other value\n'  # Force not getting any other value
             else:
                 raise ValueError(f'Unknown type {p.type}')
 
         activation_prompt += f'\nProvide the values as JSON with the following fields: {property_names}.\n'
-        activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
+        activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, ask again.\n"
+        #activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
         prompt = (
             f"Your task is collecting the following data from the user: {property_names}. Pass this information to the corresponding tool.\n"

@@ -2,26 +2,26 @@ from datetime import datetime
 from abc import abstractmethod, ABC
 from duckling import DucklingWrapper
 
+from spec import DataProperty
+
 
 class Formatter(ABC):
     @abstractmethod
-    def do_format(self, value):
-        pass
-
-    @abstractmethod
-    def get_type(self):
+    def do_format(self, value: str, p : DataProperty):
         pass
 
     @classmethod
-    def get_validator(cls):
+    def get_validators(cls):
         return {
-            'date': DateFormatter.do_format,
-            'time': TimeFormatter.do_format,
+            'date': DateFormatter(),
+            'time': TimeFormatter(),
+            'enum': EnumFormatter()
         }
 
 
+
 class DateFormatter(Formatter):
-    def do_format(self, value):
+    def do_format(self, value: str, p : DataProperty):
         duckling_wrapper = DucklingWrapper()
         try:
             parsed_value = duckling_wrapper.parse_time(value)
@@ -32,12 +32,8 @@ class DateFormatter(Formatter):
         except ValueError:
             return "Invalid date"
 
-    def get_type(self):
-        return "date"
-
-
 class TimeFormatter(Formatter):
-    def do_format(self, value):
+    def do_format(self, value: str, p: DataProperty):
         duckling_wrapper = DucklingWrapper()
         try:
             parsed_value = duckling_wrapper.parse_time(value)
@@ -47,5 +43,13 @@ class TimeFormatter(Formatter):
         except ValueError:
             return "Invalid time"
 
-    def get_type(self):
-        return "time"
+
+class EnumFormatter(Formatter):
+
+    def do_format(self, value: str, p: DataProperty):
+        lower_values = [val.lower() for val in p.values]
+        val_lower = value.lower()
+        if val_lower in lower_values:
+            return p.values[lower_values.index(val_lower)]
+        else:
+            return None
