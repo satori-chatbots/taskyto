@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict
 import spec
 from engine.common import Configuration, logger, get_property_value, replace_values
 from engine.common.prompts import FORMAT_INSTRUCTIONS
-from engine.common.validator import DateFormatter, TimeFormatter
+from engine.common.validator import Formatter
 
 
 class State:
@@ -275,15 +275,15 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
     def run_as_tool(self, state: StateManager, tool_input: str):
         import json
         data = {}
-        validators = DateFormatter.get_validator()
+        validators = Formatter.get_validator()
 
         try:
             json_query = json.loads(tool_input)
 
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
-                if value is not None and p.name in validators:
-                    data[p.name] = validators[p.name](self, value)
+                if value is not None and p.type in validators:
+                    data[p.name] = validators[p.type](self, value)
                 else:
                     data[p.name] = value
 

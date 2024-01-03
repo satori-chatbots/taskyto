@@ -2,6 +2,7 @@ from datetime import datetime
 from abc import abstractmethod, ABC
 from duckling import DucklingWrapper
 
+
 class Formatter(ABC):
     @abstractmethod
     def do_format(self, value):
@@ -18,6 +19,7 @@ class Formatter(ABC):
             'time': TimeFormatter.do_format,
         }
 
+
 class DateFormatter(Formatter):
     def do_format(self, value):
         duckling_wrapper = DucklingWrapper()
@@ -32,6 +34,7 @@ class DateFormatter(Formatter):
 
     def get_type(self):
         return "date"
+
 
 class TimeFormatter(Formatter):
     def do_format(self, value):
