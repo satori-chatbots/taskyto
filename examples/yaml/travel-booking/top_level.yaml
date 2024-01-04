@@ -1,0 +1,24 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users to book flights of different companies like Iberia or Lufthansa.
+      fallback: |
+          For any question not related to these aspects you have to answer:
+          "I'm sorry, I can help you booking flights. How can I help you?"
+
+      items:
+          - title: Payment. To answer questions about how to pay.
+            kind: answer
+            answer: Payment is by credit card only
+          - title: Delivery. To answer questions about how the ticket is to be delivered to the user.
+            kind: answer
+            answer: The flight ticket will be delivered by email after the payment is processed
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer:
+              Welcome, I can help  you booking flights. 
+              What can I do for you?
+          - title: Book Flight
+            kind: module
+            reference: book_flight

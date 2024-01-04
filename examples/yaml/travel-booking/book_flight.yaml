@@ -1,0 +1,17 @@
+name: book_flight
+kind: data_gathering
+description: Useful for booking flights.
+data:
+  - departure_date: date
+  - return_date: date
+  - source: City
+  - destination: City
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("Booked!")
+  response: | 
+    Ok, I have booked a flight for you on {{departure_date}} from {{source}} to {{destination}} returning on {{return_date}}.
+    See you then!
