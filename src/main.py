@@ -154,9 +154,11 @@ def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file
                 if parent_folder_name in ["tests", "test"] and file.endswith(".yaml"):
                     tests.append(os.path.join(root, file))
 
-        for individual_test_file in tests:
-            print("Running test: " + individual_test_file)
+        # iterate tests with indices
+        for index, individual_test_file in enumerate(tests):
+            print(f"{index + 1}. " + individual_test_file)
             test(chatbot, individual_test_file, configuration, dry_run, replay, None, module_path)
+            print("\n")
     else:
         engine = initialize_engine(chatbot, configuration)
         test_model = load_test_model(test_file)
@@ -169,6 +171,30 @@ def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file
 
         if recording_file_dump is not None:
             dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
+
+
+def setup_debugging_capabilities(args):
+    if args.verbose:
+        import langchain.globals
+
+        langchain.globals.set_verbose(True)
+    if args.debug:
+        import langchain.globals
+
+        langchain.globals.set_debug(True)
+
+
+def setup_configuration(args):
+    if args.engine == "langchain":
+        conf = LangChainConfiguration()
+    else:
+        chatbot_folder = args.chatbot
+        if os.path.isfile(chatbot_folder):
+            chatbot_folder = os.path.dirname(chatbot_folder)
+
+        config_model = load_configuration_model(chatbot_folder)
+        conf = CustomConfiguration(chatbot_folder, config_model)
+    return conf
 
 
 if __name__ == '__main__':
@@ -193,27 +219,11 @@ if __name__ == '__main__':
                         help='A file to dump the interaction in a test case format')
 
     args = parser.parse_args()
-    if args.verbose:
-        import langchain.globals
 
-        langchain.globals.set_verbose(True)
+    setup_debugging_capabilities(args)
+    configuration = setup_configuration(args)
 
-    if args.debug:
-        import langchain.globals
-
-        langchain.globals.set_debug(True)
-
-    if args.engine == "langchain":
-        configuration = LangChainConfiguration()
-    else:
-        chatbot_folder = args.chatbot
-        if os.path.isfile(chatbot_folder):
-            chatbot_folder = os.path.dirname(chatbot_folder)
-
-        config_model = load_configuration_model(chatbot_folder)
-        configuration = CustomConfiguration(chatbot_folder, config_model)
-
-    utils.check_keys(["OPENAI_API_KEY"]) # "SERPAPI_API_KEY"
+    utils.check_keys(["OPENAI_API_KEY"])  # "SERPAPI_API_KEY"
     if args.test:
         test(args.chatbot, args.test, configuration, args.dry_run, args.replay, args.dump, args.module_path)
     else:
