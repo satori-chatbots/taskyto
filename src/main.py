@@ -92,8 +92,9 @@ def load_configuration_model(chatbot_folder, configuration_file: Optional[str] =
     if configuration_file is None:
         configuration_file = os.path.join(chatbot_folder, "configuration", "default.yaml")
         if not os.path.isfile(configuration_file):
-            return ConfigurationModel(default_llm="gpt-3.5-turbo-0301")
+            return ConfigurationModel(default_llm="gpt-3.5-turbo-0613")
 
+    # See OpenAI model table: https://platform.openai.com/docs/models
     return read_configuration(configuration_file)
 
 
@@ -144,16 +145,30 @@ def main(chatbot_folder: str, configuration, recording_file_dump: str = None, mo
 
 
 def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file_dump: str = None, module_path=None):
-    engine = initialize_engine(chatbot, configuration)
-    test_model = load_test_model(test_file)
-    config = TestEngineConfiguration(dry_run=dry_run)
-    if replay:
-        config.replay = replay
-    completed_steps = run_test(test_model, engine, config)
-    if not completed_steps:
-        run_with_engine(engine)
+    # Check if test_file is a folder, in which case return all tests in the `test` folder (find recursively)
+    if os.path.isdir(test_file):
+        tests = []
+        for root, dirs, files in os.walk(test_file):
+            for file in files:
+                parent_folder_name = os.path.basename(root)
+                if parent_folder_name in ["tests", "test"] and file.endswith(".yaml"):
+                    tests.append(os.path.join(root, file))
 
-    dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
+        for individual_test_file in tests:
+            print("Running test: " + individual_test_file)
+            test(chatbot, individual_test_file, configuration, dry_run, replay, None, module_path)
+    else:
+        engine = initialize_engine(chatbot, configuration)
+        test_model = load_test_model(test_file)
+        config = TestEngineConfiguration(dry_run=dry_run)
+        if replay:
+            config.replay = replay
+        completed_steps = run_test(test_model, engine, config)
+        if not completed_steps:
+            run_with_engine(engine)
+
+        if recording_file_dump is not None:
+            dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
 
 if __name__ == '__main__':

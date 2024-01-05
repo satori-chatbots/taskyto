@@ -5,6 +5,47 @@ from langchain.schema import OutputParserException
 import spec
 
 
+class Prompt:
+    def __init__(self, sections=[]):
+        self.sections = []
+        self.sections.extend(sections)
+
+    def __add__(self, other):
+        return Prompt(self.sections + other.sections)
+
+    def variables(self):
+        variables = []
+        for section_ in self.sections:
+            variables.extend(section_.variables())
+        return variables
+
+    def to_text(self, prompts_disabled=[]) -> str:
+        return "\n".join([s.content for s in self.sections if s.name not in prompts_disabled])
+
+class PromptSection:
+    def __init__(self, name, content):
+        self.name = name
+        self.content = content
+
+    @property
+    def sections(self):
+        return [self]
+
+    def to_prompt(self):
+        return Prompt([self])
+
+    def __add__(self, other):
+        return Prompt([self, other])
+
+    def variables(self):
+        import re
+        return re.findall(r'\{([^\}]+)\}', self.content)
+
+
+def section(name: str, content: str) -> PromptSection:
+    return PromptSection(name, content)
+
+
 def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModule], str]) -> str:
     # Describe the menu
     options = '\nYou are able to assist only in these tasks:\n'
@@ -23,12 +64,14 @@ def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModul
 
     return prompt
 
+
 def question_answering_prompt(module: spec.QuestionAnsweringModule) -> str:
     prompt = [f"Use the following to answer the questions:\n"]
     prompt = prompt + [f"- Question: {q.question}\n  Answer: {q.answer}\n" for q in module.questions]
     prompt = prompt + [f"\nOnly provide an answer if the question is in the list.\n"]
     prompt = "\n".join(prompt) + "\n"
     return prompt
+
 
 FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
 
@@ -40,6 +83,13 @@ Observation: the result of the action
 ```
 
 When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+
+```
+Thought: Do I need to use a tool? No
+{ai_prefix}: [your response here]
+```"""
+
+NO_TOOL_INSTRUCTIONS = """To respond to the Human you MUST use the format:
 
 ```
 Thought: Do I need to use a tool? No

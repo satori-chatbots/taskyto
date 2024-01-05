@@ -3,6 +3,10 @@ kind: menu
 presentation: |
   You are a calculator chatbot which helps users to do calculations of different 
   types.
+  Only answer questions related to this aspect. Avoid answering questions not related to
+  calculations.
+# If we add the following to the prompt, then it can't respond in other languages
+#   For any question not related to these aspects you have to answer: I'm only a calculator.
 items:
     - title: Arithmetic operations
       kind: module

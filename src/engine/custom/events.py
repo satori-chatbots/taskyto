@@ -54,8 +54,8 @@ UserInputEventType = TriggerEventMatchByClass(UserInput)
 
 class TaskInProgressEvent(Event):
 
-    def __init__(self, continuation_prompt: str):
-        self.continuation_prompt = continuation_prompt
+    def __init__(self, memory: dict):
+        self.memory = memory
 
 
 TaskInProgressEventType = TriggerEventMatchByClass(TaskInProgressEvent)
@@ -63,9 +63,10 @@ TaskInProgressEventType = TriggerEventMatchByClass(TaskInProgressEvent)
 
 class TaskFinishEvent(Event):
 
-    def __init__(self, message: str, **kwargs):
+    def __init__(self, message, memory: dict = {}, **kwargs):
         super().__init__(**kwargs)
         self.message = message
+        self.memory = memory
 
 
 TaskFinishEventEventType = TriggerEventMatchByClass(TaskFinishEvent)

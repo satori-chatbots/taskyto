@@ -3,7 +3,7 @@ import re
 import uuid
 from abc import ABC
 from typing import List, Optional, Union
-from engine.custom.events import ActivateModuleEvent, AIResponseEvent
+from engine.custom.events import ActivateModuleEvent, AIResponseEvent, TaskFinishEvent
 
 from langchain.agents.conversational.output_parser import ConvoOutputParser
 from langchain.memory import ConversationBufferMemory
@@ -19,17 +19,10 @@ from engine.common.prompts import FORMAT_INSTRUCTIONS
 from engine.common.validator import Formatter, FallbackFormatter
 from utils import get_unparsed_output
 
-
-class State:
-    def __init__(self, module):
-        self.module = module
-        self.data = {}
-        self.memory = ConversationBufferMemory(memory_key="chat_history")
-        self.executed_tool = None
-
-        # This is a hack to tell the engine that the current state has be executed
-        # by passing the last response (or data).
-        self.linked_to_previous_response = False
+from engine.common import Configuration, logger, get_property_value, replace_values, Rephraser, prompts
+from engine.common.memory import ConversationMemory, MemoryPiece
+from engine.common.prompts import FORMAT_INSTRUCTIONS, NO_TOOL_INSTRUCTIONS
+from engine.custom.events import ActivateModuleEvent, AIResponseEvent
 
 
 class ExecutionState:
@@ -51,25 +44,25 @@ class ExecutionState:
         for listener in self.action_listeners:
             listener(action)
 
-    def update_memory(self, module, memory_piece: "MemoryPiece"):
+    def update_memory(self, module, memory_piece: "MemoryPiece", memory_id: str):
+        memory = self.get_or_create_memory(module, memory_id)
+        memory.add_memory(memory_piece)
+
+    def get_memory(self, module, memory_id):
+        return self.get_or_create_memory(module, memory_id)
+        # TODO: For the moment, create the memory if it doesnt' exist, but maybe we need a protocol to make sure
+        #       that the memory is created at the beginning of the conversation
+        # module_id = module.name
+        # return self.memory[module_id][memory_id]
+
+    def get_or_create_memory(self, module, memory_id):
         module_id = module.name
         if module_id not in self.memory:
-            self.memory[module_id] = ConversationBufferMemory(memory_key="chat_history")
+            self.memory[module_id] = {}
+        if memory_id not in self.memory[module_id]:
+            self.memory[module_id][memory_id] = ConversationMemory()
 
-        memory_messages = self.memory[module_id].chat_memory.messages
-        if len(memory_messages) > 0 and isinstance(memory_messages[-1],
-                                                   AIMessage) and memory_piece.output is not None and memory_piece.input is None:
-            # This is a nasty trick to make sure that we append "Observation:" in an AI block and avoid having two AI blocks in a row
-            memory_messages[-1].content += "\n" + memory_piece.output
-        else:
-            ExecutionState.add_memory(self.memory[module_id], memory_piece)
-
-    def get_memory(self, module):
-        module_id = module.name
-        if module_id not in self.memory:
-            self.memory[module_id] = ConversationBufferMemory(memory_key="chat_history")
-
-        return self.memory[module_id]
+        return self.memory[module_id][memory_id]
 
     def pop_event(self):
         return self.event_stack.pop()
@@ -79,22 +72,6 @@ class ExecutionState:
 
     def push_event(self, event):
         self.event_stack.append(event)
-
-    ## Private
-    @staticmethod
-    def add_memory(memory, memory_piece: "MemoryPiece"):
-        if memory_piece.input is not None:
-            memory.chat_memory.add_user_message(memory_piece.input)
-        if memory_piece.output is not None:
-            memory.chat_memory.add_ai_message(memory_piece.output)
-
-    @staticmethod
-    def add_user_memory(memory, message):
-        memory.chat_memory.add_user_message(message)
-
-    @staticmethod
-    def add_ai_memory(memory, message):
-        memory.chat_memory.add_ai_message(message)
 
 
 class Channel(abc.ABC):
@@ -141,11 +118,6 @@ class ChatbotOutputParser(ConvoOutputParser):
         return match.group(1)
 
 
-class MemoryPiece(BaseModel):
-    input: Optional[str] = None
-    output: Optional[str] = None
-
-
 # HUMAN_MESSAGE_TEMPLATE = "{input}\n\n{agent_scratchpad}"
 HUMAN_MESSAGE_TEMPLATE = "Begin!\n\nPrevious conversation history:\n{history}\n\n{input}\n\n{agent_scratchpad}\n"
 
@@ -186,6 +158,15 @@ class RuntimeChatbotModule(BaseModel):
         To be used by sub-classes
         """
         state.data[self.id] = data
+
+    def get_prompts_disabled(self, prompt_id):
+        return []
+
+    def get_human_prompt(self) -> prompts.Prompt:
+        return prompts.section("default", HUMAN_MESSAGE_TEMPLATE).to_prompt()
+
+    def memory_types(self):
+        return {}
 
     def get_tool_names(self):
         return ", ".join([tool.name() for tool in self.tools])
@@ -232,24 +213,43 @@ class RuntimeChatbotModule(BaseModel):
         else:
             raise ValueError("No response available")
 
-    def run(self, state: ExecutionState, input: str):
+    def run(self, state: ExecutionState, input: str, allow_tools=True, prompts_disabled=[]):
         # From ConversationalAgent, but modified
         prefix = self.prompt
         format_instructions = FORMAT_INSTRUCTIONS.format(tool_names=self.get_tool_names(), ai_prefix=self.ai_prefix)
         formatted_tools = self.get_tools_prompt()
         suffix = ""
 
+        if not allow_tools:
+            format_instructions = NO_TOOL_INSTRUCTIONS.format(ai_prefix=self.ai_prefix)
+            formatted_tools = ""
+
         template = "\n\n".join([prefix,
                                 formatted_tools,
                                 format_instructions,
                                 suffix])
 
-        input_variables = ["input", "history", "agent_scratchpad"]
-        _memory_prompts = state.get_memory(self.module).buffer_as_messages
+        # input_variables = ["input", "history", "agent_scratchpad"]
+        input_variables = ["input", "agent_scratchpad"]
+
+        # TODO: Allow passing as parameters the section of the prompt that we want to use
+        human_prompt = self.get_human_prompt()
+        variables = human_prompt.variables()
+        input_variables.extend(variables)
+
+        memory_types = self.memory_types()
+        substitutions = {}
+        # The variable is the same as the memory_id... by convention
+        for memory_id in variables:
+            m = state.get_memory(self.module, memory_id)
+            memory_type = memory_types.get(memory_id) or "default"
+            substitutions[memory_id] = m.to_text_messages(memory_type)
+
+        #_memory_prompts = state.get_memory(self.module).buffer_as_messages
         messages = [
             SystemMessagePromptTemplate.from_template(template),
-            # *_memory_prompts,
-            HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE_TEMPLATE),
+            HumanMessagePromptTemplate.from_template(human_prompt.to_text(prompts_disabled=prompts_disabled)),
+            #HumanMessagePromptTemplate.from_template(HUMAN_MESSAGE_TEMPLATE),
         ]
         template = ChatPromptTemplate(input_variables=input_variables, messages=messages)
 
@@ -260,9 +260,10 @@ class RuntimeChatbotModule(BaseModel):
         else:
             prompt_input = "New input: " + input
 
-        formatted_prompt = template.format_messages(input=prompt_input,
-                                                    history=RuntimeChatbotModule.to_messages(_memory_prompts),
-                                                    agent_scratchpad="")
+        substitutions['input'] = prompt_input
+        substitutions['agent_scratchpad'] = ""
+
+        formatted_prompt = template.format_messages(**substitutions)
         # agent_scratchpad="Thought: ")
         logger.debug_prompt(formatted_prompt)
 
@@ -273,10 +274,14 @@ class RuntimeChatbotModule(BaseModel):
             parsed_result = self.parser.parse(result.content)
         except OutputParserException as ope:
             # for the moment, just try to continue
-            return TaskSuccessResponse(get_unparsed_output(str(ope)))
+            message = get_unparsed_output(str(ope))
+            # jesus: not sure if this has to be a finish event (task is completed) or AIResponse
+            state.push_event(TaskFinishEvent(message))
 
         if isinstance(parsed_result, AgentAction):
-            previous_answer = MemoryPiece(input=input, output=parsed_result.log)
+            previous_answer = (MemoryPiece().
+                               add_human_message(input).
+                               add_ai_reasoning_message(parsed_result.log))
             self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
         else:
             output = parsed_result.return_values['output']
@@ -296,135 +301,3 @@ class RuntimeChatbotModule(BaseModel):
                 raise ValueError(f"Unknown message type {message}")
         return "\n".join(prefixed)
 
-class DataGatheringChatbotModule(RuntimeChatbotModule):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.tools.append(self)
-
-    def run_as_tool(self, state: StateManager, tool_input: str):
-        import json
-        data = {}
-        validators = Formatter.get_validators()
-
-        try:
-            json_query = json.loads(tool_input)
-
-            for p in self.module.data_model.properties:
-                value = get_property_value(p, json_query)
-                if value is not None and p.type in validators:
-                    formatted_value = validators[p.type].do_format(value, p, self.configuration)
-                    if formatted_value is not None:
-                        data[p.name] = formatted_value
-                else:
-                    formatted_value = FallbackFormatter().do_format(value, p, self.configuration)
-                    if formatted_value is not None:
-                        data[p.name] = value
-
-            if len(data) == len(self.module.data_model.properties):
-                if state.is_module_active(self):
-                    state.pop_module()
-
-                result = None
-                if self.module.on_success is not None and self.module.on_success.execute is not None:
-                    evaluator = self.configuration.new_evaluator()
-                    result = evaluator.eval_code(self.module.on_success.execute, data)
-
-                self.set_data(state, data)
-                if self.module.on_success is not None and self.module.on_success.response is not None:
-                    data['result'] = result
-                    return TaskSuccessResponse(replace_values(self.module.on_success.response, data))
-                else:
-                    collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-                    # return "Stop using the tool. The following data has been collected: " + collected_data
-                    return TaskSuccessResponse("The following data has been collected: " + collected_data)
-
-        except json.JSONDecodeError:
-            pass
-
-        if not state.is_module_active(self):
-            state.push_state(State(self))
-
-        missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
-        instruction = "Do not use the " + self.name() + " tool and ask the user the following:" \
-                                                        "Please provide " + ", ".join(missing_properties)
-        return TaskInProgressResponse(instruction, module=self)
-        # return "Do not use the " + self.name + " tool and ask the user the following:" \
-        #                                       "Please provide " + ", ".join(
-        #    [p.name for p in self.module.data_model.properties])
-
-
-class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.tools.append(self)
-
-    def run_as_tool(self, state: StateManager, tool_input: str):
-        new_llm = self.configuration.llm()
-        question = self.get_question(tool_input)
-
-        prompt_template = ChatPromptTemplate.from_template(self.prompt)
-        prompt_template.append("Please answer the following question:")
-        prompt_template.append(question)
-
-        result = new_llm(prompt_template.format_messages())
-        return TaskSuccessResponse(result.content)
-
-    def get_question(self, tool_input):
-        if tool_input.startswith("Question:"):
-            return tool_input.replace("Question:", "").strip()
-        else:
-            import json
-            json_query = json.loads(tool_input)
-            if "question" in json_query:
-                return json_query["question"].strip()
-
-        raise ValueError("The query should start with \"Question:\" but it was: " + tool_input)
-
-
-class SequenceChatbotModule(RuntimeChatbotModule):
-    def run_as_tool(self, state_manager: StateManager, tool_input: str):
-        # traverse self.tools in reverse order and add each tool to state.push_state
-        for tool in reversed(self.tools[1:]):
-            new_state = State(tool)
-            new_state.linked_to_previous_response = True
-            state_manager.push_state(new_state)
-
-        initial_tool = self.tools[0]
-        # state.push_module(self)
-        state_manager.push_state(State(initial_tool))
-
-        postfix = ""
-        if tool_input is not None and tool_input.strip() != "":
-            postfix = "following this request: " + tool_input
-
-        return TaskInProgressResponse("Do your task " + postfix, module=initial_tool)
-
-
-class ActionChatbotModule(RuntimeChatbotModule):
-    # This is overriding run to avoid launching the LLM. Probably we need another super-class to split behaviors.
-
-    def run(self, state: StateManager, input: str) -> ModuleResponse:
-        available_data = state.data[self.previous_tool.id]
-        if available_data is None:
-            raise ValueError(
-                "Data is None. Expected data for module " + self.previous_tool.name() + " - " + self.previous_tool.id)
-
-        # Extract the data needed
-        data = {}
-        for p in self.module.data_model.properties:
-            if p.name not in available_data:
-                raise ValueError("Data is missing the property " + p.name)
-
-            data[p.name] = available_data[p.name]
-
-        if self.module.on_success is not None and self.module.on_success.execute is not None:
-            evaluator = self.configuration.new_evaluator()
-            result = evaluator.eval_code(self.module.on_success.execute, data)
-
-            state.pop_module()
-
-            data['result'] = result
-            return TaskSuccessResponse(replace_values(self.module.on_success.response, data))
-        else:
-            raise ValueError("Action module should have an on_success.execute")

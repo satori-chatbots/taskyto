@@ -1,6 +1,8 @@
 from langchain.prompts import ChatPromptTemplate
 
-from engine.common import get_property_value
+from engine.common import get_property_value, prompts
+from engine.common.memory import MemoryPiece
+from engine.common.validator import FallbackFormatter, Formatter
 from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
 from engine.custom.runtime import RuntimeChatbotModule, ExecutionState
 
@@ -11,33 +13,76 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         super().__init__(**kwargs)
         self.tools.append(self)
 
+    def memory_types(self):
+        return {
+            'collected_data': ['data'],
+            'history': ['human', 'ai_response'],
+            'instruction': ['instruction']
+        }
+
+    def get_prompts_disabled(self, prompt_id):
+        if prompt_id == "input":
+            return ['instruction']
+        elif prompt_id == "reasoning":
+            return ['input']
+        return super().get_prompts_disabled(prompt_id)
+
+    def get_human_prompt(self):
+        history = prompts.section("history",
+                                  """Previous conversation history:\n{history}""")
+
+        data = prompts.section("collected-data",
+                               """Data already collected: {collected_data}""")
+
+        instruction = prompts.section("instruction", "{instruction}")
+
+        input_ = prompts.section("input", "{input}")
+
+        return history + data + instruction + input_
+
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         import json
         data = {}
+        validators = Formatter.get_validators()
+
         try:
             json_query = json.loads(tool_input)
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
-                if value is not None:
-                    data[p.name] = value
+                if value is not None and p.type in validators:
+                    formatted_value = validators[p.type].do_format(value, p, self.configuration)
+                    if formatted_value is not None:
+                        data[p.name] = formatted_value
+                else:
+                    formatted_value = FallbackFormatter().do_format(value, p, self.configuration)
+                    if formatted_value is not None:
+                        data[p.name] = value
+
 
             if len(data) == len(self.module.data_model.properties):
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
                 result = self.execute_action(self.module.on_success, data,
-                                                    default_response=f"The following data has been collected: {collected_data}")
+                                             default_response=f"The following data has been collected: {collected_data}")
 
                 # TODO: This is probably not needed anymore
                 self.set_data(state, data)
 
-                state.push_event(TaskFinishEvent(result, data=data))
+                data_memory = MemoryPiece().add_data_message(collected_data)
+                inst_memory = MemoryPiece().add_instruction_message("Tell the user:" + result)
+                state.push_event(
+                    TaskFinishEvent(result, memory={'collected_data': data_memory, 'instruction': inst_memory}, data=data))
                 return None
         except json.JSONDecodeError:
             pass
 
+        collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
         missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
-        instruction = "Do not use the " + self.name() + " tool and ask the user the following:" \
-                                                        "Please provide " + ", ".join(missing_properties)
-        state.push_event(TaskInProgressEvent(instruction))
+
+        data_memory = MemoryPiece().add_data_message(collected_data)
+        inst_memory = MemoryPiece().add_instruction_message("Respond the following to the Human:" \
+                                                            "Please provide " + ", ".join(missing_properties))
+
+        state.push_event(TaskInProgressEvent(memory={'collected_data': data_memory, 'instruction': inst_memory}))
 
 
 class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
