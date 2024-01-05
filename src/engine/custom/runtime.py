@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict
 import spec
 from engine.common import Configuration, logger, get_property_value, replace_values
 from engine.common.prompts import FORMAT_INSTRUCTIONS
-from engine.common.validator import Formatter
+from engine.common.validator import Formatter, FallbackFormatter
 from utils import get_unparsed_output
 
 
@@ -292,7 +292,9 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     if formatted_value is not None:
                         data[p.name] = formatted_value
                 else:
-                    data[p.name] = value
+                    formatted_value = FallbackFormatter().do_format(value, p, self.configuration)
+                    if formatted_value is not None:
+                        data[p.name] = value
 
             if len(data) == len(self.module.data_model.properties):
                 if state.is_module_active(self):

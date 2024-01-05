@@ -16,8 +16,17 @@ class Formatter(ABC):
         return {
             'date': DateFormatter(),
             'time': TimeFormatter(),
-            'enum': EnumFormatter()
+            'enum': EnumFormatter(),
+            'integer': IdentityFormatter(),  # we could have formatters to convert numbers expressed in words into digit
+            'str': IdentityFormatter(),
+            'double': IdentityFormatter(),
+            'float': IdentityFormatter()
         }
+
+
+class IdentityFormatter(Formatter):
+    def do_format(self, value: str, p: DataProperty, c: Configuration):
+        return value
 
 
 class DateFormatter(Formatter):
@@ -73,3 +82,14 @@ class EnumFormatter(Formatter):
             if result.content in values:
                 return values.index(result.content)
             return -1
+
+
+class FallbackFormatter(Formatter):
+    def do_format(self, value: str, p: DataProperty, c: Configuration):
+        prompt = f'Is {value} a {p.type}?. Reply yes or no.'
+        llm = c.llm()
+        result = llm.invoke(prompt)
+        if 'yes' in result.content.lower():
+            return value
+        else:
+            return None
