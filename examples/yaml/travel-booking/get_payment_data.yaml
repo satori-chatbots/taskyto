@@ -1,0 +1,16 @@
+name: get_payment_data
+kind: data_gathering
+description: Useful for obtaining the passenger payment data, after a flight has been booked, and the passenger personal data has been gathered.
+data:
+  - creditcard_number: CreditCardNumber
+  - expiration_date: date
+  - ccv: CCV
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("I have the card!")
+  response: | 
+    Ok, we will charge the flight ticket to {{creditcard_number}}.
+    Thanks for your purchase!

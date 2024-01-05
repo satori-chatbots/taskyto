@@ -1,0 +1,18 @@
+name: get_personal_data
+kind: data_gathering
+description: Useful for obtaining the passenger personal data, after a flight has been booked.
+data:
+  - name: str
+  - surname: str
+  - birth_date: date
+  - email_address: email
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print("Got it!")
+  response: | 
+    Ok, I have booked a flight for {{name}} {{surname}} (born on {{birth_date}}) on {{departure_date}} from {{source}} to {{destination}} returning on {{return_date}}.
+    Tickets will be delivered to {{email_address}}
+    Now I need your credit card details.

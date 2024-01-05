@@ -22,3 +22,9 @@ modules:
           - title: Book Flight
             kind: module
             reference: book_flight
+          - title: Get Personal Data
+            kind: module
+            reference: get_personal_data
+          - title: Get Payment Data
+            kind: module
+            reference: get_payment_data

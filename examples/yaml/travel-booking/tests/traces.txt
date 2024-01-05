@@ -1,0 +1,22 @@
+Some traces of interactions:
+
+### Here we do not seem to store the data provided, if we only provide some of the data
+
+You: I want to book a flight
+Chatbot [book_flight]: Sure, I can help you book a flight. Can you please provide me with the following information: departure date, return date, source, and destination?
+You: Madrid to Rome, going today, returning tomorrow
+Chatbot [book_flight]: I'm sorry, I need the exact dates for departure and return in order to book a flight. Can you please provide me with the dates you plan to travel?
+You: departing today, returning tomorrow
+Chatbot [book_flight]: Thank you for letting me know your travel dates. Can you please provide me with the source and destination cities?
+You: source Madrid and destination Rome
+Chatbot [book_flight]: Thank you for providing me with your travel details. However, I noticed that you did not provide the departure and return dates. Can you please let me know the exact dates you would like to travel?
+You: departing today, returning tomorrow
+Chatbot [book_flight]: Thank you for letting me know your travel dates. Can you please provide me with the source and destination cities?
+You: source Madrid and destination Rome
+Chatbot [book_flight]: Thank you for letting me know your source and destination cities. However, I still need to know the exact departure and return dates to help you book your flight. Can you please provide me with those details?
+You: source Madrid and destination Rome, departing today, returning tomorrow
+Chatbot [book_flight]: Thank you for providing me with the source and destination cities. However, I noticed that you did not provide the exact departure and return dates. Can you please let me know the exact dates you would like to travel?
+You: source Madrid and destination Rome, departing 05/01/2024 returning 07/01/2024
+Chatbot [book_flight]: Thank you for providing me with your travel details. Is there anything else I can help you with?
+
+## The module does not return to top_level, it does not seem to execute on_success

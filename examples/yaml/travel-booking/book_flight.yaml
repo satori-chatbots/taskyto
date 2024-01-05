@@ -13,5 +13,5 @@ on-success:
     code: |
       print("Booked!")
   response: | 
-    Ok, I have booked a flight for you on {{departure_date}} from {{source}} to {{destination}} returning on {{return_date}}.
-    See you then!
+    Ok, I have noted a flight for you on {{departure_date}} from {{source}} to {{destination}} returning on {{return_date}}.
+    Now I need your personal data: name, surname, birth date and email
