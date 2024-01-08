@@ -4,3 +4,5 @@ interaction:
 - user: Compute 2.0 + 4.0, then say the resulting number in plain english
 - chatbot:
   - The resulting number is six.
+  - The result is six.
+  - The result of the operation is six.

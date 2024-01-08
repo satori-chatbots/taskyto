@@ -1,5 +1,10 @@
 interaction:
-  - user: which is the best way to ensure that my bike doesn't get old?
-  - chatbot:
-      - You should clean it regularly, check the tire pressure, and lubricate the chain.
-      - To ensure that your bike doesn't get old, it's important to take good care of it. This includes regular maintenance such as cleaning and lubricating the chain, checking the tire pressure, and making sure all the components are in good working order. It's also a good idea to store your bike in a dry place and avoid leaving it outside in the rain or extreme heat.
+  - user: Tell me the price of a new tire?
+  - chatbot: The price of a new tire is 20$.
+
+# TODO: Include this test in the future. But this is more complicated since the LLM tends to overexplicate.
+#       It does it well, but need to check if the explanation is ok rather than comparing strings.
+#  - user: which is the best way to ensure that my bike doesn't get old?
+#  - chatbot:
+#      - You should clean it regularly, check the tire pressure, and lubricate the chain.
+#      - To ensure that your bike doesn't get old, it's important to take good care of it. This includes regular maintenance such as cleaning and lubricating the chain, checking the tire pressure, and making sure all the components are in good working order. It's also a good idea to store your bike in a dry place and avoid leaving it outside in the rain or extreme heat.

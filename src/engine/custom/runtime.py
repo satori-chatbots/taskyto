@@ -272,20 +272,22 @@ class RuntimeChatbotModule(BaseModel):
         # TODO: Handle langchain.schema.output_parser.OutputParserException smoothly
         try:
             parsed_result = self.parser.parse(result.content)
+
+            if isinstance(parsed_result, AgentAction):
+                previous_answer = (MemoryPiece().
+                                   add_human_message(input).
+                                   add_ai_reasoning_message(parsed_result.log))
+                self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
+            else:
+                output = parsed_result.return_values['output']
+                state.push_event(AIResponseEvent(output))
+
         except OutputParserException as ope:
             # for the moment, just try to continue
             message = get_unparsed_output(str(ope))
             # jesus: not sure if this has to be a finish event (task is completed) or AIResponse
             state.push_event(TaskFinishEvent(message))
 
-        if isinstance(parsed_result, AgentAction):
-            previous_answer = (MemoryPiece().
-                               add_human_message(input).
-                               add_ai_reasoning_message(parsed_result.log))
-            self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
-        else:
-            output = parsed_result.return_values['output']
-            state.push_event(AIResponseEvent(output))
 
     @staticmethod
     def to_messages(messages: [MessageLike]):
