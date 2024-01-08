@@ -58,31 +58,36 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     if formatted_value is not None:
                         data[p.name] = value
 
-
             if len(data) == len(self.module.data_model.properties):
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
                 result = self.execute_action(self.module.on_success, data,
                                              default_response=f"The following data has been collected: {collected_data}")
 
-                # TODO: This is probably not needed anymore
-                self.set_data(state, data)
-
                 data_memory = MemoryPiece().add_data_message(collected_data)
                 inst_memory = MemoryPiece().add_instruction_message("Tell the user:" + result)
                 state.push_event(
-                    TaskFinishEvent(result, memory={'collected_data': data_memory, 'instruction': inst_memory}, data=data))
+                    TaskFinishEvent(result, memory={'collected_data': data_memory, 'instruction': inst_memory},
+                                    data=data))
+
+                # The data is made available, indexing it by the name of the module
+                self.set_data(state, data)
+
                 return None
         except json.JSONDecodeError:
             pass
 
         collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-        missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
 
         data_memory = MemoryPiece().add_data_message(collected_data)
-        inst_memory = MemoryPiece().add_instruction_message("Respond the following to the Human:" \
-                                                            "Please provide " + ", ".join(missing_properties))
+        inst_memory = MemoryPiece().add_instruction_message("Ask the Human to provide the missing data: " +
+                                                            self.get_missing_data_instruction(data))
 
         state.push_event(TaskInProgressEvent(memory={'collected_data': data_memory, 'instruction': inst_memory}))
+
+    # TODO: Decide if we want to be more explicit about what information is missing and its shape (specifically for enums)
+    def get_missing_data_instruction(self, data):
+        missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
+        return ", ".join(missing_properties)
 
 
 class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):

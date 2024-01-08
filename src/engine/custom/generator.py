@@ -48,22 +48,23 @@ class ModuleGenerator(Visitor):
     def visit_data_gathering_module(self, module: spec.DataGatheringModule) -> RuntimeChatbotModule:
         property_names = ", ".join([p.name for p in module.data_model.properties])
 
-        activation_prompt = module.description
-        activation_prompt = activation_prompt + "\nThe tool needs the following data:\n"
+        data_shape = ""
         for p in module.data_model.properties:
             if p.is_simple_type():
-                activation_prompt += f'- {p.name} which is of type {p.type}\n'
+                data_shape += f'- \'{p.name}\' which is of type {p.type}\n'
             elif p.type == 'enum':
-                activation_prompt += f'- {p.name} which can be one of the following values: {",".join(p.values)}, do not accept any other value\n'  # Force not getting any other value
+                data_shape += f'- \'{p.name}\' which can be one of the following values: {", ".join(p.values)}, do not accept any other value\n'  # Force not getting any other value
             else:
                 raise ValueError(f'Unknown type {p.type}')
 
+        activation_prompt = module.description + "\nThe tool needs the following data:\n" + data_shape
         activation_prompt += f'\nProvide the values as JSON with the following fields: {property_names}.\n'
         activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, ask again.\n"
         #activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
         prompt = (
-            f"Your task is collecting the following data from the user: {property_names}. Pass this information to the corresponding tool.\n"
+            f"Your task is collecting the following data from the user:\n" + data_shape + "\n" 
+            f"Pass this information to the corresponding tool.\n"
             f"If there is missing data, ask for it politely.\n"
             # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
             f"\n")

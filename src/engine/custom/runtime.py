@@ -37,6 +37,9 @@ class ExecutionState:
         # To pass data between modules
         self.data = {}
 
+    def get_module_data(self, module_name):
+        return self.data[module_name]
+
     def add_action_listener(self, listener):
         self.action_listeners.append(listener)
 
@@ -144,12 +147,6 @@ class RuntimeChatbotModule(BaseModel):
     ai_prefix: str = "AI"
     parser: ChatbotOutputParser = ChatbotOutputParser()
 
-    # Handling of data dependencies
-    id: str = uuid.uuid4()
-
-    # Not needed anymore
-    # previous_tool: Optional["RuntimeChatbotModule"] = None
-
     def name(self):
         return self.module.name
 
@@ -157,7 +154,7 @@ class RuntimeChatbotModule(BaseModel):
         """
         To be used by sub-classes
         """
-        state.data[self.id] = data
+        state.data[self.name()] = data
 
     def get_prompts_disabled(self, prompt_id):
         return []

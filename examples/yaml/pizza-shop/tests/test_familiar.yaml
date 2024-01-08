@@ -9,13 +9,19 @@ interaction:
   - Sure, what size would you like your pizza to be? We have small, medium, and large sizes available.
   - Sure, what size would you like your pizza to be? We have small, medium, and big sizes available.
   - Sure, what size pizza would you like? We have small, medium, and large sizes available.
+  - Could you please provide the size of the pizza you would like? It can be either small, medium, or big.
+  - Could you please provide the size of the pizza you would like? It can be small, medium, or big.
 - user: Frecking
 - assert_module: pizza_size
 - chatbot:
   - Sure, I'd be happy to help you order a pizza! Just to confirm, what size pizza would you like? We have small, medium, and large sizes available.
+  # TODO: This answer is not very natural ("the values" is not a natural thing to say by a person)
+  - I'm sorry, but I only accept the values small, medium, or big for the pizza size. Could you please provide one of those options?
 - user: big
 - assert_data:
-    size: 'big'
+    scope: 'pizza_size'
+    values:
+      size: 'big'
 - chatbot:
   - 'Ok, I have received your order for a big pizza.
 

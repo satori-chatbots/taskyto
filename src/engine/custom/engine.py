@@ -29,6 +29,7 @@ class RunModuleAction(Action):
         disabled = " , -" + ",".join(self.prompts_disabled) if len(self.prompts_disabled) > 0 else ""
         return f"RunModuleOnInput({self.runtime_module.module.name}{disabled})"
 
+
 class ApplyLLM(Action):
 
     def __init__(self, tool: RuntimeChatbotModule, allow_tools=True, prompts_disabled: list[str] = []):
@@ -82,7 +83,6 @@ class CompositeAction(Action):
             a.execute(execution_state, event)
             execution_state.notify_action_listeners(a)
 
-
     def __str__(self):
         return "\n".join([str(a) for a in self.actions])
 
@@ -106,6 +106,7 @@ class UpdateMemory(Action):
     def __str__(self):
         return f"UpdateMemory({self.module.name})"
 
+
 class StateMachineTransformer(Visitor):
 
     def __init__(self, chatbot_model: spec.ChatbotModel, configuration: Configuration):
@@ -121,7 +122,8 @@ class StateMachineTransformer(Visitor):
 
         prompts_disabled = runtime_module.get_prompts_disabled('input')
 
-        sm.add_transition(state, state, UserInputEventType, RunModuleAction(runtime_module, prompts_disabled=prompts_disabled))
+        sm.add_transition(state, state, UserInputEventType,
+                          RunModuleAction(runtime_module, prompts_disabled=prompts_disabled))
         sm.add_transition(state, state, AIResponseEventType,
                           CompositeAction([UpdateMemory(state.module), SayAction(message=None, consume_event=True)]))
 
@@ -161,10 +163,13 @@ class StateMachineTransformer(Visitor):
                                            CompositeAction([SayAction(None, consume_event=True)]))
                 elif response.is_in_caller_rephrase():
                     self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
-                                           CompositeAction([UpdateMemory(current_state.module), RunTool(state.runtime_module), UpdateMemory(state.module)]))
+                                           CompositeAction(
+                                               [UpdateMemory(current_state.module), RunTool(state.runtime_module),
+                                                UpdateMemory(state.module)]))
 
                     self.sm.add_transition(state, current_state, TaskFinishEventEventType,
-                                           CompositeAction([UpdateMemory(current_state.module), ApplyLLM(current_state.runtime_module)]))
+                                           CompositeAction([UpdateMemory(current_state.module),
+                                                            ApplyLLM(current_state.runtime_module)]))
                 else:
                     raise ValueError(f"Unsupported response type: {response}")
             else:
@@ -175,7 +180,7 @@ class StateMachineTransformer(Visitor):
                 self.sm.add_transition(state, current_state, TaskFinishEventEventType,
                                        CompositeAction([SayAction(None, consume_event=True)]))
 
-                #self.sm.add_transition(state, current_state, TaskFinishEventEventType,
+                # self.sm.add_transition(state, current_state, TaskFinishEventEventType,
                 #                       CompositeAction([UpdateMemory(current_state.module), ApplyLLM(current_state.runtime_module)]))
 
         return current_state
@@ -214,7 +219,7 @@ class StateMachineTransformer(Visitor):
         self.sm_stack.append(self.sm)
         self.sm = composite
 
-        #self.sm.add_state(composite)
+        # self.sm.add_state(composite)
 
         initial = Initial()
         composite.add_state(initial)
@@ -222,7 +227,7 @@ class StateMachineTransformer(Visitor):
         last = initial
         for r in item.references:
             resolved_module = self.chatbot_model.resolve_module(r)
-            #state = self.new_state(composite, resolved_module)
+            # state = self.new_state(composite, resolved_module)
             state = resolved_module.accept(self)
             composite.add_state(state)
 
@@ -277,7 +282,6 @@ class CustomPromptEngine(Visitor):
         self.execution_state.add_action_listener(self.record_output_interaction_)
         self.execute()
 
-
     def execute(self) -> ChatbotResult:
         while True:
             event = None
@@ -290,7 +294,6 @@ class CustomPromptEngine(Visitor):
 
             if transition is None:
                 break
-
 
             self.execute_transition(transition, event)
 

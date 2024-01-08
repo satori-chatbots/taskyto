@@ -52,8 +52,6 @@ class ModuleAssert(InteractionElement):
     def check(self, engine, config, response) -> bool:
         if not config.dry_run:
             module_exec = response.debug_info.current_module
-            if response.debug_info.executed_tool is not None:
-                module_exec = response.debug_info.executed_tool
 
             if self.assert_module != module_exec:
                 print(f"Expecting chatbot in module {self.assert_module}", file=sys.stderr)
@@ -63,15 +61,12 @@ class ModuleAssert(InteractionElement):
 
 
 class DataAssert(InteractionElement):
+    scope: str
     data_asserts: Dict[str, str] = {}
 
     def check(self, engine, config, response):
-        if engine.state_manager.data is None:
-            raise ValueError(f"Found no data, but asked to assert {self.data_asserts}")
-        if not bool(engine.state_manager.data):  # test for empty dict
-            data = {}
-        else:
-            data = next(iter(engine.state_manager.data.values()))
+        data = engine.execution_state.get_module_data(self.scope)
+
         print(f"Need to check the following assertions {self.data_asserts} in {data}")
         for attr in self.data_asserts:
             if attr in data:

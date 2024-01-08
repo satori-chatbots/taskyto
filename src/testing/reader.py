@@ -23,7 +23,8 @@ def to_model(data) -> Interaction:
         elif 'assert_module' in element:
             elements.append(ModuleAssert(assert_module=element['assert_module']))
         elif 'assert_data' in element:
-            elements.append(DataAssert(data_asserts=element['assert_data']))
+            assert_data = element['assert_data']
+            elements.append(DataAssert(scope=assert_data['scope'], data_asserts=assert_data['values']))
         else:
             raise ValueError('Unknown element type', element)
 
