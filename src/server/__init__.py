@@ -51,9 +51,7 @@ class FlaskChatbotApp:
 
         @app.post("/conversation/new")
         def init_conversation():
-            import main
-            model = main.load_chatbot_model(configuration.root_folder)
-            engine = configuration.new_engine(model)
+            engine = configuration.new_engine()
 
             # Generate an unique uuid
             id = str(uuid.uuid4())
