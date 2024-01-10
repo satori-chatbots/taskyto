@@ -1,4 +1,6 @@
 import abc
+import glob
+import os
 from abc import abstractmethod
 
 import pydantic
@@ -279,3 +281,20 @@ def parse_yaml(yaml_str) -> List[Module]:
         return [parse_obj_as_(Module, m) for m in data["modules"]]
     else:
         return [parse_obj_as_(Module, data)]
+
+
+def load_chatbot_model(chatbot_folder_or_file: str):
+    modules = []
+    if chatbot_folder_or_file.endswith(".yaml"):
+        with open(chatbot_folder_or_file) as yaml_file:
+            parsed_modules = parse_yaml(yaml_file.read())
+            modules.extend(parsed_modules)
+    else:
+        # Read yaml files in chatbot_folder
+        for yaml_path in glob.glob(os.path.join(chatbot_folder_or_file, '*.yaml')):
+            with open(yaml_path) as yaml_file:
+                parsed_modules = parse_yaml(yaml_file.read())
+                modules.extend(parsed_modules)
+
+    model = ChatbotModel(modules=modules)
+    return model

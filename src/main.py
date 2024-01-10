@@ -1,31 +1,23 @@
 import os.path
-
-from langchain.schema import OutputParserException
+from argparse import ArgumentParser
 from typing import Optional
 
+import spec
 import utils
-import glob
-
-from argparse import ArgumentParser
-
-from engine.common import Configuration, Engine, ChatbotResult, DebugInfo
 from engine.common import Configuration, Engine
 from engine.common.configuration import ConfigurationModel, read_configuration
 from engine.common.evaluator import Evaluator
 from engine.custom.engine import CustomPromptEngine
-from engine.custom.runtime import CustomRephraser, ConsoleChannel
+from engine.custom.runtime import CustomRephraser
 from recording import dump_test_recording
-from spec import ChatbotModel
-from spec import parse_yaml
-from engine.langchain import LangchainEngine
 from testing.reader import load_test_model
 from testing.test_engine import TestEngineConfiguration, run_test
-from utils import get_unparsed_output
 
 
 class CustomConfiguration(Configuration):
 
     def __init__(self, root_folder, model: ConfigurationModel):
+        self.chatbot_model = spec.load_chatbot_model(root_folder)
         self.root_folder = root_folder
         self.model = model
 
@@ -33,8 +25,8 @@ class CustomConfiguration(Configuration):
         from engine.custom.runtime import ConsoleChannel
         return ConsoleChannel()
 
-    def new_engine(self, model: ChatbotModel) -> Engine:
-        return CustomPromptEngine(model, configuration=self)
+    def new_engine(self) -> Engine:
+        return CustomPromptEngine(self.chatbot_model, configuration=self)
 
     def new_evaluator(self):
         return Evaluator(load_path=[self.root_folder])
@@ -48,44 +40,6 @@ class CustomConfiguration(Configuration):
 
     def new_rephraser(self):
         return CustomRephraser(self)
-
-
-class LangChainConfiguration(Configuration):
-
-    def new_engine(self, model: ChatbotModel) -> Engine:
-        return LangchainEngine(model, configuration=self)
-
-    def new_state(self):
-        from engine.langchain.modules import State
-        from langchain.chat_models import ChatOpenAI
-
-        llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo-0301", verbose=True)
-
-        # Doesn't work
-        # llm = ChatOpenAI(temperature=0., model_name="gpt-3.5-turbo", verbose=True)
-
-        # Do work
-        # llm = ChatOpenAI(temperature=0., model_name="gpt-4")
-
-        state = State(llm=llm)
-        return state
-
-
-def load_chatbot_model(chatbot_folder_or_file: str):
-    modules = []
-    if chatbot_folder_or_file.endswith(".yaml"):
-        with open(chatbot_folder_or_file) as yaml_file:
-            parsed_modules = parse_yaml(yaml_file.read())
-            modules.extend(parsed_modules)
-    else:
-        # Read yaml files in chatbot_folder
-        for yaml_path in glob.glob(os.path.join(chatbot_folder_or_file, '*.yaml')):
-            with open(yaml_path) as yaml_file:
-                parsed_modules = parse_yaml(yaml_file.read())
-                modules.extend(parsed_modules)
-
-    model = ChatbotModel(modules=modules)
-    return model
 
 
 def load_configuration_model(chatbot_folder, configuration_file: Optional[str] = None) -> ConfigurationModel:
@@ -102,44 +56,15 @@ def initialize_engine(chatbot_folder, configuration):
     if not os.path.exists(chatbot_folder):
         print("Chatbot folder does not exist: " + chatbot_folder)
         exit(1)
-    model = load_chatbot_model(chatbot_folder)
-    engine = configuration.new_engine(model)
+    engine = configuration.new_engine()
     return engine
-
-
-def run_with_engine(engine: Engine):
-    while True:
-        user_prompt = utils.get_user_prompt()
-        try:
-            inp = input(user_prompt)
-            if inp == 'exit':
-                return
-        except EOFError as e:
-            return
-
-        try:
-            result = engine.run_step(inp)
-        except OutputParserException as ope:
-            #result = ChatbotResult("Could not parse LLM output", DebugInfo("top_level"))
-            result = ChatbotResult(get_unparsed_output(str(ope)), DebugInfo("top_level"))
-
-        utils.print_chatbot_answer(result)
 
 
 def main(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):
     engine = initialize_engine(chatbot_folder, configuration)
 
-    # check if engine has method first_action
-    if not hasattr(engine, 'first_action'):
-        channel = configuration.new_channel()
-        engine.run_all(channel)
-
-    else:
-        # This is an engine which uses an externally input loop
-        # Run the first action which is typically a greeting
-        result = engine.first_action()
-        utils.print_chatbot_answer(result)
-        run_with_engine(engine)
+    channel = configuration.new_channel()
+    engine.run_all(channel)
 
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
@@ -167,7 +92,9 @@ def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file
             config.replay = replay
         completed_steps = run_test(test_model, engine, config)
         if not completed_steps:
-            run_with_engine(engine)
+            from engine.custom.runtime import ConsoleChannel
+            channel = ConsoleChannel()
+            engine.run_all(channel)
 
         if recording_file_dump is not None:
             dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
@@ -185,15 +112,16 @@ def setup_debugging_capabilities(args):
 
 
 def setup_configuration(args):
-    if args.engine == "langchain":
-        conf = LangChainConfiguration()
-    else:
+    if args.engine is None or args.engine == 'standard':
         chatbot_folder = args.chatbot
         if os.path.isfile(chatbot_folder):
             chatbot_folder = os.path.dirname(chatbot_folder)
 
         config_model = load_configuration_model(chatbot_folder)
         conf = CustomConfiguration(chatbot_folder, config_model)
+    else:
+        raise ValueError(f"Unknown engine: {args.engine}")
+
     return conf
 
 
@@ -203,7 +131,7 @@ if __name__ == '__main__':
                         help='Path to the chatbot specification')
     parser.add_argument('--module-path', default='.',
                         help='List of paths to chatbot modules, separated by :')
-    parser.add_argument('--engine', required=False, default="custom",
+    parser.add_argument('--engine', required=False, default="standard",
                         help='Engine to use')
     parser.add_argument('--verbose', default=False, action='store_true',
                         help='Show the intermediate prompts')

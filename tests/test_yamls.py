@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from main import load_chatbot_model
+import spec
 from testing.reader import load_test_set
 
 
@@ -13,7 +13,7 @@ from testing.reader import load_test_set
 ])
 def test_chatbot_model(name):
     path = os.path.join("examples", "yaml", name)
-    model = load_chatbot_model(path)
+    model = spec.load_chatbot_model(path)
     assert model is not None
     assert len(model.modules) >= 1
 

@@ -1,11 +1,11 @@
 import abc
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from typing import Optional
 
 import networkx as nx
 
 import spec
-
+from engine.common.evaluator import Evaluator
 
 class DebugInfo:
     def __init__(self, current_module: str):
@@ -19,14 +19,39 @@ class ChatbotResult:
         self.debug_info = debug_info
 
 
-class Configuration:
+class Configuration(abc.ABC):
+    """Provides methods to create the components of the chatbot engine."""
+
     @abstractmethod
-    def new_state(self):
-        pass
+    def new_channel(self):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def new_engine(self):
+        raise NotImplementedError()
 
     @abstractmethod
     def new_evaluator(self):
         raise NotImplementedError()
+
+    @abstractmethod
+    def llm(self, module_name: Optional[str] = None):
+        raise NotImplementedError()
+
+    @abstractmethod
+    def new_rephraser(self):
+        raise NotImplementedError()
+
+
+class BasicConfiguration(Configuration, metaclass=ABCMeta):
+    "A basic configuration for the most commonly used components"
+
+    def __init__(self, root_folder):
+        self.chatbot_model = spec.load_chatbot_model(root_folder)
+        self.root_folder = root_folder
+
+    def new_evaluator(self):
+        return Evaluator(load_path=[self.root_folder])
 
 
 class Rephraser(abc.ABC):
@@ -41,14 +66,10 @@ class Rephraser(abc.ABC):
         raise NotImplementedError()
 
 
+# TODO: Find out which the right interface for an engine
+#       For the moment, we assume that everything follows CustomPromptEngine
 class Engine(ABC):
-    @abstractmethod
-    def first_action(self) -> ChatbotResult:
-        pass
-
-    @abstractmethod
-    def run_step(self, message: str) -> ChatbotResult:
-        pass
+    pass
 
 
 def get_property_value(p: spec.DataProperty, data):
