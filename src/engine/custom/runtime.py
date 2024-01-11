@@ -132,7 +132,7 @@ class CustomRephraser(Rephraser):
             prompt = "Context: " + context + "\n" + prompt
 
         formatted_message = HumanMessagePromptTemplate.from_template(prompt).format()
-        return self.configuration.llm()([formatted_message]).content
+        return self.configuration.new_llm()([formatted_message]).content
 
 
 class RuntimeChatbotModule(BaseModel):
@@ -250,7 +250,7 @@ class RuntimeChatbotModule(BaseModel):
         ]
         template = ChatPromptTemplate(input_variables=input_variables, messages=messages)
 
-        llm = self.configuration.llm(module_name=self.name())
+        llm = self.configuration.new_llm(module_name=self.name())
 
         if input is None or input.strip() == "":
             prompt_input = ""

@@ -74,7 +74,7 @@ class EnumFormatter(Formatter):
             return values.index(val)
         # now check synonyms
         prompt = f'Return a synonym of {val} among: {values} or None if there is no synonym. Return just one word.'
-        llm = cnf.llm()
+        llm = cnf.new_llm()
         result = llm.invoke(prompt)
         if result.content == 'None':
             return -1
@@ -87,7 +87,7 @@ class EnumFormatter(Formatter):
 class FallbackFormatter(Formatter):
     def do_format(self, value: str, p: DataProperty, c: Configuration):
         prompt = f'Is {value} a {p.type}?. Reply yes or no.'
-        llm = c.llm()
+        llm = c.new_llm()
         result = llm.invoke(prompt)
         if 'yes' in result.content.lower():
             return value

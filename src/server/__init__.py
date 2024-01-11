@@ -68,6 +68,7 @@ class FlaskChatbotApp:
             message = request.json['message']
 
             conversation = get_data()[id]
+            conversation.channel.clear()
 
             conversation.engine.execute_with_input(message)
 

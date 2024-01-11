@@ -96,7 +96,7 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         self.tools.append(self)
 
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
-        new_llm = self.configuration.llm(module_name=self.name())
+        new_llm = self.configuration.new_llm(module_name=self.name())
         question = self.get_question(tool_input)
 
         prompt_template = ChatPromptTemplate.from_template(self.prompt)
