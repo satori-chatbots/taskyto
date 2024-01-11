@@ -31,7 +31,7 @@ class CustomConfiguration(Configuration):
     def new_evaluator(self):
         return Evaluator(load_path=[self.root_folder])
 
-    def llm(self, module_name: Optional[str] = None):
+    def new_llm(self, module_name: Optional[str] = None):
         from langchain.chat_models import ChatOpenAI
         model = self.model.get_llm_for_module_or_default(module_name)
 
