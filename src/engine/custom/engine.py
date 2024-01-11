@@ -1,6 +1,7 @@
 from typing import Optional
 
 import spec
+import utils
 from engine.common import Configuration, ChatbotResult, DebugInfo, compute_init_module, Engine
 from engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
     TaskInProgressEventType, TaskInProgressEvent, AIResponseEventType, TaskFinishEventEventType, TaskFinishEvent, \
@@ -251,7 +252,6 @@ def compute_statemachine(chatbot_model: spec.ChatbotModel, configuration: Config
 
 
 class CustomPromptEngine(Visitor, Engine):
-    DEBUG = True
 
     def __init__(self, chatbot_model: ChatbotModel, configuration: Configuration):
         self._chatbot_model = chatbot_model
@@ -262,7 +262,7 @@ class CustomPromptEngine(Visitor, Engine):
 
         self.execution_state = None
 
-        if self.DEBUG:
+        if utils.DEBUG:
             self.statemachine.to_visualization()
 
     def run_all(self, channel):

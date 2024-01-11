@@ -44,3 +44,7 @@ def get_unparsed_output(message: str) -> str:
     if len(msg) > 1:
         return msg[1].strip("`")
     return message
+
+
+_debug_var = os.environ.get("DEBUG")
+DEBUG = _debug_var == "true" or _debug_var == "True" or _debug_var == "1"
