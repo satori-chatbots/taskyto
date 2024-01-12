@@ -1,0 +1,26 @@
+name: estimate_price
+kind: action
+data:
+  - location: Address
+  - description: string
+  - media:
+      type: enum
+      values:
+        - photography
+        - video
+        - 3D rendering
+  - number_artworks: number
+  - type_artworks:
+      type: enum
+      values:
+        - picture
+        - sculpture
+        - ceramic
+
+on-success:
+  execute:
+    language: python
+    code: estimate.py
+  response:
+    text: "{{result}}"
+    rephrase: simple

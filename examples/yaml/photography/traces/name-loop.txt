@@ -1,0 +1,18 @@
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: ¿puedes hablar en español?
+Chatbot [top-level]: I'm sorry, I can only interact with you in English.
+You: ¿Hablamos de futbol?
+Chatbot [top-level]: I'm sorry, I can help you to appoint an appointment, provide price estimates, and answer on issues related to our shop.
+You: Let's talk about lobsters
+Chatbot [top-level]: I'm sorry, I can help you to appoint an appointment, provide price estimates, and answer on issues related to our shop.
+You: I want an appointment for my art gallery
+Chatbot [call_appointment]: Thank you for your interest in our art gallery. May I please have your name, email address, and phone number so we can schedule your appointment?
+You: My name is John Doe, phone is 555-123456 and my emails is john-doe@aol.com
+Chatbot [call_appointment]: Thank you for providing your email address and phone number, John. May I please have your full name as well so we can schedule your appointment?
+You: My full name is John Doe
+Chatbot [call_appointment]: Thank you for providing your email address and phone number, John. May I please have your full name as well so we can schedule your appointment?
+You:  My full name is John Doe
+Chatbot [call_appointment]: Thank you for confirming your full name, John. However, I still need your name to schedule your appointment. Could you please provide me with your name?
+You:

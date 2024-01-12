@@ -1,0 +1,15 @@
+interaction:
+- chatbot:
+  - Hello
+- user: I need a photo session
+- chatbot:
+  - That's great! Could you please provide me with your name, phone number, and preferred
+    date for the photo session?
+- user: I'd like the session tomorrow, my name is John Doe, and my phone number is
+    555-123456
+- chatbot:
+  - "Thanks John Doe! We'll contact you very soon for a session on 13/01/2024. \n"
+- user: Thanks, bye!
+- chatbot:
+  - You're welcome! Don't hesitate to contact us if you need any further assistance.
+    Goodbye!

@@ -1,0 +1,12 @@
+name: photo_qa
+kind: question_answering
+description: Useful for answering general questions about ArtClick's photo shop.
+questions:
+  - question: When are you open?
+    answer: We shoot art on location and on our studio at SoHo. We are open Monday to Friday from 9am to 17:00pm.
+  - question: Tell me about your portfolio, what important projects have you worked on?
+    answer: We have recently worked on large on-site digitization projects for the Taller del Prado, Madrid, Spain, and the Centro Cultural Eduardo Leon Jimenez Art Museum, Santiago, Dominican Republic
+  - question: Do you charge per hour or by number of photos?
+    answer: We charge 200$ by hour
+  - question: What media do you work on?
+    answer: Mainly on photographs, but also on video, and virtual/3D rendering

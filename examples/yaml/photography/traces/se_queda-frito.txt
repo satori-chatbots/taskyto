@@ -1,0 +1,6 @@
+Chatbot [top-level]: Hello
+You: I need a photo session tomorrow
+Chatbot [call_appointment]: Thank you for your request. May I please have your name and phone number so that I can schedule your photo session?
+You: My name is John Doe and my phone is 555-32355
+Chatbot [call_appointment]: Thank you for providing your name and appointment date, John Doe. May I please have your phone number as well so that we can confirm your photo session?
+You: my phone number is 555-12345

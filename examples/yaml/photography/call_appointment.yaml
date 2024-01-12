@@ -1,0 +1,15 @@
+name: call_appointment
+kind: data_gathering
+description: Useful for asking the contact information.
+data:
+  - name: Person name
+  - phone_number: Phone number
+  - appointment: date
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print(f"Saving appointment for {name} ({phone_number}) at {appointment} into data base")
+  response: | 
+    Thanks {name}! We'll contact you very soon for a session on {appointment}. 

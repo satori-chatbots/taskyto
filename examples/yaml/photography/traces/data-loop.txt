@@ -1,0 +1,18 @@
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: I'd like photos for my art gallery
+Chatbot [top-level]: That's great! We would love to help you with that. Could you please provide me with your contact information so we can schedule a call to discuss the details?
+You: What data do you need?
+Chatbot [top-level]: We would need your name, phone number, and email address to schedule a call. Could you please provide these details?
+You: I'm Juan, my phone is 555-123456 and my email is jjj@gmail.com
+Chatbot [call_appointment]: Thank you for providing your phone number and email address, Juan. May I please have your full name?
+You: Juan de Lara
+Chatbot [call_appointment]: Thank you, Juan de Lara. Can you please provide me with your email address and phone number?
+You: my phone is 555-123456 and my email is jjj@gmail.com
+Chatbot [call_appointment]: Thank you for providing your phone number and email address again, Juan de Lara. However, I already have that information. Can you please provide me with your full name?
+You: My full name is Juan de Lara
+Chatbot [call_appointment]: Thank you, Juan de Lara. Can you please provide me with your email address and phone number?
+You: y phone is 555-123456 and my email is jjj@gmail.com
+Chatbot [call_appointment]: I'm sorry, Juan de Lara, but I already have your phone number and email address. Can you please provide me with your full name?
+You: exit
