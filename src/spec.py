@@ -128,11 +128,16 @@ class SequenceModule(BaseModule):
 class DataProperty(BaseModel):
     name: str
     type: str
-    values: List[str] = None
+    values: Optional[List[str]] = None
+    required: Optional[bool] = True
+    examples: Optional[List[str]] = []
 
     def is_simple_type(self):
         return self.type != "enum"
 
+    @property
+    def is_optional(self):
+        return not self.required
 
 class DataSpecification(BaseModel):
     properties: List[DataProperty]
@@ -176,14 +181,25 @@ class WithDataModel(abc.ABC):
         for d in self.data:
             for name, type in d.items():
                 if isinstance(type, dict):
-                    if "type" in type and type["type"] == "enum":
-                        properties.append(DataProperty(name=name, type="enum", values=type["values"]))
-                    else:
-                        raise ValueError(f"Unknown type: {type}")
+                    property = self.parse_type_specification(name, type)
+                    properties.append(property)
                 else:
                     properties.append(DataProperty(name=name, type=type))
 
         return DataSpecification(properties=properties)
+
+    def parse_type_specification(self, name, type_dict: dict):
+        if "type" not in type_dict:
+            raise ValueError(f"Type specification should contain a type: {type_dict}")
+
+        type_ = type_dict["type"]
+        required = type_dict.get("required", True)
+        examples = type_dict.get("examples", [])
+
+        if type_ == "enum":
+            return DataProperty(name=name, type="enum", values=type_dict["values"], required=required)
+
+        return DataProperty(name=name, type=type_, required=required, examples=examples)
 
 
 class DataGatheringModule(BaseModule, WithDataModel):
