@@ -6,6 +6,7 @@ from langchain.schema import BaseMessage
 
 import spec
 from engine.common import Configuration, Engine, BasicConfiguration
+from engine.common.configuration import ConfigurationModel
 from engine.custom.engine import CustomPromptEngine
 
 
@@ -76,6 +77,7 @@ class TestConfiguration(BasicConfiguration):
     def __init__(self, root_folder, mocked_llm: MockedLLM):
         super().__init__(root_folder)
         self.llm = mocked_llm
+        self.model = ConfigurationModel(default_llm="mocked", languages="en")
 
     def new_channel(self):
         raise NotImplementedError("This is created separately by the test case")

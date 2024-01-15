@@ -104,13 +104,33 @@ class MenuModulePromptGenerator(Visitor):
     def __init__(self, cfg: Configuration):
         self.config = cfg       # to access stored info, like languages
 
-    def visit_menu_module(self, module: spec.Module) -> str:
-        def handle_item(mod):
-            handling = '\nThe following items specify how to handle each task:\n'
-            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
-            return handling
+#    def visit_menu_module(self, module: spec.Module) -> str:
+#        def handle_item(mod):
+#            handling = '\nThe following items specify how to handle each task:\n'
+#            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
+#            return handling
 
-        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
+#        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
+#        return prompt
+
+    def visit_menu_module(self, module: spec.Module) -> str:
+        # Describe the menu
+        options = '\nYou are able to assist only in these tasks:\n'
+        options = options + '\n'.join([f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
+
+        if module.fallback is None:
+            fallback = ''
+        else:
+            fallback = '\nFallback:\n' + 'For any question not related to these aspects you have to answer:' + module.fallback
+
+        if self.config.model.languages is not None and len(self.config.model.languages) > 0:
+            languages = self.config.model.languages
+            languages_prompt = '\nYou are only able to answer  the user in the following languages: ' + languages + '\n'
+            languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+        else:
+            languages_prompt = ''
+
+        prompt = f'{module.presentation}\n{languages_prompt}\n{options}\n{fallback}'
         return prompt
 
     def visit_answer_item(self, item: spec.Item) -> str:

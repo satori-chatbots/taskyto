@@ -75,9 +75,9 @@ def question_answering_prompt(module: spec.QuestionAnsweringModule) -> str:
     prompt = "\n".join(prompt) + "\n"
     return prompt
 
-
+# When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+# If you do not need to use a tool to provide the answer to the Human, you MUST use the format:
 FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
-
 ```
 Thought: Do I need to use a tool? Yes
 Action: the action to take, should be one of [{tool_names}]
