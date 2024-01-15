@@ -6,7 +6,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Runner for a chatbot')
     parser.add_argument('--chatbot', required=True,
                         help='Path to the chatbot specification')
-    parser.add_argument('--engine', required=False, default="custom",
+    parser.add_argument('--engine', required=False, default="standard",
                         help='Engine to use')
     parser.add_argument('--verbose', default=False, action='store_true',
                         help='Show the intermediate prompts')
