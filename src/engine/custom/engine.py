@@ -97,6 +97,9 @@ class UpdateMemory(Action):
         if isinstance(event, ActivateModuleEvent):
             # TODO: Do not hardcode history here... maybe ask self.module??
             execution_state.update_memory(self.module, event.previous_answer, 'history')
+        elif isinstance(event, UserInput):
+            memory_piece = MemoryPiece().add_human_message(event.message)
+            execution_state.update_memory(self.module, memory_piece, 'history')
         elif isinstance(event, AIResponseEvent):
             memory_piece = MemoryPiece().add_ai_response(event.message)
             execution_state.update_memory(self.module, memory_piece, 'history')
@@ -124,7 +127,7 @@ class StateMachineTransformer(Visitor):
         prompts_disabled = runtime_module.get_prompts_disabled('input')
 
         sm.add_transition(state, state, UserInputEventType,
-                          RunModuleAction(runtime_module, prompts_disabled=prompts_disabled))
+                          CompositeAction([RunModuleAction(runtime_module, prompts_disabled=prompts_disabled), UpdateMemory(state.module)]))
         sm.add_transition(state, state, AIResponseEventType,
                           CompositeAction([UpdateMemory(state.module), SayAction(message=None, consume_event=True)]))
 
