@@ -1,6 +1,6 @@
 name: session_details
 kind: data_gathering
-description: Useful for asking details about the photography session, including the location of the shooting, the description of the work, the type of media, and number and type of artworks
+description: Useful to provide an estimation of a photogtaphy session. For this, it asks details about the session, including the location of the shooting, the description of the work, the type of media, and number and type of artworks
 data:
   - location: Address
   - description: string
