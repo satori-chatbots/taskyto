@@ -1,6 +1,6 @@
 name: call_appointment
 kind: data_gathering
-description: Useful for asking the contact information.
+description: Useful for asking the contact information, so that the shop can contact the client for the photo session.
 data:
   - name: Person name
   - phone_number: Phone number

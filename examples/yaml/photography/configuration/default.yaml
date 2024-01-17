@@ -4,7 +4,7 @@ default_llm: gpt-3.5-turbo-1106
 
 modules:
   - name: call_appointment
-    llm: gpt-3.5-turbo-0301
+    llm: gpt-4
   - name: top-level
     llm: gpt-3.5-turbo-0301
   - name: photo_qa

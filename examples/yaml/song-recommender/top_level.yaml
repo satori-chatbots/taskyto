@@ -4,8 +4,7 @@ modules:
       presentation: |
           You are a chatbot gathers information about genres and languages of songs preferred by the user.
       fallback: |
-          For any question not related to these aspects you have to answer:
-          "hey?I can recommend you some musics. You just need to tell me what genre of music you like, and the language of the song"
+          hey? I can recommend you some musics. You just need to tell me what genre of music you like, and the language of the song
 
       items:
           - title: Recommend a song

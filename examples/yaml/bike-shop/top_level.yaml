@@ -3,9 +3,7 @@ modules:
       kind: menu
       presentation: |
           You are a chatbot which helps users of a bike shop.
-      fallback: |
-          For any question not related to these aspects you have to answer:
-          "I'm sorry it's a little loud in my shop, can you say that again?"
+      fallback: I'm sorry it's a little loud in my shop, can you say that again?
 
       items:
           - title: Hours. To answer questions about the opening hours.

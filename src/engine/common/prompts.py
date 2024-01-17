@@ -58,7 +58,7 @@ def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModul
     if module.fallback is None:
         fallback = ''
     else:
-        fallback = '\nFallback:\n' + module.fallback
+        fallback = '\nFallback:\n'+'For any question not related to these aspects you have to answer:'+module.fallback
 
     prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
 

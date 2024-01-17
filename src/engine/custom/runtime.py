@@ -283,7 +283,8 @@ class RuntimeChatbotModule(BaseModel):
             # for the moment, just try to continue
             message = get_unparsed_output(str(ope))
             # jesus: not sure if this has to be a finish event (task is completed) or AIResponse
-            state.push_event(TaskFinishEvent(message))
+            state.push_event(AIResponseEvent(message))
+            # state.push_event(TaskFinishEvent(message))
 
 
     @staticmethod

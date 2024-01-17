@@ -1,0 +1,26 @@
+------------------------ call_appointment with gpt-3.5-turbo-0301
+=================================== Here, first the bot asks for date and time. Why also time?
+=================================== Second, it does not parse the appointment date, which needs to be repeated
+=================================== Finally, the tool does not finish
+Chatbot [top-level]: Hello
+You: Milk, please
+Chatbot [top-level]: I'm sorry, I can help you to set an appointment for a session, provide price estimates, and answer on issues related to our shop. Is there anything related to our services that I can help you with?
+You: Yes I want to contract a session to photograph my gallery
+Chatbot [call_appointment]: Thank you for your interest in our photography services. May I please have your name, phone number, and preferred appointment date and time?
+You: My name is John Smith, with phone number 555-123456, and I'd like the appointment to be tomorrow at 16:00
+Chatbot [call_appointment]: Thank you for providing your name and phone number, John Smith. Can you please confirm the date and time of your appointment?
+You: I'd like the appointment to be tomorrow at 16:00
+Chatbot [call_appointment]: Thank you for confirming your appointment date and time, John Smith. We look forward to seeing you tomorrow at 16:00.
+You: I want an estimation of the price
+Chatbot [call_appointment]: Sure, we can provide you with an estimate for the photography session. The price will depend on the type of photography you need and the duration of the session. Can you please provide more details about the type of photography you need?
+You:
+------------------------ call_appointment with gpt-4
+=================================== Everything fine
+Chatbot [top-level]: Hello
+You: Milk, please
+Chatbot [top-level]: I'm sorry, I can help you to set an appointment for a session, provide price estimates, and answer on issues related to our shop. Is there anything related to our services that I can help you with?
+You: Yes I want to contract a session to photograph my gallery
+Chatbot [call_appointment]: That sounds great! Could you please provide me with your name, phone number, and the date you would like to schedule the appointment?
+You: My name is John Smith, with phone number 555-123456, and I'd like the appointment to be tomorrow at 16:00
+Saving appointment for John Smith (555-123456) at 18/01/2024 into data base
+Chatbot [top-level]: Thanks John Smith! We'll contact you very soon for a session on 18/01/2024.
