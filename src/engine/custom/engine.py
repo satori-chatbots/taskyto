@@ -298,6 +298,9 @@ class CustomPromptEngine(Visitor, Engine):
             if transition is None:
                 break
 
+            if utils.DEBUG:
+                print(f"Executing transition: {transition} for event: {event}")
+
             self.execute_transition(transition, event)
 
     def execute_with_input(self, input_: str):
