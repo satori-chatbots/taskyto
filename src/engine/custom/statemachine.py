@@ -32,6 +32,8 @@ class Trigger:
         self.event = event
         self.action = action
 
+    def __str__(self):
+        return f"{self.event}/{self.action}"
 
 class Action(abc.ABC):
 
@@ -70,6 +72,8 @@ class Transition:
         self.target = target
         self.trigger = trigger
 
+    def __str__(self):
+        return f"{self.source} -> {self.target} [{self.trigger}]"
 
 class StateMachine:
 

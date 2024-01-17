@@ -54,3 +54,4 @@ pylint==3.0.2
 pydot==1.4.2
 colorama==0.4.6
 duckling==1.8.0
+ctparse==0.3.6

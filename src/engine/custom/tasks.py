@@ -46,9 +46,13 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         validators = Formatter.get_validators()
 
         try:
+            unknown_values = []
             json_query = json.loads(tool_input)
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
+                if value is None:
+                    continue
+
                 if value is not None and p.type in validators:
                     formatted_value = validators[p.type].do_format(value, p, self.configuration)
                     if formatted_value is not None:
@@ -57,6 +61,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     formatted_value = FallbackFormatter().do_format(value, p, self.configuration)
                     if formatted_value is not None:
                         data[p.name] = value
+                    else:
+                        unknown_values.append(value)
 
             if len(data) == len(self.module.data_model.properties):
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
@@ -77,10 +83,12 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
             pass
 
         collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
+        instruction = "Ask the Human to provide the missing data: " + self.get_missing_data_instruction(data)
+        if len(unknown_values) > 0:
+            instruction += f"\nIn addition, tell the human that you could not understand: {','.join(unknown_values)}"
 
         data_memory = MemoryPiece().add_data_message(collected_data)
-        inst_memory = MemoryPiece().add_instruction_message("Ask the Human to provide the missing data: " +
-                                                            self.get_missing_data_instruction(data))
+        inst_memory = MemoryPiece().add_instruction_message(instruction)
 
         state.push_event(TaskInProgressEvent(memory={'collected_data': data_memory, 'instruction': inst_memory}))
 

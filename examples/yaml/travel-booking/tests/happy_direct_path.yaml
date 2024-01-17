@@ -1,0 +1,14 @@
+interaction:
+- chatbot:
+  - Hello
+- user: I want to book a flight from Madrid to Lisbon departing tomorrow and returning on Sunday
+- assert_module: book_flight
+- assert_data:
+    departure_date: '05/01/2024'
+    return_date: '07/01/2024'
+    source: 'Madrid'
+    destination: 'Lisbon'
+- chatbot:
+  - 'Ok, I have booked a flight for you on 05/01/2024 from Madrid to Lisbon returning on 07/01/2024.
+
+    See you then!'

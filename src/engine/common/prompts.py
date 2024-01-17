@@ -46,7 +46,7 @@ def section(name: str, content: str) -> PromptSection:
     return PromptSection(name, content)
 
 
-def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModule], str]) -> str:
+def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModule], str], languages: str) -> str:
     # Describe the menu
     options = '\nYou are able to assist only in these tasks:\n'
     options = options + '\n'.join([f'{i}: {item.title}' for i, item in enumerate(module.items)])
@@ -58,9 +58,12 @@ def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModul
     if module.fallback is None:
         fallback = ''
     else:
-        fallback = '\nFallback:\n' + module.fallback
+        fallback = '\nFallback:\n'+'For any question not related to these aspects you have to answer:'+module.fallback
 
-    prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
+    languages_prompt = '\nYou are only able to answer  the user in the following languages: '+languages+'\n'
+    languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+
+    prompt = f'{module.presentation}\n{languages_prompt}\n{options}\n{handling}\n{fallback}'
 
     return prompt
 
@@ -72,9 +75,9 @@ def question_answering_prompt(module: spec.QuestionAnsweringModule) -> str:
     prompt = "\n".join(prompt) + "\n"
     return prompt
 
-
-FORMAT_INSTRUCTIONS = """To use a tool, please use the following format:
-
+# When you have a response to say to the Human, or if you do not need to use a tool, you MUST use the format:
+# If you do not need to use a tool to provide the answer to the Human, you MUST use the format:
+FORMAT_INSTRUCTIONS = """You have tools to help you achieve some of your tasks. To use a tool, please use the following format:
 ```
 Thought: Do I need to use a tool? Yes
 Action: the action to take, should be one of [{tool_names}]

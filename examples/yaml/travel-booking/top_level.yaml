@@ -4,8 +4,7 @@ modules:
       presentation: |
           You are a chatbot which helps users to book flights of different companies like Iberia or Lufthansa.
       fallback: |
-          For any question not related to these aspects you have to answer:
-          "I'm sorry, I can help you booking flights. How can I help you?"
+          I'm sorry, I can help you booking flights. How can I help you?
 
       items:
           - title: Payment. To answer questions about how to pay.

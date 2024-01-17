@@ -33,6 +33,8 @@ class ActivateModuleEvent(Event):
         self.input = input
         self.previous_answer = previous_answer
 
+    def __str__(self):
+        return f"ActivateModule({self.module.name()}, {self.input})" #, {self.previous_answer})"
 
 class AIResponseEvent(Event):
 

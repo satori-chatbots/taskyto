@@ -25,11 +25,14 @@ class ModuleGenerator(Visitor):
         return runtime_module
 
     def visit_menu_module(self, module: spec.MenuModule) -> RuntimeChatbotModule:
-        prompt = module.accept(MenuModulePromptGenerator())
+        presentation, task = module.accept(MenuModulePromptGenerator(self.configuration))
         tools = [i.accept(self) for i in module.items if
                  isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
 
-        return RuntimeChatbotModule(module=module, prompt=prompt, tools=tools, configuration=self.configuration)
+        return RuntimeChatbotModule(module=module,
+                                    presentation_prompt=presentation,
+                                    task_prompt=task,
+                                    tools=tools, configuration=self.configuration)
 
     def visit_question_answering_module(self, module: spec.QuestionAnsweringModule) -> RuntimeChatbotModule:
         activation_prompt = (module.description +
@@ -40,8 +43,12 @@ class ModuleGenerator(Visitor):
                              "\nProvide the question given by the user using the JSON format "
                              "\"question\": <question>\".\n")
 
-        prompt = prompts.question_answering_prompt(module)
-        return QuestionAnsweringRuntimeModule(module=module, prompt=prompt, activation_prompt=activation_prompt,
+        presentation_prompt = ""
+        task_prompt = prompts.question_answering_prompt(module)
+        return QuestionAnsweringRuntimeModule(module=module,
+                                              presentation_prompt=presentation_prompt,
+                                              task_prompt=task_prompt,
+                                              activation_prompt=activation_prompt,
                                               tools=[],
                                               configuration=self.configuration)
 
@@ -68,7 +75,10 @@ class ModuleGenerator(Visitor):
             f"If there is missing data, ask for it politely.\n"
             # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
             f"\n")
-        return DataGatheringChatbotModule(module=module, prompt=prompt, activation_prompt=activation_prompt, tools=[],
+        return DataGatheringChatbotModule(module=module,
+                                          presentation_prompt="",
+                                          task_prompt=prompt,
+                                          activation_prompt=activation_prompt, tools=[],
                                           configuration=self.configuration)
 
     def visit_sequence_module(self, module: spec.SequenceModule):
@@ -81,14 +91,21 @@ class ModuleGenerator(Visitor):
         #for i, tool in enumerate(seq_tools[:-1]):
         #    seq_tools[i + 1].previous_tool = tool
 
-        return SequenceChatbotModule(module=module, prompt=prompt, activation_prompt=activation_prompt, tools=seq_tools,
+        return SequenceChatbotModule(module=module,
+                                     presentation_prompt='',
+                                     task_prompt=prompt,
+                                     activation_prompt=activation_prompt, tools=seq_tools,
                                      configuration=self.configuration)
 
     def visit_action_module(self, module: spec.ActionModule):
         prompt = ""
         activation_prompt = None
-        return ActionChatbotModule(module=module, prompt=prompt, tools=[],
-                                     configuration=self.configuration)
+        return ActionChatbotModule(module=module,
+                                   activation_prompt='',
+                                   presentation_prompt=prompt,
+                                   task_prompt='',
+                                   tools=[],
+                                   configuration=self.configuration)
 
 
     def visit_tool_item(self, item: spec.Item) -> str:
@@ -100,14 +117,40 @@ class ModuleGenerator(Visitor):
 
 
 class MenuModulePromptGenerator(Visitor):
-    def visit_menu_module(self, module: spec.Module) -> str:
-        def handle_item(mod):
-            handling = '\nThe following items specify how to handle each task:\n'
-            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
-            return handling
 
-        prompt = prompts.menu_prompt(module, handle_item)
-        return prompt
+    def __init__(self, cfg: Configuration):
+        self.config = cfg       # to access stored info, like languages
+
+#    def visit_menu_module(self, module: spec.Module) -> str:
+#        def handle_item(mod):
+#            handling = '\nThe following items specify how to handle each task:\n'
+#            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
+#            return handling
+
+#        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
+#        return prompt
+
+    def visit_menu_module(self, module: spec.Module) -> (str, str):
+        # Describe the menu
+        options = '\nYou are able to assist only in these tasks:\n'
+        options = options + '\n'.join([f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
+
+        if module.fallback is None:
+            fallback = ''
+        else:
+            fallback = '\nFallback:\n' + 'For any question not related to these aspects you have to answer:' + module.fallback
+
+        if self.config.model.languages is not None and len(self.config.model.languages) > 0:
+            languages = self.config.model.languages
+            languages_prompt = '\nYou are only able to answer  the user in the following languages: ' + languages + '\n'
+            languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+        else:
+            languages_prompt = ''
+
+        presentation_prompt = f'{module.presentation}\n{languages_prompt}\n'
+        task = f'{options}\n{fallback}'
+
+        return presentation_prompt, task
 
     def visit_answer_item(self, item: spec.Item) -> str:
         return f'You have to answer "{item.answer}"'

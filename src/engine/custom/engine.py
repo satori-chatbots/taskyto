@@ -97,6 +97,9 @@ class UpdateMemory(Action):
         if isinstance(event, ActivateModuleEvent):
             # TODO: Do not hardcode history here... maybe ask self.module??
             execution_state.update_memory(self.module, event.previous_answer, 'history')
+        elif isinstance(event, UserInput):
+            memory_piece = MemoryPiece().add_human_message(event.message)
+            execution_state.update_memory(self.module, memory_piece, 'history')
         elif isinstance(event, AIResponseEvent):
             memory_piece = MemoryPiece().add_ai_response(event.message)
             execution_state.update_memory(self.module, memory_piece, 'history')
@@ -124,7 +127,7 @@ class StateMachineTransformer(Visitor):
         prompts_disabled = runtime_module.get_prompts_disabled('input')
 
         sm.add_transition(state, state, UserInputEventType,
-                          RunModuleAction(runtime_module, prompts_disabled=prompts_disabled))
+                          CompositeAction([RunModuleAction(runtime_module, prompts_disabled=prompts_disabled), UpdateMemory(state.module)]))
         sm.add_transition(state, state, AIResponseEventType,
                           CompositeAction([UpdateMemory(state.module), SayAction(message=None, consume_event=True)]))
 
@@ -255,8 +258,8 @@ class CustomPromptEngine(Visitor, Engine):
 
     def __init__(self, chatbot_model: ChatbotModel, configuration: Configuration):
         self._chatbot_model = chatbot_model
+        self.configuration = configuration  # to access the languages stored in the configuration when building prompts
         self.statemachine = compute_statemachine(chatbot_model, configuration)
-        self.configuration = configuration
         self.state_manager = None
         self.recorded_interaction = RecordedInteraction()
 
@@ -294,6 +297,9 @@ class CustomPromptEngine(Visitor, Engine):
 
             if transition is None:
                 break
+
+            if utils.DEBUG:
+                print(f"Executing transition: {transition} for event: {event}")
 
             self.execute_transition(transition, event)
 

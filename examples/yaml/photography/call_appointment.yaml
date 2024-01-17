@@ -1,0 +1,22 @@
+name: call_appointment
+kind: data_gathering
+description: Useful for asking the contact information, so that the shop can contact the client for the photo session.
+data:
+  - name: Person name
+  - phone_number:
+      type: Phone number
+      examples:
+        - 555-123456
+        - +34 555 12 34 56
+  - email:
+      type: email
+      required: false
+  - appointment: date
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print(f"Saving appointment for {name} ({phone_number}) at {appointment} into data base")
+  response: | 
+    Thanks {name}! We'll contact you very soon for a session on {appointment}. 

@@ -1,0 +1,37 @@
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: I'd like a photo session for tomorrow
+Chatbot [call_appointment]: Thank you for your request. May I please have your name and phone number so we can schedule your photo session?
+You: My name is John Doe, and my phone number is 555-123456
+Saving appointment into data base
+Chatbot [top-level]: Thanks John Doe! We'll contact you very soon for a session on 01/01/2024.
+
+You: How much will it cost?
+Chatbot [session_details]: Could you please provide the location of the artwork exhibition or installation? Additionally, I'll need a description of the artworks, the type of media you plan to use (photography, video, 3D rendering), the number of artworks, and the type of artworks (picture, sculpture, ceramic). Thank you!
+You: I'm at Main Street 17. I want to record a video of 3 big sculptures.
+Traceback (most recent call last):
+  File "C:\research\chatbot-llm\src\main.py", line 230, in <module>
+    main(args.chatbot, configuration, args.dump, args.module_path)
+  File "C:\research\chatbot-llm\src\main.py", line 135, in main
+    engine.run_all(channel)
+  File "C:\research\chatbot-llm\src\engine\custom\engine.py", line 274, in run_all
+    self.execute_with_input(inp)
+  File "C:\research\chatbot-llm\src\engine\custom\engine.py", line 303, in execute_with_input
+    self.execute()
+  File "C:\research\chatbot-llm\src\engine\custom\engine.py", line 298, in execute
+    self.execute_transition(transition, event)
+  File "C:\research\chatbot-llm\src\engine\custom\engine.py", line 308, in execute_transition
+    transition.trigger.action.execute(self.execution_state, event)
+  File "C:\research\chatbot-llm\src\engine\custom\engine.py", line 26, in execute
+    self.runtime_module.run(execution_state, event.message, prompts_disabled=self.prompts_disabled)
+  File "C:\research\chatbot-llm\src\engine\custom\runtime.py", line 277, in run
+    self.execute_tool(state, parsed_result.tool, parsed_result.tool_input, previous_answer)
+  File "C:\research\chatbot-llm\src\engine\custom\runtime.py", line 190, in execute_tool
+    module = self.find_tool_by_name(tool_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\research\chatbot-llm\src\engine\custom\runtime.py", line 187, in find_tool_by_name
+    raise ValueError(f"Unknown tool {tool_name}")
+ValueError: Unknown tool the action to take, should be one of [session_details]
+
+Process finished with exit code 1

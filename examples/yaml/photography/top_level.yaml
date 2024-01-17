@@ -1,0 +1,26 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps customers of a photography shop, specialized in photographs for art galleries. 
+          The shop also works on other media like video and 3D rendering.
+      fallback: |
+          I'm sorry, I can help you to set an appointment for a session, provide price estimates, and answer on issues related to our shop
+
+      items:
+          - title: Q&A
+            kind: module
+            reference: photo_qa
+          - title: Set an appointment
+            kind: module
+            reference: call_appointment
+          - title: Calculate a price estimate of the work
+            kind: sequence
+            references:
+              - session_details
+              - estimate_price
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Welcome to ArtClicks, we are specialized in photographs for art galleries.
+              What can I do for you?

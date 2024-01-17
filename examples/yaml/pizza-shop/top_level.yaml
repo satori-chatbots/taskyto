@@ -3,9 +3,7 @@ modules:
       kind: menu
       presentation: |
           You are a chatbot which helps users of a pizza shop. You first ask pizza size, then the toppings and finally ask if they'd like a drink.
-      fallback: |
-          For any question not related to these aspects you have to answer:
-          "I'm sorry it's a little loud in my pizza shop, can you say that again?"
+      fallback: I'm sorry it's a little loud in my pizza shop, can you say that again?
 
       items:
           - title: Hours. To answer questions about the opening hours.
