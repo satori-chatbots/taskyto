@@ -60,6 +60,19 @@ class DateFormatter(Formatter):
 
 class TimeFormatter(Formatter):
     def do_format(self, value: str, p: DataProperty, c: Configuration):
+        return self.format_with_ctparse(value)
+        # Alternatively: self.format_with_duckling(value)
+
+    def format_with_ctparse(self, value: str):
+        ts = datetime.now()
+        artefact = ctparse(value, ts=ts).resolution
+        if artefact.hasTime:
+            timestamp = datetime(artefact.year, artefact.month, artefact.day, artefact.hour, artefact.minute)
+            time_str = timestamp.strftime('%H:%M:%S')
+            return time_str
+        return "Invalid time"
+
+    def format_with_duckling(self, value: str):
         duckling_wrapper = DucklingWrapper()
         try:
             parsed_value = duckling_wrapper.parse_time(value)
