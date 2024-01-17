@@ -1,0 +1,29 @@
+================================ as is
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: When are you open?
+Chatbot [top-level]: Answer: We are open Monday to Friday from 9am to 17:00pm.
+You: What types of photos do you make?
+Chatbot [top-level]: I do not know. The given information does not provide a clear answer to the question about the types of photos they make. However, they do mention that they work mainly on photographs, but also on video and virtual/3D rendering.
+You: exit
+================================ ordering to answer in first person if don't know
+Chatbot [top-level]: Hello
+You: When are you open?
+Chatbot [top-level]: Answer: We shoot art on location and on our studio at SoHo. We are open Monday to Friday from 9am to 17:00pm.
+You: What types of photos do you make?
+Chatbot [top-level]: I do not know. However, I can provide information on when the business is open, important projects they have worked on, how they charge, and the media they work on.
+You: exit
+================================ more attempts
+Chatbot [top-level]: Hello
+You: Do you charge per hour or by number of photos?
+Chatbot [top-level]: I can answer the question: "Do you charge per hour or by number of photos?"
+
+The answer is: "We charge 200$ by hour."
+You: What media do you work on?
+Chatbot [top-level]: I can answer the question "What media do you work on?" The answer is: "Mainly on photographs, but also on video, and virtual/3D rendering."
+You: Do you work on specific media?
+Chatbot [top-level]: Answer: Yes, we mainly work on photographs, but we also work on video and virtual/3D rendering.
+You: What's your opening times?
+Chatbot [top-level]: Answer: We shoot art on location and on our studio at SoHo. We are open Monday to Friday from 9am to 17:00pm.
+You: exit

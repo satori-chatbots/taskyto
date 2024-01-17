@@ -35,7 +35,7 @@ class CustomConfiguration(Configuration):
         from langchain.chat_models import ChatOpenAI
         model = self.model.get_llm_for_module_or_default(module_name)
 
-        llm = ChatOpenAI(temperature=0, model_name=model.id, verbose=True)
+        llm = ChatOpenAI(temperature=model.temperature, model_name=model.id, verbose=True)
         return llm
 
     def new_rephraser(self):

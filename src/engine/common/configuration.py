@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 class LLMConfiguration(BaseModel):
     id: str
-
+    temperature: float = 0.0
 
 class ModuleConfiguration(BaseModel):
     name: str
@@ -27,7 +27,7 @@ class ConfigurationModel(BaseModel):
     @staticmethod
     def __to_llm_config(llm_config: Union[LLMConfiguration, str]) -> LLMConfiguration:
         if isinstance(llm_config, str):
-            return LLMConfiguration(id=llm_config)
+            return LLMConfiguration(id=llm_config, temperature=0.0)
         else:
             return llm_config
 

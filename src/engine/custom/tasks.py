@@ -107,12 +107,20 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         new_llm = self.configuration.new_llm(module_name=self.name())
         question = self.get_question(tool_input)
 
-        prompt_template = ChatPromptTemplate.from_template(self.prompt)
+        #prompt_template = ChatPromptTemplate.from_template(self.prompt)
+        prompt_template = ChatPromptTemplate.from_template(self.task_prompt)
         prompt_template.append("Please answer the following question:")
         prompt_template.append(question)
+        prompt_template.append("If you find the answer, reply ANSWER_IS: followed by the answer")
+        prompt_template.append("If you do not find the information, reply exactly 'I do not know'"
+                               ", followed by a summary of what can you answer, replying in first person")
 
         result = new_llm(prompt_template.format_messages())
-        state.push_event(TaskFinishEvent(result.content))
+        state.push_event(TaskFinishEvent(self.parse_LLM_output(result.content)))
+
+    def parse_LLM_output(self, output: str):
+        return output.replace("ANSWER_IS:", '').strip()
+
 
     def get_question(self, tool_input):
         if tool_input.startswith("Question:"):
