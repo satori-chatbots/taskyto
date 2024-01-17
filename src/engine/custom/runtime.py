@@ -139,8 +139,16 @@ class RuntimeChatbotModule(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     module: spec.Module
-    prompt: str
+
+    presentation_prompt: str
+    """High-level description of the context in which the module must perform its task"""
+
+    task_prompt: str
+    """A clear description of the task or list of tasks that the module is able to accomplish"""
+
     activation_prompt: str = None
+    """Summary of the task that the tool accomplish. To be used by a calling module."""
+
     tools: List["RuntimeChatbotModule"]
     configuration: Configuration
 
@@ -161,6 +169,12 @@ class RuntimeChatbotModule(BaseModel):
 
     def get_human_prompt(self) -> prompts.Prompt:
         return prompts.section("default", HUMAN_MESSAGE_TEMPLATE).to_prompt()
+
+    def get_presentation_prompt(self) -> prompts.Prompt:
+        return prompts.section("default", self.presentation_prompt).to_prompt()
+
+    def get_task_prompt(self) -> prompts.Prompt:
+        return prompts.section("default", self.task_prompt).to_prompt()
 
     def memory_types(self):
         return {}
@@ -212,7 +226,7 @@ class RuntimeChatbotModule(BaseModel):
 
     def run(self, state: ExecutionState, input: str, allow_tools=True, prompts_disabled=[]):
         # From ConversationalAgent, but modified
-        prefix = self.prompt
+        prefix = self.presentation_prompt
         format_instructions = FORMAT_INSTRUCTIONS.format(tool_names=self.get_tool_names(), ai_prefix=self.ai_prefix)
         formatted_tools = self.get_tools_prompt()
         suffix = ""
@@ -221,10 +235,11 @@ class RuntimeChatbotModule(BaseModel):
             format_instructions = NO_TOOL_INSTRUCTIONS.format(ai_prefix=self.ai_prefix)
             formatted_tools = ""
 
-        template = "\n\n".join([prefix,
-                                formatted_tools,
-                                format_instructions,
-                                suffix])
+        template = "\n".join([self.get_presentation_prompt().to_text(),
+                              format_instructions,
+                              formatted_tools,# TODO: Make this a standard prompt.Prompt
+                              self.get_task_prompt().to_text(),
+                              suffix])
 
         # input_variables = ["input", "history", "agent_scratchpad"]
         input_variables = ["input", "agent_scratchpad"]
