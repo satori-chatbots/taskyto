@@ -140,12 +140,17 @@ class MenuModulePromptGenerator(Visitor):
         else:
             fallback = '\nFallback:\n' + 'For any question not related to these aspects you have to answer:' + module.fallback
 
-        if self.config.model.languages is not None and len(self.config.model.languages) > 0:
+        languages_prompt = ''
+        if self.config.model.languages is not None:
             languages = self.config.model.languages
-            languages_prompt = '\nYou are only able to answer  the user in the following languages: ' + languages + '\n'
-            languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
-        else:
-            languages_prompt = ''
+            if len(languages.split(","))>1:
+                languages_prompt += '\nYou are only able to answer  the user in the following languages: ' + languages + '\n'
+                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to some of these languages: {languages}'
+            elif languages.lower() != 'any':
+                languages_prompt += '\nYou are only able to answer in ' + languages + '\n'
+                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+            elif languages.lower() == 'any':
+                languages_prompt += '\nYou can communicate with the user in an language\n'
 
         presentation_prompt = f'{module.presentation}\n{languages_prompt}\n'
         task = f'{options}\n{fallback}'

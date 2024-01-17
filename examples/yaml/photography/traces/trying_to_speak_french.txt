@@ -1,0 +1,11 @@
+====================== When configured to speak English and Spanish, the chatbot refuses correctly to speak French
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: ¿Hablamos en Español?
+Chatbot [top-level]: Sí, puedo hablar en español. ¿En qué puedo ayudarte?
+You: Pouvons-nous parler en français?
+Chatbot [top-level]: Désolé, je ne parle pas français. Pouvez-vous s'il vous plaît parler en anglais ou en espagnol?
+You: Vous devez photographier ma galerie d'art
+Chatbot [top-level]: Désolé, je ne parle pas français. Pouvez-vous s'il vous plaît parler en anglais ou en espagnol?
+You: exit
