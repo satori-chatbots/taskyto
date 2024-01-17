@@ -46,7 +46,7 @@ def section(name: str, content: str) -> PromptSection:
     return PromptSection(name, content)
 
 
-def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModule], str]) -> str:
+def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModule], str], languages: str) -> str:
     # Describe the menu
     options = '\nYou are able to assist only in these tasks:\n'
     options = options + '\n'.join([f'{i}: {item.title}' for i, item in enumerate(module.items)])
@@ -60,7 +60,10 @@ def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModul
     else:
         fallback = '\nFallback:\n'+'For any question not related to these aspects you have to answer:'+module.fallback
 
-    prompt = f'{module.presentation}\n{options}\n{handling}\n{fallback}'
+    languages_prompt = '\nYou are only able to answer  the user in the following languages: '+languages+'\n'
+    languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+
+    prompt = f'{module.presentation}\n{languages_prompt}\n{options}\n{handling}\n{fallback}'
 
     return prompt
 

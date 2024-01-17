@@ -25,7 +25,7 @@ class ModuleGenerator(Visitor):
         return runtime_module
 
     def visit_menu_module(self, module: spec.MenuModule) -> RuntimeChatbotModule:
-        prompt = module.accept(MenuModulePromptGenerator())
+        prompt = module.accept(MenuModulePromptGenerator(self.configuration))
         tools = [i.accept(self) for i in module.items if
                  isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
 
@@ -100,13 +100,17 @@ class ModuleGenerator(Visitor):
 
 
 class MenuModulePromptGenerator(Visitor):
+
+    def __init__(self, cfg: Configuration):
+        self.config = cfg       # to access stored info, like languages
+
     def visit_menu_module(self, module: spec.Module) -> str:
         def handle_item(mod):
             handling = '\nThe following items specify how to handle each task:\n'
             handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
             return handling
 
-        prompt = prompts.menu_prompt(module, handle_item)
+        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
         return prompt
 
     def visit_answer_item(self, item: spec.Item) -> str:

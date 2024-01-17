@@ -1,6 +1,7 @@
 # We use gpt-3.5-turbo-1106 because it doesn't work, so we can test that the
 # the specification for the modules (below) actually works.
 default_llm: gpt-3.5-turbo-1106
+languages: English
 
 modules:
   - name: call_appointment

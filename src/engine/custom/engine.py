@@ -255,8 +255,8 @@ class CustomPromptEngine(Visitor):
 
     def __init__(self, chatbot_model: ChatbotModel, configuration: Configuration):
         self._chatbot_model = chatbot_model
+        self.configuration = configuration  # to access the languages stored in the configuration when building prompts
         self.statemachine = compute_statemachine(chatbot_model, configuration)
-        self.configuration = configuration
         self.state_manager = None
         self.recorded_interaction = RecordedInteraction()
 

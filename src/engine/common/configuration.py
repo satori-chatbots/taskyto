@@ -15,6 +15,7 @@ class ModuleConfiguration(BaseModel):
 
 class ConfigurationModel(BaseModel):
     default_llm: Union[LLMConfiguration, str]
+    languages: str = "any"
     modules: List[ModuleConfiguration] = []
 
     def get_llm_for_module_or_default(self, module_name: str) -> LLMConfiguration:

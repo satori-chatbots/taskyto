@@ -169,7 +169,7 @@ class LangchainEngine(Visitor):
             handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
             return handling
 
-        prompt = prompts.menu_prompt(module, handle_item)
+        prompt = prompts.menu_prompt(module, handle_item, self.configuration.model.languages)
 
         generator = ToolGenerator(self._chatbot_model, self._current_state)
         tools = [i.accept(generator) for i in module.items if
