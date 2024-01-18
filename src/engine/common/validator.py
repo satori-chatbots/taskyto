@@ -1,9 +1,11 @@
 from datetime import datetime
 from abc import abstractmethod, ABC
+from typing import List
+
 from duckling import DucklingWrapper
 
 from engine.common import Configuration
-from spec import DataProperty
+from spec import DataProperty, EnumValue
 
 from datetime import datetime
 from ctparse import ctparse
@@ -86,32 +88,40 @@ class TimeFormatter(Formatter):
 class EnumFormatter(Formatter):
 
     def do_format(self, value: str, p: DataProperty, c: Configuration):
-        indx = EnumFormatter.get_index_in(value.lower(), [val.lower() for val in p.values], c)
+        indx = EnumFormatter.get_index_in(value.lower(), p.values, c)
         if indx >= 0:
-            return p.values[indx]
+            return p.values[indx].name # TODO: Maybe return the actual EnumValue?
         else:
             return None
 
     @staticmethod
-    def get_index_in(val, values, cnf):
+    def get_index_in(val: str, values: List[EnumValue], cnf):
         """
         returns the index of string val -- or a synonym of it -- in the list values. cnf is the Configuration from which we
         can extract the llm to extract synonyms
         """
         # check direct containment
-        if val in values:
-            return values.index(val)
+        idx = EnumFormatter.check_value(val, values)
+        if idx != -1:
+            return idx
+
         # now check synonyms
         prompt = f'Return a synonym of {val} among: {values} or None if there is no synonym. Return just one word.'
+
         llm = cnf.new_llm()
         result = llm.invoke(prompt)
         if result.content == 'None':
             return -1
         else:
-            if result.content in values:
-                return values.index(result.content)
-            return -1
+            return EnumFormatter.check_value(result.content, values)
 
+    def check_value(val: str, values: List[EnumValue]):
+        for idx, enum_value in enumerate(values):
+            if enum_value.name.lower() == val:
+                return idx
+            elif val in [e.lower() for e in enum_value.examples]:
+                return idx
+        return -1
 
 class FallbackFormatter(Formatter):
     def do_format(self, value: str, p: DataProperty, c: Configuration):

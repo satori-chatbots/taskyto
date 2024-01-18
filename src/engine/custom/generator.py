@@ -61,7 +61,7 @@ class ModuleGenerator(Visitor):
             if p.is_simple_type():
                 data_shape += f'- \'{p.name}\' which is of type {p.type}\n'
             elif p.type == 'enum':
-                data_shape += f'- \'{p.name}\' which can be one of the following values: {", ".join(p.values)}, do not accept any other value\n'  # Force not getting any other value
+                data_shape += f'- \'{p.name}\' which can be one of the following values: {", ".join([v.name for v in p.values])}, do not accept any other value\n'  # Force not getting any other value
             else:
                 raise ValueError(f'Unknown type {p.type}')
 

@@ -7,7 +7,9 @@ data:
       values:
         - small
         - medium
-        - big
+        - big:
+            - large
+            - huge
 
 on-success:
   execute:

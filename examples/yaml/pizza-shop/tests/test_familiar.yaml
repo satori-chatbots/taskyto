@@ -9,6 +9,7 @@ interaction:
   - Sure, what size would you like your pizza to be? We have small, medium, and large sizes available.
   - Sure, what size would you like your pizza to be? We have small, medium, and big sizes available.
   - Sure, what size pizza would you like? We have small, medium, and large sizes available.
+  - Sure! What size pizza would you like? We have small, medium, and big sizes available.
   - Could you please provide the size of the pizza you would like? It can be either small, medium, or big.
   - Could you please provide the size of the pizza you would like? It can be small, medium, or big.
 - user: Frecking
@@ -17,6 +18,7 @@ interaction:
   - Sure, I'd be happy to help you order a pizza! Just to confirm, what size pizza would you like? We have small, medium, and large sizes available.
   # TODO: This answer is not very natural ("the values" is not a natural thing to say by a person)
   - I'm sorry, but I only accept the values small, medium, or big for the pizza size. Could you please provide one of those options?
+  - I apologize, but I couldn't understand the size of the pizza you would like. Could you please specify if you would like a small, medium, or big pizza?
 - user: big
 - assert_data:
     scope: 'pizza_size'

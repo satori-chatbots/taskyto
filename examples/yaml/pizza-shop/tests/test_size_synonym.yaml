@@ -5,10 +5,12 @@ interaction:
 - chatbot:
   - Sure, what size of pizza would you like? We have small, medium, and big sizes available.
   - Sure, what size would you like your pizza to be? We have small, medium, and big sizes available.
+  - Sure! What size pizza would you like? We have small, medium, and big sizes available.
   - Could you please provide the size of the pizza you would like? It can be either small, medium, or big.
   - Could you please provide the size of the pizza you would like? It can be small, medium, or big.
-- user: Huge
 - assert_module: pizza_size
+- user: Huge
+- assert_module: top-level
 - assert_data:
     scope: 'pizza_size'
     values:

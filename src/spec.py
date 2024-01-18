@@ -124,11 +124,14 @@ class SequenceModule(BaseModule):
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_sequence_module(self)
 
+class EnumValue(BaseModel):
+    name: str
+    examples: List[str] = []
 
 class DataProperty(BaseModel):
     name: str
     type: str
-    values: Optional[List[str]] = None
+    values: Optional[List[EnumValue]] = None
     required: Optional[bool] = True
     examples: Optional[List[str]] = []
 
@@ -197,7 +200,13 @@ class WithDataModel(abc.ABC):
         examples = type_dict.get("examples", [])
 
         if type_ == "enum":
-            return DataProperty(name=name, type="enum", values=type_dict["values"], required=required)
+            values = type_dict["values"]
+            # Traverse values and convert them to EnumValue
+            values = [EnumValue(name=v, examples=[])
+                      if isinstance(v, str)
+                      else EnumValue(name=next(iter(v.keys())), examples=next(iter(v.values())))
+                      for v in values]
+            return DataProperty(name=name, type="enum", values=values, required=required)
 
         return DataProperty(name=name, type=type_, required=required, examples=examples)
 
