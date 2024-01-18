@@ -117,7 +117,8 @@ class StateMachineTransformer(Visitor):
         self.sm = StateMachine()
         self.chatbot_model = chatbot_model
 
-        self.module_generator = ModuleGenerator(chatbot_model, configuration)
+        self.initial = compute_init_module(chatbot_model)
+        self.module_generator = ModuleGenerator(chatbot_model, configuration, initial=self.initial)
         self.sm_stack = []
 
     def new_state(self, sm, module: spec.Module) -> State:
@@ -134,10 +135,7 @@ class StateMachineTransformer(Visitor):
         return state
 
     def visit_chatbot_model(self, model: spec.ChatbotModel) -> StateMachine:
-        initial = compute_init_module(model)
-        # nodes_by_name = [{m.name: State(m)} for m in model.modules]
-
-        initial_module_state = initial.accept(self)
+        initial_module_state = self.initial.accept(self)
 
         initial = Initial()
         self.sm.add_state(initial)

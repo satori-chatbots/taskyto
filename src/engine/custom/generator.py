@@ -11,10 +11,11 @@ class ModuleGenerator(Visitor):
     This is in charge of generating the different types of modules, setting the appropriate prompts.
     """
 
-    def __init__(self, chatbot_model: spec.ChatbotModel, configuration: Configuration):
+    def __init__(self, chatbot_model: spec.ChatbotModel, configuration: Configuration, initial: spec.Module):
         self.chatbot_model = chatbot_model
         self.configuration = configuration
         self.generated = {}
+        self.initial = initial
 
     def generate(self, module: spec.Module) -> RuntimeChatbotModule:
         if module.name in self.generated:
@@ -43,7 +44,7 @@ class ModuleGenerator(Visitor):
                              "\nProvide the question given by the user using the JSON format "
                              "\"question\": <question>\".\n")
 
-        presentation_prompt = ""
+        presentation_prompt = self.initial.presentation
         task_prompt = prompts.question_answering_prompt(module)
         return QuestionAnsweringRuntimeModule(module=module,
                                               presentation_prompt=presentation_prompt,
@@ -76,7 +77,7 @@ class ModuleGenerator(Visitor):
             # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
             f"\n")
         return DataGatheringChatbotModule(module=module,
-                                          presentation_prompt="",
+                                          presentation_prompt=self.initial.presentation,
                                           task_prompt=prompt,
                                           activation_prompt=activation_prompt, tools=[],
                                           configuration=self.configuration)
@@ -88,21 +89,17 @@ class ModuleGenerator(Visitor):
         called_modules = [self.chatbot_model.resolve_module(ref) for ref in module.references]
         seq_tools = [t for m in called_modules if (t := m.accept(self)) is not None]
 
-        #for i, tool in enumerate(seq_tools[:-1]):
-        #    seq_tools[i + 1].previous_tool = tool
-
         return SequenceChatbotModule(module=module,
-                                     presentation_prompt='',
+                                     presentation_prompt=self.initial.presentation,
                                      task_prompt=prompt,
                                      activation_prompt=activation_prompt, tools=seq_tools,
                                      configuration=self.configuration)
 
     def visit_action_module(self, module: spec.ActionModule):
-        prompt = ""
         activation_prompt = None
         return ActionChatbotModule(module=module,
                                    activation_prompt='',
-                                   presentation_prompt=prompt,
+                                   presentation_prompt=self.initial.presentation,
                                    task_prompt='',
                                    tools=[],
                                    configuration=self.configuration)
