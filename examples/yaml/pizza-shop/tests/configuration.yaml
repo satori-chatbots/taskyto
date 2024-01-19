@@ -1,0 +1,11 @@
+# Default values unless overridden by test-specific values
+default:
+  match-strategy:
+    tolerance: 0.0
+    use-llm: false
+
+tests:
+  - name: 'test_size_synonym.yaml'
+    match-strategy:
+      tolerance: 0.3
+

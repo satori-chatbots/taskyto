@@ -1,6 +1,8 @@
 interaction:
   - user: Tell me the price of a new tire?
-  - chatbot: The price of a new tire is 20$.
+  - chatbot:
+      - The price of a new tire is 20$.
+      - 20$
 
 # TODO: Include this test in the future. But this is more complicated since the LLM tends to overexplicate.
 #       It does it well, but need to check if the explanation is ok rather than comparing strings.

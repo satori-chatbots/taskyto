@@ -55,6 +55,6 @@ def run_test(interaction: Interaction, engine: Engine,
             response = channel.last_response
             utils.print_chatbot_answer(response)
         else:
-            i.check(engine, config, response)
+            i.check(interaction.config, engine, config, response)
 
     return True

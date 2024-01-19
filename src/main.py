@@ -68,6 +68,12 @@ def main(chatbot_folder: str, configuration, recording_file_dump: str = None, mo
 
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
+def is_test_file(file):
+    return file.endswith(".yaml") and not is_test_configuration(file)
+
+def is_test_configuration(file):
+    return file.endswith("configuration.yaml")
+
 
 def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file_dump: str = None, module_path=None):
     # Check if test_file is a folder, in which case return all tests in the `test` folder (find recursively)
@@ -76,7 +82,7 @@ def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file
         for root, dirs, files in os.walk(test_file):
             for file in files:
                 parent_folder_name = os.path.basename(root)
-                if parent_folder_name in ["tests", "test"] and file.endswith(".yaml"):
+                if parent_folder_name in ["tests", "test"] and is_test_file(file):
                     tests.append(os.path.join(root, file))
 
         # iterate tests with indices
