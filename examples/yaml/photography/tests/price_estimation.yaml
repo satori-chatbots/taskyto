@@ -1,0 +1,13 @@
+interaction:
+- chatbot:
+  - Hello
+- user: I'd like an estimation for a photo session
+- chatbot:
+  - 'Sure, I''d be happy to provide an estimation for your photo session. Before we
+    proceed, could you please provide me with the following information: What type
+    of media are you interested in? Photography, video or 3D rendering? Also, how
+    many artworks do you have and what type are they? (picture, sculpture, ceramic)'
+- user: I need to shoot photographs of 3 sculptures
+- chatbot:
+  - The cost could be approximately $1500, but it may vary depending on other factors
+    such as the size of the artworks.

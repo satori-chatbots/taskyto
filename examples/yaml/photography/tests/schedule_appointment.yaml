@@ -3,13 +3,17 @@ interaction:
   - Hello
 - user: I need a photo session
 - chatbot:
-  - That's great! Could you please provide me with your name, phone number, and preferred
-    date for the photo session?
-- user: I'd like the session tomorrow, my name is John Doe, and my phone number is
-    555-123456
+  - Thank you for your interest in our photography shop. May I have your name, please?
+- user: My name is John Doe
 - chatbot:
-  - "Thanks John Doe! We'll contact you very soon for a session on 13/01/2024. \n"
-- user: Thanks, bye!
+  - Great, John! May I have your phone number and email address so that we can contact
+    you for the photo session?
+  - Great, John! May I have your phone number, please?
+- user: My phone number is 555-123456, my email address is John.Doe@gmail.com
 - chatbot:
-  - You're welcome! Don't hesitate to contact us if you need any further assistance.
-    Goodbye!
+  - Thank you for providing your name, phone number, and email address, John. We would
+    also need to know when you would like to schedule your photo session. May I know
+    your preferred appointment date?
+- user: Tomorrow at 15:00
+- chatbot:
+  - "Thanks John Doe! We'll contact you very soon for a session on 20/01/2024. \n"

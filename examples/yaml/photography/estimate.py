@@ -1,6 +1,14 @@
-def main(location, description, media, number_artworks, type_artworks):
-    global SONGS
-
-    print(f"Calculating price for a {media} session ({number_artworks} {type_artworks}) at {location}")
-
-    return f"The prices for {description} would be around {number_artworks*123}$"
+def main(media, number_artworks, type_artworks):
+    print(f"Calculating price for a {media} session for {number_artworks} {type_artworks}")
+    artwork_prices = {
+        "sculpture": 10,
+        "picture": 1,
+        "ceramic": 5,
+    }
+    media_prices = {
+        "photography": 50,
+        "video": 200,
+        "3D rendering": 290,
+    }
+    price = artwork_prices[type_artworks]*media_prices[media]
+    return f"The price would be around {number_artworks*price}$, but may depend on other factors, like the size of the artworks"

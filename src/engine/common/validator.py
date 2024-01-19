@@ -42,7 +42,7 @@ class DateFormatter(Formatter):
     def format_with_ctparse(self, value: str):
         ts = datetime.now()
         artefact = ctparse(value, ts=ts).resolution
-        if artefact.isDate:
+        if artefact.hasDate:
             # format a string from artefact.month, artefact.year, artefact.year
             timestamp = datetime(artefact.year, artefact.month, artefact.day)
             return timestamp.strftime('%d/%m/%Y')

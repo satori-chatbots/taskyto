@@ -1,0 +1,30 @@
+===== With params address and description
+Chatbot [top-level]: Hello
+You: I need an estimation of a photo session
+Chatbot [session_details]: Thank you for your interest in our photography shop. To provide you with an accurate estimation, we need some additional information. Could you please provide us with the following details:
+- Where would you like the photo session to take place? (Please provide the full address)
+- Could you describe the type of photos you are looking for?
+- What type of media are you interested in? (photography, video, 3D rendering)
+- How many artworks do you need photographed?
+- What type of artworks are they? (picture, sculpture, ceramic)
+You: TThe session would be at 45 Main Street in Manhattan. I need to shoot a video for 4 sculptures.
+Chatbot [session_details]: Thank you for providing the location and media information. Could you please provide a brief description of the video you would like to shoot? Additionally, we would need to know the number and type of artworks you need photographed.
+You: The video would be short overviews of around 30 seconds. It is for 4 sculptures.
+Chatbot [session_details]: Thank you for the additional information. Could you please provide a brief description of the sculptures you would like to shoot? Also, I apologize but I did not understand what you meant by "short overviews of around 30 seconds". Could you please clarify?
+You: The sculptures are 4 big bronze human figures of around 3 meters. The video should be short shots of around 30 seconds per each sculpture.
+Chatbot [session_details]: Thank you for the additional information about the sculptures. However, we still need some information to provide you with an accurate estimation. Could you please provide us with the following details:
+- Could you please provide the full address of the location where the video will be shot?
+- Could you please provide a brief description of the sculptures?
+- What type of media are you interested in? (photography, video, 3D rendering)
+- How many artworks do you need photographed?
+- What type of artworks are they? (picture, sculpture, ceramic)
+You: exit
+===== After removing address and description
+Chatbot [top-level]: Hello
+You: I'd like an estimation for a photo session
+Chatbot [session_details]: Sure, I'd be happy to provide an estimation for your photo session. Before we proceed, could you please provide me with the following information: What type of media are you interested in? Photography, video or 3D rendering? Also, how many artworks do you have and what type are they? (picture, sculpture, ceramic)
+You: I need to shoot photographs of 3 sculptures
+Saving details into data-base
+Calculating price for a photography session for 3.0 sculpture
+Chatbot [top-level]: The cost would be approximately 369.0 dollars.
+You: exit

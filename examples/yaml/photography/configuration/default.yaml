@@ -2,7 +2,7 @@
 # the specification for the modules (below) actually works.
 default_llm:
   id: gpt-3.5-turbo-1106
-  temperature: 0.4
+  temperature: 0.0
 languages: English, Spanish
 
 modules:
@@ -11,7 +11,7 @@ modules:
   - name: top-level
     llm:
       id: gpt-3.5-turbo-0301
-      temperature: 0.1
+      temperature: 0.0
   - name: photo_qa
     llm:
       id: gpt-3.5-turbo-0301

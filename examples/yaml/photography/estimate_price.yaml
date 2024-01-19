@@ -1,8 +1,6 @@
 name: estimate_price
 kind: action
 data:
-  - location: Address
-  - description: string
   - media:
       type: enum
       values:
