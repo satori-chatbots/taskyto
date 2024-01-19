@@ -7,7 +7,11 @@ interaction:
     May I please have your full name, phone number, and the date you would like to
     schedule your appointment? If you have an email address, that would be helpful
     as well, but it is optional.
-- user: My name is John Doe, my phone number is 555-123456, I do not have email address
-    and I want the appointment tomorrow
+- user: I'm John Doe
+- chatbot:
+  - Great, John! May I please have your phone number and the date you would like to
+    schedule your appointment? If you have an email address, that would be helpful
+    as well, but it is optional.
+- user: My phone is 555-123456, I'd like the appointment tomorrow
 - chatbot:
   - "Thanks John Doe! We'll contact you very soon for a session on 20/01/2024. \n"

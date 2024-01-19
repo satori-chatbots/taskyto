@@ -64,7 +64,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                     else:
                         unknown_values.append(value)
 
-            if len(data) == len(self.module.data_model.properties):
+            # if len(data) == len(self.module.data_model.properties):
+            if self.all_mandatory_data_provided(data):
                 collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
                 result = self.execute_action(self.module.on_success, data,
                                              default_response=f"The following data has been collected: {collected_data}")
@@ -83,7 +84,11 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
             pass
 
         collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-        instruction = "Ask the Human to provide the missing data: " + self.get_missing_data_instruction(data)
+        instruction = ("Ask the Human to provide the missing data: " +
+                       self.get_missing_data_instruction(data, lambda param: param.required))
+        missing_optionals = self.get_missing_data_instruction(data, lambda param: not param.required)
+        if len(missing_optionals) > 0:
+            instruction += f"\nIf you have not asked for it before, tell the human that the following data is optional: " + missing_optionals
         if len(unknown_values) > 0:
             instruction += f"\nIn addition, tell the human that you could not understand: {','.join(unknown_values)}"
 
@@ -92,9 +97,17 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
 
         state.push_event(TaskInProgressEvent(memory={'collected_data': data_memory, 'instruction': inst_memory}))
 
+    def all_mandatory_data_provided(self, data):
+        for dp in self.module.data_model.properties:
+            if dp.required and dp.name not in data:
+                return False
+        return True
+
     # TODO: Decide if we want to be more explicit about what information is missing and its shape (specifically for enums)
-    def get_missing_data_instruction(self, data):
-        missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data]
+    def get_missing_data_instruction(self, data, param_predicate=lambda param: True):
+        # missing_properties = [p.name for p in self.module.data_model.properties if p.name not in data and p.required]
+        missing_properties = [p.name for p in self.module.data_model.properties
+                              if p.name not in data and param_predicate(p)]
         return ", ".join(missing_properties)
 
 
@@ -107,7 +120,7 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         new_llm = self.configuration.new_llm(module_name=self.name())
         question = self.get_question(tool_input)
 
-        #prompt_template = ChatPromptTemplate.from_template(self.prompt)
+        # prompt_template = ChatPromptTemplate.from_template(self.prompt)
         prompt_template = ChatPromptTemplate.from_template(self.task_prompt)
         prompt_template.append("Please answer the following question:")
         prompt_template.append(question)
@@ -120,7 +133,6 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
 
     def parse_LLM_output(self, output: str):
         return output.replace("ANSWER_IS:", '').strip()
-
 
     def get_question(self, tool_input):
         if tool_input.startswith("Question:"):
