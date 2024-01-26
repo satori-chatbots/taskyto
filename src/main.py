@@ -1,6 +1,6 @@
 import os.path
 from argparse import ArgumentParser
-from typing import Optional
+from typing import Optional, List
 
 import spec
 import utils
@@ -17,6 +17,8 @@ from testing.test_engine import TestEngineConfiguration, run_test
 class CustomConfiguration(Configuration):
 
     def __init__(self, root_folder, model: ConfigurationModel):
+        assert model is not None
+
         self.chatbot_model = spec.load_chatbot_model(root_folder)
         self.root_folder = root_folder
         self.model = model
@@ -43,18 +45,13 @@ class CustomConfiguration(Configuration):
         return Evaluator(load_path=[self.root_folder])
 
     def new_llm(self, module_name: Optional[str] = None):
-        #from langchain.chat_models import ChatOpenAI
-        from langchain_openai import ChatOpenAI
-        model = self.model.get_llm_for_module_or_default(module_name)
-
-        llm = ChatOpenAI(temperature=model.temperature, model_name=model.id, verbose=True)
-        return llm
+        return self.model.get_llm_for_module_or_default(module_name)
 
     def new_rephraser(self):
         return CustomRephraser(self)
 
 
-def load_configuration_model(chatbot_folder, configuration_file: Optional[str] = None) -> ConfigurationModel:
+def load_configuration_model(chatbot_folder, configuration_file: Optional[str] = None, module_path: List[str] = []) -> ConfigurationModel:
     if configuration_file is None:
         configuration_file = os.path.join(chatbot_folder, "configuration", "default.yaml")
         if not os.path.isfile(configuration_file):
@@ -64,7 +61,7 @@ def load_configuration_model(chatbot_folder, configuration_file: Optional[str] =
             print("Using configuration", configuration_file)
 
     # See OpenAI model table: https://platform.openai.com/docs/models
-    return read_configuration(configuration_file)
+    return read_configuration(configuration_file, module_path)
 
 
 def initialize_engine(chatbot_folder, configuration):
@@ -138,12 +135,17 @@ def setup_debugging_capabilities(args):
 
 
 def setup_configuration(args):
+    module_path = args.module_path.split(":")
     if args.engine is None or args.engine == 'standard':
         chatbot_folder = args.chatbot
         if os.path.isfile(chatbot_folder):
             chatbot_folder = os.path.dirname(chatbot_folder)
 
+<<<<<<< HEAD
         config_model = load_configuration_model(chatbot_folder, args.config)
+=======
+        config_model = load_configuration_model(chatbot_folder, module_path=module_path)
+>>>>>>> 96cd7af (LLM can be loaded externally as plug-ins)
         conf = CustomConfiguration(chatbot_folder, config_model)
     else:
         raise ValueError(f"Unknown engine: {args.engine}")
@@ -155,7 +157,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Runner for a chatbot')
     parser.add_argument('--chatbot', required=True,
                         help='Path to the chatbot specification')
-    parser.add_argument('--module-path', default='.',
+    parser.add_argument('--module-path', default='',
                         help='List of paths to chatbot modules, separated by :')
     parser.add_argument('--engine', required=False, default="standard",
                         help='Engine to use')

@@ -27,6 +27,7 @@ if __name__ == '__main__':
     for chatbot in chatbots:
         print("Running tests for chatbot: ", chatbot, "\n")
         args.chatbot = chatbot
+        args.module_path = ''
         configuration = main.setup_configuration(args)
         main.test(chatbot, chatbot, configuration, False, False, None, [])
         

@@ -4,3 +4,19 @@ default_llm:
   id: gpt-4o
   temperature: 0.0
 languages: English, Spanish
+
+modules:
+  - name: call_appointment
+    llm:  gpt-4
+  - name: top-level
+    llm:
+      id:  gpt-4
+      temperature: 0.0
+  - name: photo_qa
+    llm:
+      id:  gpt-4
+      temperature: 0.0
+  - name: session_details
+    llm:  gpt-4
+  - name: estimate_price
+    llm:  gpt-4
