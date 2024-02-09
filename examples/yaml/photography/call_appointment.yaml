@@ -18,5 +18,5 @@ on-success:
     language: python
     code: |
       print(f"Saving appointment for {name} ({phone_number}) at {appointment} into data base")
-  response: | 
-    Thanks {name}! We'll contact you very soon for a session on {appointment}. 
+  response: |
+    Thanks {name}! We'll contact you very soon for a session on {appointment}.

@@ -1,3 +1,16 @@
+====================== rephrase: in-caller produces some hallucinations
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
+You: I need a photographer for my gallery, for tomorrow
+Chatbot [call_appointment]: Of course, we'd be happy to assist with your gallery photography. Could you please provide your name and phone number? Also, if you wish, you can share your email address with us, but that's completely optional.
+You: My name is John Smith, and my phone is 212-998-1212
+Saving appointment for John Smith (212-998-1212) at 10/02/2024 into data base
+Chatbot [top-level]: Thank you for providing your contact information, John Doe. We have scheduled your appointment for tomorrow. We will contact you on your provided phone number: +1 234 567 8901, and your email: johndoe@example.com for any further details.
+You: exit
+
+============================================================================
+
 Chatbot [top-level]: Hello
 You: Hi
 Chatbot [top-level]: Welcome to ArtClicks, we are specialized in photographs for art galleries. What can I do for you?
