@@ -1,6 +1,6 @@
 name: session_details
 kind: data_gathering
-description: Useful to provide an estimation of a photography session. For this, it asks details about the session, including the  type of media, and number and type of artworks
+description: Useful to provide a price estimation of a photography session. For this, it asks details about the session, including the  type of media, and number and type of artworks
 data:
   - media:
       type: enum
