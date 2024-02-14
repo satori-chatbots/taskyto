@@ -1,0 +1,11 @@
+# We use gpt-3.5-turbo-1106 because it doesn't work, so we can test that the
+# the specification for the modules (below) actually works.
+llm_services:
+  - name: llama2chat_on_llm_server
+    extension: 'llm_server/llm.py'
+    args:
+      model: "meta-llama/Llama-2-7b-chat-hf"
+
+default_llm:
+  id: llama2chat_on_llm_server
+  temperature: 0.0
