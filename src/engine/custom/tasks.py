@@ -47,6 +47,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
 
         try:
             unknown_values = []
+            if tool_input is None:
+                raise json.JSONDecodeError(msg="tool_input is null", doc='', pos=0)
             json_query = json.loads(tool_input)
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
