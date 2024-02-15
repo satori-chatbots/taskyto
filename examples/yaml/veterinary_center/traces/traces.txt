@@ -11,3 +11,5 @@ You: vaccination
 The appointment was created successfully.
 Chatbot [top-level]: Ok, I have received your request to schedule an appointment for 16/02/2024 at 16:00:00 for Vaccination.
 See you then!
+
+====

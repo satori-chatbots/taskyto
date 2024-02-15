@@ -3,12 +3,10 @@ from abc import abstractmethod, ABC
 from typing import List
 
 from ctparse.types import Duration, Interval, DurationUnit
-from duckling import DucklingWrapper
+#from duckling import DucklingWrapper
 
 from datetime import date
 from dateutil.relativedelta import relativedelta
-
-#from duckling import DucklingWrapper
 
 from engine.common import Configuration
 from spec import DataProperty, EnumValue

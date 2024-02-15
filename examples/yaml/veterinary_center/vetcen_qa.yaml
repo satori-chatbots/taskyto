@@ -8,6 +8,8 @@ questions:
     answer: We do not open on weekends
   - question: How much does a vet visit cost?
     answer: Between $50 and $60
+  - question: What kind of animals do you accept?
+    answer: We are specialized in dogs, cats and birds. For other animals, please consult first.
   - question: What can I do to take care of my pet?
     answer: |
       You should meet their basic needs: food, water, shelter, exercise, and love.
