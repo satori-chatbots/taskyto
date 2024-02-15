@@ -2,6 +2,12 @@ from datetime import datetime
 from abc import abstractmethod, ABC
 from typing import List
 
+from ctparse.types import Duration, Interval, DurationUnit
+from duckling import DucklingWrapper
+
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 #from duckling import DucklingWrapper
 
 from engine.common import Configuration
@@ -37,11 +43,27 @@ class IdentityFormatter(Formatter):
 class DateFormatter(Formatter):
     def do_format(self, value: str, p: DataProperty, c: Configuration):
         return self.format_with_ctparse(value)
+        #return self.format_with_duckling(value)
         # Alternatively: self.format_with_duckling(value)
 
     def format_with_ctparse(self, value: str):
         ts = datetime.now()
         artefact = ctparse(value, ts=ts).resolution
+        if isinstance(artefact, Duration):
+            today = date.today()
+            match artefact.unit:
+                case DurationUnit.DAYS:
+                    today = today + relativedelta(days=artefact.value)
+                case DurationUnit.MONTHS:
+                    today = today + relativedelta(months=artefact.value)
+                case DurationUnit.WEEKS:
+                    today = today + relativedelta(weeks=artefact.value)
+            return today
+        if isinstance(artefact, Interval):
+            # for strings like 'the day after tomorrow', not sure if correctly parsed, since I think
+            # it takes it as an open interval starting tomorrow
+            timestamp = datetime(artefact.start.year, artefact.start.month, artefact.start.day)
+            return timestamp.strftime('%d/%m/%Y')
         if artefact.hasDate:
             # format a string from artefact.month, artefact.year, artefact.year
             timestamp = datetime(artefact.year, artefact.month, artefact.day)

@@ -56,3 +56,5 @@ colorama==0.4.6
 duckling==1.8.0
 ctparse==0.3.6
 alignment==1.0.10
+
+python-dateutil~=2.8.2
