@@ -1,0 +1,13 @@
+Chatbot [top-level]: Hello
+You: Hi
+Chatbot [top-level]: Welcome to my veterinary center. I'm the owner and I'm happy to help you. What can I do for you?
+You: I'd like to set an appointment
+Chatbot [make_appointment]: Sure! I can help you set an appointment. Could you please provide me with the date, time, and the type of service you would like to schedule?
+You: Which services do you offer?
+Chatbot [make_appointment]: We offer a variety of services including physical examinations, vaccinations, dental health and cleaning, and lab or diagnostic testing. Is there a specific service you are interested in?
+You: I'd like a vaccination for my dog Tobbie, for tomorrow at 16:00
+Chatbot [make_appointment]: Thank you for providing the date and time for the appointment. Could you please let me know which service you would like to schedule for your dog Tobbie?
+You: vaccination
+The appointment was created successfully.
+Chatbot [top-level]: Ok, I have received your request to schedule an appointment for 16/02/2024 at 16:00:00 for Vaccination.
+See you then!

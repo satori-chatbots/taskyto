@@ -4,7 +4,7 @@ modules:
       presentation: |
           You are a chatbot which helps users of a veterinary center.
       fallback: |
-          I'm sorry it's a little loud in here, can you say that again?
+          I'm sorry, but I did not understand the last sentence, can you say that again?
 
       items:
           - title: Hours. To answer questions about the opening hours.
