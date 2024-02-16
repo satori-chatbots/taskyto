@@ -123,7 +123,7 @@ def setup_configuration(args):
         if os.path.isfile(chatbot_folder):
             chatbot_folder = os.path.dirname(chatbot_folder)
 
-        config_model = load_configuration_model(chatbot_folder)
+        config_model = load_configuration_model(chatbot_folder, args.config)
         conf = CustomConfiguration(chatbot_folder, config_model)
     else:
         raise ValueError(f"Unknown engine: {args.engine}")
@@ -151,6 +151,8 @@ if __name__ == '__main__':
                         help='Replay a test case up to n user steps')
     parser.add_argument('--dump', default=None, type=str,
                         help='A file to dump the interaction in a test case format')
+    parser.add_argument('--config', default=None, type=str,
+                        help='The configuration file to use for the chatbot')
 
     args = parser.parse_args()
 
