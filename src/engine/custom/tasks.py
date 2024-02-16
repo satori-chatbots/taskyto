@@ -1,3 +1,5 @@
+from typing import Optional
+
 from langchain.prompts import ChatPromptTemplate
 
 from engine.common import get_property_value, prompts
@@ -40,7 +42,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
 
         return history + data + instruction + input_
 
-    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
+    def run_as_tool(self, state: ExecutionState, tool_input: Optional[str], activating_event=None):
         import json
         data = {}
         validators = Formatter.get_validators()
@@ -48,7 +50,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         try:
             unknown_values = []
             if tool_input is None:
-                raise json.JSONDecodeError(msg="tool_input is null", doc='', pos=0)
+                # This may happen when the tool is invoked explicitly without going through an LLM (e.g., as part of a sequence)
+                tool_input = "{}"
             json_query = json.loads(tool_input)
             for p in self.module.data_model.properties:
                 value = get_property_value(p, json_query)
