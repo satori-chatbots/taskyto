@@ -206,12 +206,13 @@ class RuntimeChatbotModule(BaseModel):
         state.push_event(event)
 
     def execute_action(self, action: Optional[spec.Action], data: dict, default_response: str = None) -> str:
-        if action is not None and action.execute is not None:
-            evaluator = self.configuration.new_evaluator()
-            result = evaluator.eval_code(action.execute, data)
+        if action is not None:
+            if action.execute is not None:
+                evaluator = self.configuration.new_evaluator()
+                result = evaluator.eval_code(action.execute, data)
+                data['result'] = result
 
             if action.response is not None:
-                data['result'] = result
                 response_element = action.get_response_element()
                 response = replace_values(response_element.text, data)
                 response = self.configuration.new_rephraser()(

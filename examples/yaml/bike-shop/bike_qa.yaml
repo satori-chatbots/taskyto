@@ -17,3 +17,8 @@ questions:
 # - which is the best bike for me?
 # - it depends, which is your budget?
 # - etc.
+
+on-success:
+  response:
+    text: "The answer to the question {{question}} is {{result}}"
+    rephrase: simple

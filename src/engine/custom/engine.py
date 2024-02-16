@@ -157,33 +157,28 @@ class StateMachineTransformer(Visitor):
             if hasattr(state.module, 'on_success'):
                 action = state.module.on_success
                 response = action.get_response_element()
-                if response.is_direct_response():
-                    self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
-                                           CompositeAction([RunTool(state.runtime_module), UpdateMemory(state.module)]))
-
-                    self.sm.add_transition(state, current_state, TaskFinishEventEventType,
-                                           CompositeAction([SayAction(None, consume_event=True)]))
-                elif response.is_in_caller_rephrase():
-                    self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
-                                           CompositeAction(
-                                               [UpdateMemory(current_state.module), RunTool(state.runtime_module),
-                                                UpdateMemory(state.module)]))
-
-                    self.sm.add_transition(state, current_state, TaskFinishEventEventType,
-                                           CompositeAction([UpdateMemory(current_state.module),
-                                                            ApplyLLM(current_state.runtime_module)]))
-                else:
-                    raise ValueError(f"Unsupported response type: {response}")
             else:
-                # TODO: Decide which is the default kind of response
+                # The default response is to say the result
+                response = spec.ResponseElement(text='{{result}}', rephrase=None)
+
+            if response.is_direct_response() or response.is_simple_rephrase():
+                # Simply rephrase is handled dynamically
                 self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
                                        CompositeAction([RunTool(state.runtime_module), UpdateMemory(state.module)]))
 
                 self.sm.add_transition(state, current_state, TaskFinishEventEventType,
                                        CompositeAction([SayAction(None, consume_event=True)]))
+            elif response.is_in_caller_rephrase():
+                self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
+                                       CompositeAction(
+                                           [UpdateMemory(current_state.module), RunTool(state.runtime_module),
+                                            UpdateMemory(state.module)]))
 
-                # self.sm.add_transition(state, current_state, TaskFinishEventEventType,
-                #                       CompositeAction([UpdateMemory(current_state.module), ApplyLLM(current_state.runtime_module)]))
+                self.sm.add_transition(state, current_state, TaskFinishEventEventType,
+                                       CompositeAction([UpdateMemory(current_state.module),
+                                                        ApplyLLM(current_state.runtime_module)]))
+            else:
+                raise ValueError(f"Unsupported response type: {response}")
 
         return current_state
 

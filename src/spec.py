@@ -259,6 +259,8 @@ class QuestionAnsweringModule(BaseModule):
     questions: List[QuestionAnswer]
     description: str
 
+    on_success: Action = Field(alias="on-success", default=None)
+
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 

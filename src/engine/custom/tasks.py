@@ -134,7 +134,12 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
                                ", followed by a summary of what can you answer, replying in first person")
 
         result = new_llm(prompt_template.format_messages())
-        state.push_event(TaskFinishEvent(self.parse_LLM_output(result.content)))
+
+        response = self.parse_LLM_output(result.content)
+        data = {'result': response, 'question': question}
+        response = self.execute_action(self.module.on_success, data, response)
+
+        state.push_event(TaskFinishEvent(response))
 
     def parse_LLM_output(self, output: str):
         return output.replace("ANSWER_IS:", '').strip()
