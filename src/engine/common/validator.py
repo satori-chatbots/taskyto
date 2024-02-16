@@ -1,6 +1,6 @@
 from datetime import datetime
 from abc import abstractmethod, ABC
-from typing import List
+from typing import List, Union
 
 from ctparse.types import Duration, Interval, DurationUnit
 #from duckling import DucklingWrapper
@@ -106,7 +106,20 @@ class TimeFormatter(Formatter):
 
 class EnumFormatter(Formatter):
 
-    def do_format(self, value: str, p: DataProperty, c: Configuration):
+    def do_format(self, value: Union[str, list[str]], prop: DataProperty, configuration: Configuration):
+        if isinstance(value, list):
+            result = []
+            for v in value:
+                format_result = EnumFormatter.format_single_value(v, prop, configuration)
+                if format_result is None:
+                    return None
+                result.append(format_result)
+            return result
+        else:
+            return EnumFormatter.format_single_value(value, prop, configuration)
+
+    @staticmethod
+    def format_single_value(value: str, p: DataProperty, c: Configuration):
         indx = EnumFormatter.get_index_in(value.lower(), p.values, c)
         if indx >= 0:
             return p.values[indx].name # TODO: Maybe return the actual EnumValue?
