@@ -233,14 +233,18 @@ class StateMachineTransformer(Visitor):
             state = resolved_module.accept(self)
             composite.add_state(state)
 
-            event_type = ActivateModuleEventType(state.module) if last == initial else TaskFinishEventEventType
+            actions = [RunTool(state.runtime_module), UpdateMemory(state.module)]
+            if last == initial:
+                event_type = ActivateModuleEventType(state.module)
+            else:
+                event_type = TaskFinishEventEventType
+                actions = [SayAction(message=None, consume_event=True)] + actions
 
-            composite.add_transition(last, state, event_type,
-                                     CompositeAction([RunTool(state.runtime_module), UpdateMemory(state.module)]))
+            composite.add_transition(last, state, event_type, CompositeAction(actions))
             last = state
 
         # Or use a final state
-        composite.add_transition(last, composite, TaskFinishEventEventType, CompositeAction([RunTool(runtime_module)]))
+        composite.add_transition(last, composite, TaskFinishEventEventType, CompositeAction([SayAction(message=None, consume_event=True), RunTool(runtime_module)]))
 
         self.sm = self.sm_stack.pop()
 
