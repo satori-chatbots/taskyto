@@ -14,8 +14,8 @@ data:
 on-success:
   execute:
     language: python
-    code: |
-      print("Order pizza")
-  response: | 
-    Ok, I have received your order for a {{size}} pizza. Next, please choose the topings.
+    code: print(f"Order pizza {size}")
+  response:
+    text: "Thanks for ordering a {{size}} pizza!"
+    rephrase: simple
     

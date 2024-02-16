@@ -13,5 +13,6 @@ on-success:
   execute:
     language: python
     code: print("Ordered drink")
-  response: | 
-    Ok, I have received your order for this drink: {{drinks}}. Enjoy both Pizza and drink!
+  response:
+    text: "Ok, I have received your order for {drinks}. Enjoy your pizza and drinks!"
+    rephrase: simple

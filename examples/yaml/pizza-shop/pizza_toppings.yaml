@@ -19,6 +19,7 @@ on-success:
   execute:
     language: python
     code: |
-      print("Ordered toppings")
-  response: | 
-    Ok, I have received your order for these {{toppings}}. Would you like something to drink?
+      print(f"Ordered toppings {toppings}")
+  response:
+    text: "Great, a pizza with {toppings}!"
+    rephrase: simple
