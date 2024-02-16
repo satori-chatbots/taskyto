@@ -49,13 +49,12 @@ class DateFormatter(Formatter):
         artefact = ctparse(value, ts=ts).resolution
         if isinstance(artefact, Duration):
             today = date.today()
-            match artefact.unit:
-                case DurationUnit.DAYS:
-                    today = today + relativedelta(days=artefact.value)
-                case DurationUnit.MONTHS:
-                    today = today + relativedelta(months=artefact.value)
-                case DurationUnit.WEEKS:
-                    today = today + relativedelta(weeks=artefact.value)
+            if artefact.unit == DurationUnit.DAYS:
+                today = today + relativedelta(days=artefact.value)
+            elif artefact.unit == DurationUnit.MONTHS:
+                today = today + relativedelta(months=artefact.value)
+            elif artefact.unit == DurationUnit.WEEKS:
+                today = today + relativedelta(weeks=artefact.value)
             return today
         if isinstance(artefact, Interval):
             # for strings like 'the day after tomorrow', not sure if correctly parsed, since I think
