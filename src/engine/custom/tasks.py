@@ -2,7 +2,7 @@ from typing import Optional
 
 from langchain.prompts import ChatPromptTemplate
 
-from engine.common import get_property_value, prompts
+from engine.common import get_property_value, prompts, logger
 from engine.common.memory import MemoryPiece
 from engine.common.validator import FallbackFormatter, Formatter
 from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
@@ -126,14 +126,17 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
         question = self.get_question(tool_input)
 
         # prompt_template = ChatPromptTemplate.from_template(self.prompt)
-        prompt_template = ChatPromptTemplate.from_template(self.task_prompt)
+        prompt_template = ChatPromptTemplate.from_template(self.presentation_prompt + "\n" + self.task_prompt)
+        prompt_template.append("If you match the user question with questions in the list, reply ANSWER_IS: followed by the answer."
+                               "Otherwise, reply exactly 'I do not know', "
+                               "followed by a summary of the questions that you know how to answer, replying in first person\n")
         prompt_template.append("Please answer the following question:")
         prompt_template.append(question)
-        prompt_template.append("If you find the answer, reply ANSWER_IS: followed by the answer")
-        prompt_template.append("If you do not find the information, reply exactly 'I do not know'"
-                               ", followed by a summary of what can you answer, replying in first person")
 
-        result = new_llm(prompt_template.format_messages())
+        formatted_prompt = prompt_template.format_messages()
+        logger.debug_prompt(formatted_prompt)
+
+        result = new_llm(formatted_prompt)
 
         response = self.parse_LLM_output(result.content)
         data = {'result': response, 'question': question}

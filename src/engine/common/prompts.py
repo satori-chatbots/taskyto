@@ -69,7 +69,7 @@ def menu_prompt(module: spec.MenuModule, item_handling: Callable[[spec.MenuModul
 
 
 def question_answering_prompt(module: spec.QuestionAnsweringModule) -> str:
-    prompt = [f"Use the following to answer the questions:\n"]
+    prompt = [f"The following is the list of question/answer pairs that you are allowed to answer:\n"]
     prompt = prompt + [f"- Question: {q.question}\n  Answer: {q.answer}\n" for q in module.questions]
     prompt = prompt + [f"\nOnly provide an answer if the question is in the list.\n"]
     prompt = "\n".join(prompt) + "\n"
