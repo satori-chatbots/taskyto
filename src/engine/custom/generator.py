@@ -130,25 +130,25 @@ class MenuModulePromptGenerator(Visitor):
 
     def visit_menu_module(self, module: spec.Module) -> (str, str):
         # Describe the menu
-        options = '\nYou are able to assist only in these tasks:\n'
+        options = '\nTASKS:\nYou are able to assist ONLY in these tasks:\n'
         options = options + '\n'.join([f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
 
         if module.fallback is None:
             fallback = ''
         else:
-            fallback = '\nFallback:\n' + 'For any question not related to these aspects you have to answer:' + module.fallback
+            fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
 
         languages_prompt = ''
         if self.config.model.languages is not None:
             languages = self.config.model.languages
             if len(languages.split(","))>1:
-                languages_prompt += '\nYou are only able to answer  the user in the following languages: ' + languages + '\n'
+                languages_prompt += '\nYou are only able to answer the user in the following languages: ' + languages + '\n'
                 languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to some of these languages: {languages}'
             elif languages.lower() != 'any':
                 languages_prompt += '\nYou are only able to answer in ' + languages + '\n'
                 languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
             elif languages.lower() == 'any':
-                languages_prompt += '\nYou can communicate with the user in an language\n'
+                languages_prompt += '\nYou can communicate with the user in any language.\n'
 
         presentation_prompt = f'{module.presentation}\n{languages_prompt}\n'
         task = f'{options}\n{fallback}'
