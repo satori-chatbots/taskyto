@@ -154,7 +154,7 @@ class StateMachineTransformer(Visitor):
 
             self.sm.add_state(state)
 
-            if hasattr(state.module, 'on_success'):
+            if hasattr(state.module, 'on_success') and state.module.on_success is not None:
                 action = state.module.on_success
                 response = action.get_response_element()
             else:
