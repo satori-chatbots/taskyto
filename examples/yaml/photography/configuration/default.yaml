@@ -7,7 +7,9 @@ languages: English, Spanish
 
 modules:
   - name: call_appointment
-    llm:  gpt-4
+    llm:
+      id: gpt-4
+      temperature: 0.0
   - name: top-level
     llm:
       id:  gpt-4
