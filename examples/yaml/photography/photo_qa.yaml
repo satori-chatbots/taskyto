@@ -12,3 +12,7 @@ questions:
     answer: We charge 200$ by hour
   - question: What media do you work on?
     answer: Mainly on photographs, but also on video, and virtual/3D rendering
+on-success:
+  response:
+    text: "{{result}}"
+    rephrase: simple
