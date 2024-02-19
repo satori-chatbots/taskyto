@@ -84,8 +84,12 @@ class ConversationMemory(BaseModel):
             else:
                 self.messages.append(m)
 
+    def copy_memory_from(self, other_memory: "ConversationMemory", filter=None):
+        to_be_copied = other_memory.messages
+        if filter is not None:
+            to_be_copied = [m for m in to_be_copied if m.__class__ in filter]
 
-        # self.messages.extend(memory_piece.messages)
+        self.messages = self.messages + to_be_copied
 
     def add_data_message(self, message: str):
         self.messages.append(DataMessage(message=message))

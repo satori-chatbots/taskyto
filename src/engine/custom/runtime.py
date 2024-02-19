@@ -47,6 +47,11 @@ class ExecutionState:
         for listener in self.action_listeners:
             listener(action)
 
+    def copy_memory(self, from_module, to_module, memory_id: str, filter=None):
+        original_memory = self.get_memory(from_module, memory_id)
+        target_memory = self.get_or_create_memory(to_module, memory_id)
+        target_memory.copy_memory_from(original_memory, filter=filter)
+
     def update_memory(self, module, memory_piece: "MemoryPiece", memory_id: str):
         memory = self.get_or_create_memory(module, memory_id)
         memory.add_memory(memory_piece)

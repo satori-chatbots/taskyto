@@ -3,6 +3,7 @@ from typing import Optional
 import spec
 import utils
 from engine.common import Configuration, ChatbotResult, DebugInfo, compute_init_module, Engine
+from engine.common.memory import HumanMessage, AIResponse
 from engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
     TaskInProgressEventType, TaskInProgressEvent, AIResponseEventType, TaskFinishEventEventType, TaskFinishEvent, \
     AIResponseEvent
@@ -90,10 +91,16 @@ class CompositeAction(Action):
 
 class UpdateMemory(Action):
 
-    def __init__(self, module: spec.Module):
+    def __init__(self, module: spec.Module, copy_from: spec.Module = None, filter=None):
         self.module = module
+        self.copy_from = copy_from
+        self.filter = filter
 
     def execute(self, execution_state, event):
+        if self.copy_from is not None:
+            execution_state.copy_memory(self.copy_from, self.module, 'history', filter=self.filter)
+            return
+
         if isinstance(event, ActivateModuleEvent):
             # TODO: Do not hardcode history here... maybe ask self.module??
             execution_state.update_memory(self.module, event.previous_answer, 'history')
@@ -108,7 +115,8 @@ class UpdateMemory(Action):
                 execution_state.update_memory(self.module, memory_piece, memory_id)
 
     def __str__(self):
-        return f"UpdateMemory({self.module.name})"
+        str_copy_from = f", from {self.copy_from.name}" if self.copy_from is not None else ""
+        return f"UpdateMemory({self.module.name}{str_copy_from})"
 
 
 class StateMachineTransformer(Visitor):
@@ -222,6 +230,7 @@ class StateMachineTransformer(Visitor):
         composite.add_state(initial)
 
         last = initial
+        last_module = None
 
         resolved_modules = [self.chatbot_model.resolve_module(r) for r in item.references]
 
@@ -236,13 +245,16 @@ class StateMachineTransformer(Visitor):
                 event_type = TaskFinishEventEventType
                 actions = [SayAction(message=None, consume_event=True)] + actions
 
-            if seq_module.memory == spec.MemoryScope.full:
-                # We need to update the memory of all subsequent modules
-                for m in resolved_modules[idx:]:
-                    actions.append(UpdateMemory(m))
+                if seq_module.memory == spec.MemoryScope.full:
+                    # We need to update the memory of all subsequent modules
+                    for m in resolved_modules[idx:]:
+                        actions.append(UpdateMemory(m, copy_from=last_module,
+                                                    filter=[HumanMessage, AIResponse]))
 
             composite.add_transition(last, state, event_type, CompositeAction(actions))
+
             last = state
+            last_module = resolved_module
 
         # Or use a final state
         composite.add_transition(last, composite, TaskFinishEventEventType, CompositeAction([SayAction(message=None, consume_event=True), RunTool(runtime_module)]))
