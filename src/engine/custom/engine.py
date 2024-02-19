@@ -222,9 +222,10 @@ class StateMachineTransformer(Visitor):
         composite.add_state(initial)
 
         last = initial
-        for r in item.references:
-            resolved_module = self.chatbot_model.resolve_module(r)
-            # state = self.new_state(composite, resolved_module)
+
+        resolved_modules = [self.chatbot_model.resolve_module(r) for r in item.references]
+
+        for idx, resolved_module in enumerate(resolved_modules):
             state = resolved_module.accept(self)
             composite.add_state(state)
 
@@ -234,6 +235,11 @@ class StateMachineTransformer(Visitor):
             else:
                 event_type = TaskFinishEventEventType
                 actions = [SayAction(message=None, consume_event=True)] + actions
+
+            if seq_module.memory == spec.MemoryScope.full:
+                # We need to update the memory of all subsequent modules
+                for m in resolved_modules[idx:]:
+                    actions.append(UpdateMemory(m))
 
             composite.add_transition(last, state, event_type, CompositeAction(actions))
             last = state

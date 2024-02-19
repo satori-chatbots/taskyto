@@ -2,6 +2,7 @@ import abc
 import glob
 import os
 from abc import abstractmethod
+from enum import Enum
 
 import pydantic
 from pydantic import BaseModel, Field
@@ -49,8 +50,14 @@ class ToolItem(BaseItem):
         return visitor.visit_tool_item(self)
 
 
+class MemoryScope(str, Enum):
+    full = 'full'
+    individual = 'individual'
+
+
 class SequenceItem(BaseItem):
     kind: Literal["sequence"] = "sequence"
+    memory: MemoryScope = MemoryScope.individual
     references: List[str]
 
     impl_module: "SequenceModule" = None
@@ -58,7 +65,7 @@ class SequenceItem(BaseItem):
     def get_sequence_module(self):
         if self.impl_module is None:
             module_name = f"sequence-{'-'.join(self.references)}"
-            self.impl_module = SequenceModule(name=module_name, description=self.title, references=self.references)
+            self.impl_module = SequenceModule(name=module_name, description=self.title, references=self.references, memory=self.memory)
         return self.impl_module
 
     def accept(self, visitor: Visitor) -> object:
@@ -108,10 +115,10 @@ class MenuModule(BaseModule):
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_menu_module(self)
 
-
 class SequenceModule(BaseModule):
     kind: Literal["sequence"] = "sequence"
     references: List[str]
+    memory: MemoryScope = MemoryScope.individual
     description: str = None  # should this be merged with presentation?
 
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
