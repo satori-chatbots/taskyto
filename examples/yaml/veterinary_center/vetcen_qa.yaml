@@ -14,3 +14,7 @@ questions:
     answer: |
       You should meet their basic needs: food, water, shelter, exercise, and love.
 
+on-success:
+  response:
+    text: "{{result}}"
+    rephrase: simple
