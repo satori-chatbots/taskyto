@@ -13,3 +13,10 @@ Chatbot [top-level]: Ok, I have received your request to schedule an appointment
 See you then!
 
 ====
+
+Chatbot [top-level]: Hello
+You: Hi, I'm Susan Sarandon
+Chatbot [top-level]: Welcome to my veterinary center. I'm the owner and I'm happy to help you. What can I do for you, Susan Sarandon?
+You: I'd like an appointment to vaccinate my dog Jumpy tomorrow at 12:00
+The appointment was created successfully.
+Chatbot [top-level]: Ok, I have received your request to schedule an appointment for 21/02/2024 at 12:00:00 for Vaccination. See you then!

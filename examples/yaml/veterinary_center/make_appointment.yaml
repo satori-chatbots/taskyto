@@ -31,6 +31,6 @@ on-success:
       else:
             print("An appointment with the same date and time already exists. Please enter new data.")
 
-  response: | 
-    Ok, I have received your request to schedule an appointment for {{date}} at {{time}} for {{service}}.
-    See you then!
+  response: |
+    Ok, I have received your request to schedule an appointment for {{date}} at {{time}} for {{service}}. 
+    See you then!    

@@ -22,4 +22,4 @@ on-success:
       print(f"Ordered toppings {toppings}")
   response:
     text: "Great, a pizza with {toppings}!"
-    rephrase: simple
+    rephrase: in-caller
