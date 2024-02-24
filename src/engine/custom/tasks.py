@@ -6,7 +6,31 @@ from engine.common import get_property_value, prompts, logger
 from engine.common.memory import MemoryPiece
 from engine.common.validator import FallbackFormatter, Formatter
 from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
-from engine.custom.runtime import RuntimeChatbotModule, ExecutionState
+from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, HUMAN_MESSAGE_TEMPLATE
+
+
+class MenuChatbotModule(RuntimeChatbotModule):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def memory_types(self):
+        return {
+            'default': ['default'],
+            'instruction': ['instruction']
+        }
+
+    def get_prompts_disabled(self, prompt_id):
+        if prompt_id == "input":
+            return ['instruction']
+        elif prompt_id == "reasoning":
+            return ['input']
+        return super().get_prompts_disabled(prompt_id)
+
+    def get_human_prompt(self) -> prompts.Prompt:
+        default_ = prompts.section("default", HUMAN_MESSAGE_TEMPLATE).to_prompt()
+        instruction = prompts.section("instruction", "{instruction}")
+        return default_ + instruction
 
 
 class DataGatheringChatbotModule(RuntimeChatbotModule):
@@ -25,7 +49,8 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
     def get_prompts_disabled(self, prompt_id):
         if prompt_id == "input":
             return ['instruction']
-        elif prompt_id == "reasoning":
+        elif prompt_id == "in-caller-rephrasing":
+            # I think we never invoke with this because we keep both the history and the instruction
             return ['input']
         return super().get_prompts_disabled(prompt_id)
 

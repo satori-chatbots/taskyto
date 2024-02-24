@@ -184,7 +184,7 @@ class StateMachineTransformer(Visitor):
 
                 self.sm.add_transition(state, current_state, TaskFinishEventEventType,
                                        CompositeAction([UpdateMemory(current_state.module),
-                                                        ApplyLLM(current_state.runtime_module)]))
+                                                        ApplyLLM(current_state.runtime_module, allow_tools=False)]))
             else:
                 raise ValueError(f"Unsupported response type: {response}")
 

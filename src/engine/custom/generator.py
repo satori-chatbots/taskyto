@@ -2,7 +2,7 @@ import spec
 from engine.common import prompts, Configuration
 from engine.custom.runtime import RuntimeChatbotModule
 from engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
-    SequenceChatbotModule, ActionChatbotModule
+    SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule
 from spec import Visitor
 
 
@@ -30,10 +30,10 @@ class ModuleGenerator(Visitor):
         tools = [i.accept(self) for i in module.items if
                  isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
 
-        return RuntimeChatbotModule(module=module,
-                                    presentation_prompt=presentation,
-                                    task_prompt=task,
-                                    tools=tools, configuration=self.configuration)
+        return MenuChatbotModule(module=module,
+                                 presentation_prompt=presentation,
+                                 task_prompt=task,
+                                 tools=tools, configuration=self.configuration)
 
     def visit_question_answering_module(self, module: spec.QuestionAnsweringModule) -> RuntimeChatbotModule:
         activation_prompt = (module.description +
@@ -69,14 +69,14 @@ class ModuleGenerator(Visitor):
         activation_prompt = module.description + "\nThe tool needs the following data:\n" + data_shape
         activation_prompt += f'\nProvide the values as JSON with the following fields: {property_names}.\n'
         activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, ask again.\n"
-        #activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
+        # activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
         prompt = (
-            f"Your task is collecting the following data from the user:\n" + data_shape + "\n" 
-            f"Pass this information to the corresponding tool.\n"
-            f"If there is missing data, ask for it politely.\n"
-            # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
-            f"\n")
+                f"Your task is collecting the following data from the user:\n" + data_shape + "\n"
+                                                                                              f"Pass this information to the corresponding tool.\n"
+                                                                                              f"If there is missing data, ask for it politely.\n"
+        # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
+                                                                                              f"\n")
         return DataGatheringChatbotModule(module=module,
                                           presentation_prompt=self.initial.presentation,
                                           task_prompt=prompt,
@@ -105,7 +105,6 @@ class ModuleGenerator(Visitor):
                                    tools=[],
                                    configuration=self.configuration)
 
-
     def visit_tool_item(self, item: spec.Item) -> str:
         return self.generate(self.chatbot_model.resolve_module(item.reference))
 
@@ -117,21 +116,22 @@ class ModuleGenerator(Visitor):
 class MenuModulePromptGenerator(Visitor):
 
     def __init__(self, cfg: Configuration):
-        self.config = cfg       # to access stored info, like languages
+        self.config = cfg  # to access stored info, like languages
 
-#    def visit_menu_module(self, module: spec.Module) -> str:
-#        def handle_item(mod):
-#            handling = '\nThe following items specify how to handle each task:\n'
-#            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
-#            return handling
+    #    def visit_menu_module(self, module: spec.Module) -> str:
+    #        def handle_item(mod):
+    #            handling = '\nThe following items specify how to handle each task:\n'
+    #            handling = handling + '\n'.join([f'{i}: {item.accept(self)}. ' for i, item in enumerate(mod.items)])
+    #            return handling
 
-#        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
-#        return prompt
+    #        prompt = prompts.menu_prompt(module, handle_item, self.config.model.languages)
+    #        return prompt
 
     def visit_menu_module(self, module: spec.Module) -> (str, str):
         # Describe the menu
         options = '\nTASKS:\nYou are able to assist ONLY in these tasks:\n'
-        options = options + '\n'.join([f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
+        options = options + '\n'.join(
+            [f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
 
         if module.fallback is None:
             fallback = ''
@@ -141,7 +141,7 @@ class MenuModulePromptGenerator(Visitor):
         languages_prompt = ''
         if self.config.model.languages is not None:
             languages = self.config.model.languages
-            if len(languages.split(","))>1:
+            if len(languages.split(",")) > 1:
                 languages_prompt += '\nYou are only able to answer the user in the following languages: ' + languages + '\n'
                 languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to some of these languages: {languages}'
             elif languages.lower() != 'any':
