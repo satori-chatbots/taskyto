@@ -58,6 +58,7 @@ class MemoryScope(str, Enum):
 class SequenceItem(BaseItem):
     kind: Literal["sequence"] = "sequence"
     memory: MemoryScope = MemoryScope.individual
+    goback: bool = True
     references: List[str]
 
     impl_module: "SequenceModule" = None
@@ -119,6 +120,7 @@ class SequenceModule(BaseModule):
     kind: Literal["sequence"] = "sequence"
     references: List[str]
     memory: MemoryScope = MemoryScope.individual
+    goback: bool = True
     description: str = None  # should this be merged with presentation?
 
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):

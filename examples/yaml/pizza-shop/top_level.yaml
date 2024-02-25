@@ -12,6 +12,7 @@ modules:
           - title: order
             kind: sequence
             memory: full
+            goback: true
             references:
               - pizza_size
               - pizza_toppings

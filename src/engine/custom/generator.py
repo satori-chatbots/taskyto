@@ -1,3 +1,5 @@
+from typing import List
+
 import spec
 from engine.common import prompts, Configuration
 from engine.custom.runtime import RuntimeChatbotModule
@@ -17,9 +19,14 @@ class ModuleGenerator(Visitor):
         self.generated = {}
         self.initial = initial
 
-    def generate(self, module: spec.Module) -> RuntimeChatbotModule:
+        # This is changed per call to generate
+        self.allow_go_back_to = None
+
+    def generate(self, module: spec.Module, allow_go_back_to: List[RuntimeChatbotModule] = []) -> RuntimeChatbotModule:
         if module.name in self.generated:
             return self.generated[module.name]
+
+        self.allow_go_back_to = allow_go_back_to
 
         runtime_module = module.accept(self)
         self.generated[module.name] = runtime_module
@@ -77,10 +84,15 @@ class ModuleGenerator(Visitor):
                                                                                               f"If there is missing data, ask for it politely.\n"
         # f"Focus on the data to be collected and do not provide any other information or ask other stuff.\n"
                                                                                               f"\n")
+
+        tools = []
+        if self.allow_go_back_to:
+            tools.extend(self.allow_go_back_to)
+
         return DataGatheringChatbotModule(module=module,
                                           presentation_prompt=self.initial.presentation,
                                           task_prompt=prompt,
-                                          activation_prompt=activation_prompt, tools=[],
+                                          activation_prompt=activation_prompt, tools=tools,
                                           configuration=self.configuration)
 
     def visit_sequence_module(self, module: spec.SequenceModule):

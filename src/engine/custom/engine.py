@@ -1,4 +1,5 @@
-from typing import Optional
+import contextlib
+from typing import Optional, List
 
 import spec
 import utils
@@ -129,8 +130,11 @@ class StateMachineTransformer(Visitor):
         self.module_generator = ModuleGenerator(chatbot_model, configuration, initial=self.initial)
         self.sm_stack = []
 
+        # Configured in the specific visitor
+        self.allow_go_back_to = []
+
     def new_state(self, sm, module: spec.Module) -> State:
-        runtime_module = self.module_generator.generate(module)
+        runtime_module = self.module_generator.generate(module, allow_go_back_to=self.allow_go_back_to)
         state = State(module, runtime_module)
 
         prompts_disabled = runtime_module.get_prompts_disabled('input')
@@ -216,6 +220,15 @@ class StateMachineTransformer(Visitor):
 
         return state
 
+    @contextlib.contextmanager
+    def specific_visitor(self, go_back_modules: List[RuntimeChatbotModule] = []):
+        old_allow_go_back_to = self.allow_go_back_to
+        self.allow_go_back_to = go_back_modules
+        try:
+            yield self
+        finally:
+            self.allow_go_back_to = old_allow_go_back_to
+
     def visit_sequence_item(self, item: spec.SequenceItem) -> State:
         seq_module = item.get_sequence_module()
         runtime_module = self.module_generator.generate(seq_module)
@@ -231,11 +244,16 @@ class StateMachineTransformer(Visitor):
 
         last = initial
         last_module = None
+        previous_states = []
 
         resolved_modules = [self.chatbot_model.resolve_module(r) for r in item.references]
 
         for idx, resolved_module in enumerate(resolved_modules):
-            state = resolved_module.accept(self)
+            with self.specific_visitor(go_back_modules=[s.runtime_module for s in previous_states]) as visitor:
+                state = resolved_module.accept(visitor)
+                if seq_module.goback:
+                    previous_states.append(state)
+
             composite.add_state(state)
 
             actions = [RunTool(state.runtime_module), UpdateMemory(state.module)]
@@ -250,6 +268,16 @@ class StateMachineTransformer(Visitor):
                     for m in resolved_modules[idx:]:
                         actions.append(UpdateMemory(m, copy_from=last_module,
                                                     filter=[HumanMessage, AIResponse]))
+
+                # Handle go back behavior if needed
+                if seq_module.goback:
+                    for previous_state in previous_states:
+                        back_event_type = ActivateModuleEventType(previous_state.module)
+                        composite.add_transition(state, previous_state, back_event_type,
+                                                 CompositeAction([RunTool(previous_state.runtime_module),
+                                                                  UpdateMemory(previous_state.module)]))
+                        # Not sure if memory should be updated here
+
 
             composite.add_transition(last, state, event_type, CompositeAction(actions))
 
@@ -311,6 +339,8 @@ class CustomPromptEngine(Visitor, Engine):
                 transition = self.statemachine.transition_for(self.execution_state.current, event=event)
 
             if transition is None:
+                if utils.DEBUG and event is not None:
+                    print(f"No transition found for event: {event} in state: {self.execution_state.current}")
                 break
 
             if utils.DEBUG:
