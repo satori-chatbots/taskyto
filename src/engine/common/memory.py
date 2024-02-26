@@ -1,10 +1,12 @@
 import abc
 from typing import List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+import time
 
 
 class Message(BaseModel, abc.ABC):
+    timestamp: float = Field(default_factory=lambda: time.time())
     message: str
 
     @abc.abstractmethod
@@ -84,12 +86,22 @@ class ConversationMemory(BaseModel):
             else:
                 self.messages.append(m)
 
+        self.__normalize_messages()
+
     def copy_memory_from(self, other_memory: "ConversationMemory", filter=None):
         to_be_copied = other_memory.messages
         if filter is not None:
             to_be_copied = [m for m in to_be_copied if m.__class__ in filter]
 
         self.messages = self.messages + to_be_copied
+        self.__normalize_messages()
+
+    # TODO: This should be done as we insert messages, but for the moment the number of messages is expected
+    #  to be small so it's ok to do this at the end which is easier
+    def __normalize_messages(self):
+        self.messages = sorted(self.messages, key=lambda x: x.timestamp)
+        self.messages = [self.messages[i] for i in range(len(self.messages)) if
+                         i == 0 or self.messages[i].timestamp != self.messages[i - 1].timestamp]
 
     def add_data_message(self, message: str):
         self.messages.append(DataMessage(message=message))
