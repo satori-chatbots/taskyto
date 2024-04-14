@@ -1,4 +1,5 @@
 import contextlib
+import time
 from typing import Optional, List
 
 import spec
@@ -349,9 +350,16 @@ class CustomPromptEngine(Visitor, Engine):
             self.execute_transition(transition, event)
 
     def execute_with_input(self, input_: str):
+        start = time.time()
+
         self.recorded_interaction.append(type="user", message=input_)
         self.execution_state.push_event(UserInput(input_))
         self.execute()
+
+        end = time.time()
+        if utils.DEBUG:
+            print(f"Execution time: {end - start}")
+        self.recorded_interaction.record_response_time(end - start)
 
     def execute_transition(self, transition, event):
         self.execution_state.current = transition.target

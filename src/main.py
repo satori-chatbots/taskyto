@@ -68,6 +68,11 @@ def main(chatbot_folder: str, configuration, recording_file_dump: str = None, mo
 
     dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
 
+    print()
+    print("Bye!")
+    print(f"Average response time: {engine.recorded_interaction.average_response_time()}")
+
+
 def is_test_file(file):
     return file.endswith(".yaml") and not is_test_configuration(file)
 
