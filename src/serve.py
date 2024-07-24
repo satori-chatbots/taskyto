@@ -12,6 +12,8 @@ if __name__ == '__main__':
                         help='Show the intermediate prompts')
     parser.add_argument('--debug', default=False, action='store_true',
                         help='Show all intermediate processing information')
+    parser.add_argument('--config', default=None, type=str,
+                        help='The configuration file to use for the chatbot')
 
     args = parser.parse_args()
 
