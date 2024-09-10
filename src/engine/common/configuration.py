@@ -34,7 +34,8 @@ class ConfigurationModel(BaseModel):
 
 # This is to imitate parse_obj_as but without warnings
 def parse_obj_as_(type_: type, obj: Any):
-    return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
+    # return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
+    return pydantic.TypeAdapter(type_).validate_python(obj)
 
 
 def read_configuration(configuration_file: str) -> ConfigurationModel:
