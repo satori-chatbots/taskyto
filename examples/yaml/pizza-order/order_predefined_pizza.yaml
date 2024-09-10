@@ -1,0 +1,26 @@
+name: order_predefined_pizza
+kind: data_gathering
+description: |
+  Useful for asking which predefined pizza type the user wants (one among margarita, carbonara, marinera, hawaiian, 
+  four cheese and vegetarian), and the size.
+data:
+  - pizza_size:
+      type: enum
+      values:
+        - small
+        - medium
+        - large
+  - pizza_type:
+      type: enum
+      values:
+        - margarita
+        - carbonara
+        - marinera
+        - hawaiian
+        - four cheese
+        - vegetarian
+
+on-success:
+  response:
+    text: "Great, a {pizza_size} {pizza_type} pizza!"
+    rephrase: in-caller

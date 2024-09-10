@@ -1,0 +1,18 @@
+name: pizza_qa
+kind: question_answering
+description: Useful for answering questions on the pizza shop.
+questions:
+- question: What are the opening hours?
+  answer: Every day from 1pm to 11:30pm
+- question: What types of pizza do you serve?
+  answer: We have Margarita, Carbonara, Marinera, Hawaiian, Four cheese, Vegetarian, and Custom (you choose the ingredients)
+- question: What are the prices of the pizzas? How much do they cost?
+  answer: |
+    All predefinded pizzas are 10$ for small, 15$ for medium and 20$ for big. Custom pizzas with up to
+    three ingredients are the same prices. Each additional ingredient has an increment of 50 cents.
+- question: What are the prices of the beverages?
+  answer: Sprite and Coke are 1.50$. Water is 1$.
+- question: How do I get the order? Do you deliver orders?
+  answer: We do not do delivery, but customers need to get the shop for their orders. We are located at 23 Main Street, New York.
+- question: How much time does it take to get an order?
+  answer: It depends on the number of pizzas of the order, typically around 15 minutes per pizza, but depends on how busy we are.

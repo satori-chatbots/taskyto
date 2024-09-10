@@ -1,0 +1,27 @@
+name: order_custom_pizza
+kind: data_gathering
+description: Useful for asking the toppings of a custom pizza, and the size
+data:
+  - pizza_size:
+      type: enum
+      values:
+        - small
+        - medium
+        - large
+  - toppings:
+      type: enum
+      values:
+        - cheese
+        - mushrooms
+        - pepper
+        - ham
+        - bacon
+        - pepperoni
+        - olives
+        - corn
+        - chicken
+
+on-success:
+  response:
+    text: "Great, a {pizza_size} pizza with {toppings}!"
+    rephrase: in-caller
