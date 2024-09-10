@@ -1,0 +1,33 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users of a pizza shop to order a pizza. The shop name is Fast pizza.
+      fallback: I'm sorry, I did not get what you said. Can you rephrase?
+
+      items:
+          - title: Hours. To answer questions about the opening hours.
+            kind: answer
+            answer: every day from 1pm to 11:30pm
+          - title: Types. To answer questions about types of pizzas.
+            kind: answer
+            answer: We have Margarita, Carbonara, Marinera, Hawaiian, Four cheese, Vegetarian, and Custom (you choose the ingredients)
+          - title: Pizza prices. To answer questions about prices of pizzas.
+            kind: answer
+            answer: |
+              All pre-definded pizzas are 10$ for small, 15$ for medium and 20$ for big. Custom pizzas with up to
+              three ingredients are the same prices. Each aditional ingredient has an increment of 50 cents.
+          - title: Drink prices. To answer questions about prices of beverages.
+            kind: answer
+            answer: Sprite and Coke are 1.50$. Water is 1$.
+          - title: How to get the order. To answer questions about how to get the order.
+            kind: answer
+            answer: We do not do delivery, but customers need to get the shop for their orders. We are located at 23 Main Street, New York.
+          - title: How much time does it take to get an order. To answer questions about the time to process an order.
+            kind: answer
+            answer: It depends on the number of pizzas of the order, typically around 15 minutes per pizza, but depends on how busy we are.
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Welcome to Fast Pizza!. I'm a chatbot assistant that can help you order pizzas and drinks. 
+              What can I do for you?
