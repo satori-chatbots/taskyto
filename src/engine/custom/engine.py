@@ -8,7 +8,7 @@ from engine.common import Configuration, ChatbotResult, DebugInfo, compute_init_
 from engine.common.memory import HumanMessage, AIResponse
 from engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
     TaskInProgressEventType, TaskInProgressEvent, AIResponseEventType, TaskFinishEventEventType, TaskFinishEvent, \
-    AIResponseEvent
+    AIResponseEvent, Event
 from engine.custom.generator import ModuleGenerator
 from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, MemoryPiece
 from engine.custom.statemachine import StateMachine, State, CompositeState, Initial, TriggerEventMatchByClass, Action, \
@@ -87,6 +87,11 @@ class CompositeAction(Action):
             a.execute(execution_state, event)
             execution_state.notify_action_listeners(a)
 
+    def add_if(self, condition, action):
+        if condition:
+            self.actions.append(action)
+        return self
+
     def __str__(self):
         return "\n".join([str(a) for a in self.actions])
 
@@ -120,6 +125,15 @@ class UpdateMemory(Action):
         str_copy_from = f", from {self.copy_from.name}" if self.copy_from is not None else ""
         return f"UpdateMemory({self.module.name}{str_copy_from})"
 
+class PushEvent(Action):
+    def __init__(self, event: Event):
+        self.event = event
+
+    def execute(self, execution_state, event):
+        execution_state.push_event(self.event)
+
+    def __str__(self):
+        return f"PushEvent({type(self.event).__name__})"
 
 class StateMachineTransformer(Visitor):
 
@@ -167,6 +181,10 @@ class StateMachineTransformer(Visitor):
 
             self.sm.add_state(state)
 
+            is_top_level_module = (self.initial == module)
+            is_item_menu_module = (isinstance(item_, spec.ToolItem) and
+                                   isinstance(self.chatbot_model.resolve_module(item_.reference), spec.MenuModule))
+
             if hasattr(state.module, 'on_success') and state.module.on_success is not None:
                 action = state.module.on_success
                 response = action.get_response_element()
@@ -174,22 +192,32 @@ class StateMachineTransformer(Visitor):
                 # The default response is to say the result
                 response = spec.ResponseElement(text='{{result}}', rephrase=None)
 
+            # TODO: When the module is not top level we need to by pass the response from the inner
+            # module to the outer module. This is done via a PushEvent(TaskFinishEvent(None)), but
+            # I'm not sure if we are passing the complete information, specially for those action
+            # which takes information from the events (e.g., a new event is generated but the information
+            # of the inner event is not copied).
             if response.is_direct_response() or response.is_simple_rephrase():
                 # Simply rephrase is handled dynamically
                 self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
                                        CompositeAction([RunTool(state.runtime_module), UpdateMemory(state.module)]))
 
                 self.sm.add_transition(state, current_state, TaskFinishEventEventType,
-                                       CompositeAction([SayAction(None, consume_event=True)]))
+                                       CompositeAction([]).
+                                            add_if((is_top_level_module and not is_item_menu_module) or
+                                                   (not is_top_level_module and not is_item_menu_module), SayAction(None, consume_event=True)).
+                                            add_if(not is_top_level_module, PushEvent(TaskFinishEvent(None))))
             elif response.is_in_caller_rephrase():
                 self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
                                        CompositeAction(
                                            [UpdateMemory(current_state.module), RunTool(state.runtime_module),
-                                            UpdateMemory(state.module)]))
+                                            UpdateMemory(state.module)]).
+                                       add_if(not is_top_level_module, PushEvent(TaskFinishEvent(None))))
 
                 self.sm.add_transition(state, current_state, TaskFinishEventEventType,
                                        CompositeAction([UpdateMemory(current_state.module),
-                                                        ApplyLLM(current_state.runtime_module, allow_tools=False)]))
+                                                        ApplyLLM(current_state.runtime_module, allow_tools=False)]).
+                                                    add_if(not is_top_level_module, PushEvent(TaskFinishEvent(None))))
             else:
                 raise ValueError(f"Unsupported response type: {response}")
 
@@ -205,8 +233,11 @@ class StateMachineTransformer(Visitor):
         resolved_module = self.chatbot_model.resolve_module(item.reference)
         if isinstance(resolved_module, spec.DataGatheringModule):
             return resolved_module.accept(self)
+        elif isinstance(resolved_module, spec.MenuModule):
+            return resolved_module.accept(self)
 
-        # TODO: Handle homogeneously
+        # TODO: Handle homogeneously. There are modules like q&a for which we know that we only generate a state,
+        # but this should be encoded in the corresponding visit_XXX method.
         return self.new_state(self.sm, resolved_module)
 
     def visit_data_gathering_module(self, module: spec.DataGatheringModule) -> State:

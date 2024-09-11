@@ -128,7 +128,7 @@ def replace_values(response, data):
     return response
 
 
-def compute_init_module(chatbot_model: spec.ChatbotModel) -> spec.Item:
+def compute_init_module(chatbot_model: spec.ChatbotModel) -> spec.Module:
     g = nx.DiGraph()
     chatbot_model.to_graph(g)
     sorted_modules = list(nx.topological_sort(g))

@@ -32,6 +32,12 @@ class MenuChatbotModule(RuntimeChatbotModule):
         instruction = prompts.section("instruction", "{instruction}")
         return default_ + instruction
 
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
+        # Here the tool_input has what the user has written and led to the activation of this tool
+        # TODO: We don't seem to have access to prompt  
+        self.run(state, tool_input)
+
+
 
 class DataGatheringChatbotModule(RuntimeChatbotModule):
 

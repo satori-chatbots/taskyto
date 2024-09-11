@@ -1,0 +1,18 @@
+modules:
+- name: pizza_type
+  kind: menu
+  presentation: |
+    In this step, you should decide whether the customer wants to order a predefined pizza, or a custom one
+  fallback: I'm sorry, I did not get what you said. Can you rephrase?
+
+  items:
+  - title: Order a predefined pizza, one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian
+    kind: sequence
+    references:
+      - order_predefined_pizza
+      - order_drinks
+  - title: Order a custom pizza, where the customer chooses the toppings
+    kind: sequence
+    references:
+      - order_custom_pizza
+      - order_drinks
