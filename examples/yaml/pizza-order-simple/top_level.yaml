@@ -1,0 +1,23 @@
+modules:
+- name: top-level
+  kind: menu
+  presentation: |
+    You are a chatbot which helps users of a pizza shop to order a pizza. The shop name is Fast pizza.
+  fallback: I'm sorry, I did not get what you said. Can you rephrase?
+
+  items:
+  - title: Pizza Q&A
+    kind: module
+    reference: pizza_qa
+  - title: Order a pizza, one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian
+    kind: sequence
+    memory: full
+    references:
+      - order_predefined_pizza
+      - order_drinks
+      - calculate_price
+  - title: Welcome. To say hello to the customers.
+    kind: answer
+    answer: |
+      Welcome to Fast Pizza!. I'm a chatbot assistant that can help you order pizzas and drinks. 
+      What can I do for you?

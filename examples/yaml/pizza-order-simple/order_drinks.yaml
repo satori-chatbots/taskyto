@@ -1,0 +1,17 @@
+name: order_drinks
+kind: data_gathering
+description: Useful for asking a number of drinks for the pizza order
+data:
+  - num_drinks:
+      type: integer
+  - drinks:
+      type: enum
+      values:
+        - coke
+        - sprite
+        - water
+
+on-success:
+  response:
+    text: "Ok, I have received your order for {num_drinks} {drinks}."
+    rephrase: simple
