@@ -8,8 +8,9 @@ questions:
   answer: We have Margarita, Carbonara, Marinera, Hawaiian, Four cheese, Vegetarian, and Custom (you choose the ingredients)
 - question: What are the prices of the pizzas? How much do they cost?
   answer: |
-    All predefinded pizzas are 10$ for small, 15$ for medium and 20$ for big. Custom pizzas with up to
-    three ingredients are the same prices. Each additional ingredient has an increment of 50 cents.
+    Margarita pizzas are 10$ for small, 15$ for medium and 20$ for big. The other predefined pizzas, except for 
+    carbonara are 2$ more for each size. Carbonara is 2.5$ more for each size. Custom pizzas with up to
+    three ingredients are the same prices than predefined ones. Each additional ingredient has an increment of 50 cents.
 - question: What are the prices of the beverages?
   answer: Sprite and Coke are 1.50$. Water is 1$.
 - question: How do I get the order? Do you deliver orders?

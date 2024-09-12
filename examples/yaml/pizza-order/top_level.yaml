@@ -12,16 +12,6 @@ modules:
   - title: Order a pizza
     kind: module
     reference: pizza_type
-#  - title: Order a custom pizza, where the customer chooses the toppings
-#    kind: sequence
-#    references:
-#      - order_custom_pizza
-#      - order_drinks
-#  - title: Order a predefined pizza, one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian
-#    kind: sequence
-#    references:
-#      - order_predefined_pizza
-#      - order_drinks
   - title: Welcome. To say hello to the customers.
     kind: answer
     answer: |

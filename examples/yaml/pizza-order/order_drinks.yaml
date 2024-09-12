@@ -1,6 +1,6 @@
 name: order_drinks
 kind: data_gathering
-description: Useful for asking a number of drinks for the pizza order
+description: Useful for asking a number of drinks for the pizza order. All ordered drinks must be of the same type.
 data:
   - num_drinks:
       type: integer

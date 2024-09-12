@@ -11,8 +11,10 @@ modules:
     references:
       - order_predefined_pizza
       - order_drinks
+      - calculate_price_predefined
   - title: Order a custom pizza, where the customer chooses the toppings
     kind: sequence
     references:
       - order_custom_pizza
       - order_drinks
+      - calculate_price_custom
