@@ -1,0 +1,37 @@
+name: calculate_price_custom
+kind: action
+data:
+  - pizza_size:
+      type: enum
+      values:
+        - small
+        - medium
+        - large
+  - pizza_toppings:
+      type: enum
+      values:
+        - cheese
+        - mushrooms
+        - pepper
+        - ham
+        - bacon
+        - pepperoni
+        - olives
+        - corn
+        - chicken
+  - num_drinks:
+      type: integer
+  - drinks:
+      type: enum
+      values:
+        - coke
+        - sprite
+        - water
+
+on-success:
+  execute:
+    language: python
+    code: calculate_price_predefined.py
+  response:
+    text: "{{result}}"
+    rephrase: simple
