@@ -1,5 +1,5 @@
 def main(pizza_size, toppings, num_drinks, drinks):
-    print(f"Calculating price for a {pizza_size} with {pizza_toppings} and {num_drinks} {drinks}")
+    print(f"Calculating price for a {pizza_size} with {toppings} and {num_drinks} {drinks}")
     pizza_prices = {
          "small": 10,
          "medium": 15,
