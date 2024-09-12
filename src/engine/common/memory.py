@@ -25,6 +25,7 @@ class HumanMessage(Message):
 
 
 class DataMessage(Message):
+    data: dict
 
     def prefix(self) -> str:
         return ""
@@ -96,6 +97,12 @@ class ConversationMemory(BaseModel):
         self.messages = self.messages + to_be_copied
         self.__normalize_messages()
 
+    @property
+    def data(self):
+        data_messages = [m for m in self.messages if isinstance(m, DataMessage)]
+        # Get the data for every message and merge in a single dict
+        return {k: v for d in [m.data for m in data_messages] for k, v in d.items()}
+
     # TODO: This should be done as we insert messages, but for the moment the number of messages is expected
     #  to be small so it's ok to do this at the end which is easier
     def __normalize_messages(self):
@@ -103,8 +110,8 @@ class ConversationMemory(BaseModel):
         self.messages = [self.messages[i] for i in range(len(self.messages)) if
                          i == 0 or self.messages[i].timestamp != self.messages[i - 1].timestamp]
 
-    def add_data_message(self, message: str):
-        self.messages.append(DataMessage(message=message))
+    def add_data_message(self, message: str, data: dict):
+        self.messages.append(DataMessage(message=message, data=data))
         return self
 
     def add_instruction_message(self, message: str):

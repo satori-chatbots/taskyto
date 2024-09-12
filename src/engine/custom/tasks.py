@@ -106,7 +106,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                 result = self.execute_action(self.module.on_success, data,
                                              default_response=f"The following data has been collected: {collected_data}")
 
-                data_memory = MemoryPiece().add_data_message(collected_data)
+                data_memory = MemoryPiece().add_data_message(collected_data, data)
                 inst_memory = MemoryPiece().add_instruction_message("Tell the user:" + result)
                 state.push_event(
                     TaskFinishEvent(result, memory={'collected_data': data_memory, 'instruction': inst_memory},
@@ -128,7 +128,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
         if len(unknown_values) > 0:
             instruction += f"\nIn addition, tell the human that you could not understand: {','.join(unknown_values)}"
 
-        data_memory = MemoryPiece().add_data_message(collected_data)
+        data_memory = MemoryPiece().add_data_message(collected_data, data)
         inst_memory = MemoryPiece().add_instruction_message(instruction)
 
         state.push_event(TaskInProgressEvent(memory={'collected_data': data_memory, 'instruction': inst_memory}))
@@ -207,8 +207,9 @@ class ActionChatbotModule(RuntimeChatbotModule):
         raise NotImplementedError("ActionChatbotModule should not be run")
 
     def run_as_tool(self, state_manager: ExecutionState, tool_input: str, activating_event=None):
-        available_data = activating_event.get_property_value("data")
-        # available_data = state.data[self.previous_tool.id]
+        history = state_manager.get_memory(self.module, 'collected_data')
+        available_data = history.data
+
         if available_data is None:
             raise ValueError(
                 "Data is None. Expected data for module " + self.previous_tool.name() + " - " + self.previous_tool.id)

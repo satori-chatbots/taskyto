@@ -37,6 +37,7 @@ class ExecutionState:
         # To pass data between modules
         self.data = {}
 
+    # TODO: This is no longer used, except by one test (see test_model.py)
     def get_module_data(self, module_name):
         return self.data[module_name]
 

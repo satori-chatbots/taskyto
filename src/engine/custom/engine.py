@@ -5,7 +5,7 @@ from typing import Optional, List
 import spec
 import utils
 from engine.common import Configuration, ChatbotResult, DebugInfo, compute_init_module, Engine
-from engine.common.memory import HumanMessage, AIResponse
+from engine.common.memory import HumanMessage, AIResponse, DataMessage
 from engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
     TaskInProgressEventType, TaskInProgressEvent, AIResponseEventType, TaskFinishEventEventType, TaskFinishEvent, \
     AIResponseEvent, Event
@@ -106,6 +106,7 @@ class UpdateMemory(Action):
     def execute(self, execution_state, event):
         if self.copy_from is not None:
             execution_state.copy_memory(self.copy_from, self.module, 'history', filter=self.filter)
+            execution_state.copy_memory(self.copy_from, self.module, 'collected_data', filter=self.filter)
             return
 
         if isinstance(event, ActivateModuleEvent):
@@ -296,10 +297,14 @@ class StateMachineTransformer(Visitor):
                 actions = [SayAction(message=None, consume_event=True)] + actions
 
                 if seq_module.memory == spec.MemoryScope.full:
-                    # We need to update the memory of all subsequent modules
+                    # We need to update the memory of the next modules with the previous data, but before
+                    # running the next tool (that's why we insert at the beginning) because the tool may need this info.
                     for m in resolved_modules[idx:]:
-                        actions.append(UpdateMemory(m, copy_from=last_module,
-                                                    filter=[HumanMessage, AIResponse]))
+                        actions.insert(0, UpdateMemory(m, copy_from=last_module,
+                                                    filter=[HumanMessage, AIResponse, DataMessage]))
+
+                # Put at the beginning a memory update of the previous module
+                actions.insert(0, UpdateMemory(last.module))
 
                 # Handle go back behavior if needed
                 if seq_module.goback:
