@@ -10,6 +10,7 @@ modules:
     kind: module
     reference: pizza_qa
   - title: Order a pizza
+    memory: full
     kind: module
     reference: pizza_type
   - title: Welcome. To say hello to the customers.

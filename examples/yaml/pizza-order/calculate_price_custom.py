@@ -1,4 +1,4 @@
-def main(pizza_size, pizza_toppings, num_drinks, drinks):
+def main(pizza_size, toppings, num_drinks, drinks):
     print(f"Calculating price for a {pizza_size} with {pizza_toppings} and {num_drinks} {drinks}")
     pizza_prices = {
          "small": 10,
@@ -15,6 +15,6 @@ def main(pizza_size, pizza_toppings, num_drinks, drinks):
     drinks = drinks.lower()
     price = pizza_prices[pizza_size]+drink_prices[drinks]*num_drinks
     # now increment if toppings > 3
-    if len(pizza_toppings)>3:
-        price += 0.5*(len(pizza_toppings)-3)
+    if len(toppings)>3:
+        price += 0.5*(len(toppings)-3)
     return f"The price of your order is {price}$"

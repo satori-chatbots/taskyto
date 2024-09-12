@@ -7,12 +7,14 @@ modules:
 
   items:
   - title: Order a predefined pizza, one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian
+    memory: full
     kind: sequence
     references:
       - order_predefined_pizza
       - order_drinks
       - calculate_price_predefined
   - title: Order a custom pizza, where the customer chooses the toppings
+    memory: full
     kind: sequence
     references:
       - order_custom_pizza

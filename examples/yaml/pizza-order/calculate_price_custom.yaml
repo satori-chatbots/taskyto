@@ -7,7 +7,7 @@ data:
         - small
         - medium
         - large
-  - pizza_toppings:
+  - toppings:
       type: enum
       values:
         - cheese
@@ -31,7 +31,7 @@ data:
 on-success:
   execute:
     language: python
-    code: calculate_price_predefined.py
+    code: calculate_price_custom.py
   response:
     text: "{{result}}"
     rephrase: simple
