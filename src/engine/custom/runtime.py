@@ -109,7 +109,7 @@ class ChatbotOutputParser(ConvoOutputParser):
     # Make sure that it uses the proper format_instructions
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
         if f"{self.ai_prefix}:" in text:
-            return super().parse(text)
+            return self.remove_trailing_stuff(super().parse(text))
 
         expected = "Thought: Do I need to use a tool? No"
         if expected in text:
@@ -125,6 +125,16 @@ class ChatbotOutputParser(ConvoOutputParser):
         if not match:
             raise OutputParserException(f"Could not parse Observation from LLM output: `{text}`")
         return match.group(1)
+
+    @staticmethod
+    def remove_trailing_stuff(action: AgentFinish) -> AgentFinish:
+        if action.return_values['output'].endswith("```"):
+            # Remove the trailing "```"
+            action.return_values['output'] = action.return_values['output'][:-3]
+        if action.return_values['output'].endswith("\n"):
+            # Remove the trailing "\n"
+            action.return_values['output'] = action.return_values['output'][:-1]
+        return action
 
 
 # HUMAN_MESSAGE_TEMPLATE = "{input}\n\n{agent_scratchpad}"

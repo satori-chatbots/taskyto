@@ -75,7 +75,7 @@ class ModuleGenerator(Visitor):
 
         activation_prompt = module.description + "\nThe tool needs the following data:\n" + data_shape
         activation_prompt += f'\nProvide the values as JSON with the following fields: {property_names}.\n'
-        activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, ask again.\n"
+        activation_prompt += f"\nOnly provide the values for {property_names} if given by the user or are in the Previous conversation history. If the valus is not there and no value is given, ask again.\n"
         # activation_prompt += f"\nOnly provide the values for {property_names} if given by the user. If no value is given, provide the empty string.\n"
 
         prompt = (

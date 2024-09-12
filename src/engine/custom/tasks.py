@@ -120,7 +120,7 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
             pass
 
         collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
-        instruction = ("Ask the Human to provide the missing data: " +
+        instruction = ("Check in the previous conversation history, and if the data is not present, ask the Human to provide the missing data: " +
                        self.get_missing_data_instruction(data, lambda param: param.required))
         missing_optionals = self.get_missing_data_instruction(data, lambda param: not param.required)
         if len(missing_optionals) > 0:
