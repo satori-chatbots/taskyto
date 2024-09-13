@@ -1,4 +1,4 @@
-name: calculate_price_custom
+name: calculate_ticket_custom
 kind: action
 data:
   - pizza_size:
@@ -31,7 +31,7 @@ data:
 on-success:
   execute:
     language: python
-    code: calculate_price_custom.py
+    code: calculate_ticket_custom.py
   response:
-    text: "The price of a {pizza_size} pizza with {', '.join(toppings[:-1]) + ' and ' + toppings[-1] if len(toppings) > 1 else toppings[0]}, and {num_drinks} {drinks} is {{result}}"
+    text: "Your order will be ready in 15 minutes: come to our shop (23 Main Street, NY). Your order ID is {{result}}"
     rephrase: simple

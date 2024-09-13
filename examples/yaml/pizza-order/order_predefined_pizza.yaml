@@ -22,5 +22,5 @@ data:
 
 on-success:
   response:
-    text: "Great, a {pizza_size} {pizza_type} pizza!"
+    text: "Thanks for ordering a {pizza_size} {pizza_type} pizza!"
     rephrase: in-caller

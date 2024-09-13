@@ -13,6 +13,7 @@ modules:
       - order_predefined_pizza
       - order_drinks
       - calculate_price_predefined
+      - calculate_ticket_predefined
   - title: Order a custom pizza, where the customer chooses the toppings
     memory: full
     kind: sequence
@@ -20,3 +21,4 @@ modules:
       - order_custom_pizza
       - order_drinks
       - calculate_price_custom
+      - calculate_ticket_custom

@@ -1,4 +1,4 @@
-name: calculate_price_predefined
+name: calculate_ticket_predefined
 kind: action
 data:
   - pizza_size:
@@ -28,7 +28,7 @@ data:
 on-success:
   execute:
     language: python
-    code: calculate_price_predefined.py
+    code: calculate_ticket_predefined.py
   response:
-    text: "The price of a {pizza_size} {pizza_type} pizza, and {num_drinks} {drinks} is {{result}}"
+    text: "Your order will be ready in 15 minutes: come to our shop (23 Main Street, NY). Your order ID is {{result}}"
     rephrase: simple

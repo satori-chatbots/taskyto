@@ -23,5 +23,5 @@ data:
 
 on-success:
   response:
-    text: "Great, a {pizza_size} pizza with {toppings}!"
+    text: "Thanks for ordering a {pizza_size} pizza with {', '.join(toppings[:-1]) + ' and ' + toppings[-1] if len(toppings) > 1 else toppings[0]}!"
     rephrase: in-caller

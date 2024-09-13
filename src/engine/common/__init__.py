@@ -1,5 +1,6 @@
 import abc
 from abc import ABC, abstractmethod, ABCMeta
+from types import SimpleNamespace
 from typing import Optional
 
 import networkx as nx
@@ -125,7 +126,10 @@ def replace_values(response, data):
         # Handle both {{ }} and { }
         response = response.replace("{{" + k + "}}", str(v))
         response = response.replace("{" + k + "}", str(v))
-    return response
+    # now handle expressions
+    string_eval = "f\""+response+"\""
+    return eval(string_eval, data)
+    #return response
 
 
 def compute_init_module(chatbot_model: spec.ChatbotModel) -> spec.Module:
