@@ -6,7 +6,7 @@ modules:
   fallback: I'm sorry, I did not get what you said. Can you rephrase?
 
   items:
-  - title: Order a predefined pizza, one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian
+  - title: Order a predefined pizza (one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian), and drinks
     memory: full
     kind: sequence
     references:
@@ -14,7 +14,7 @@ modules:
       - order_drinks
       - calculate_price_predefined
       - calculate_ticket_predefined
-  - title: Order a custom pizza, where the customer chooses the toppings
+  - title: Order a custom pizza, where the customer chooses the toppings, and drinks
     memory: full
     kind: sequence
     references:

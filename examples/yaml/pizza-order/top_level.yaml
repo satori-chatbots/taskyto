@@ -2,14 +2,14 @@ modules:
 - name: top-level
   kind: menu
   presentation: |
-    You are a chatbot which helps users of a pizza shop to order a pizza. The shop name is Fast pizza.
+    You are a chatbot which helps users of a pizza shop to order pizza and drinks. The shop name is Fast pizza.
   fallback: I'm sorry, I did not get what you said. Can you rephrase?
 
   items:
   - title: Pizza Q&A
     kind: module
     reference: pizza_qa
-  - title: Order a pizza
+  - title: Order a pizza and drinks
     memory: full
     kind: module
     reference: pizza_type

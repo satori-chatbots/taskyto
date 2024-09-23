@@ -1,6 +1,6 @@
 name: order_custom_pizza
 kind: data_gathering
-description: Useful for asking the toppings of a custom pizza, and the size
+description: Useful for asking the toppings of a custom pizza, and the size. If the customer mentions drinks, just ignore that.
 data:
   - pizza_size:
       type: enum
