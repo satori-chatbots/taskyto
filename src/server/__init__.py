@@ -3,6 +3,7 @@ import os
 
 from flask import Flask, jsonify
 from flask import request
+from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
 
 from engine.custom.runtime import Channel
 
@@ -64,13 +65,35 @@ class FlaskChatbotApp:
 
         @app.post('/conversation/user_message')
         def user_message():
+            try:
+                return _handle_user_message()
+            except BadRequest as e:
+                return jsonify({"error": str(e)}), 400
+            except NotFound as e:
+                return jsonify({"error": str(e)}), 404
+            except InternalServerError as e:
+                return jsonify({"error": str(e)}), 500
+            except Exception as e:
+                return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
+        def _handle_user_message():
+            if not request.json or 'id' not in request.json or 'message' not in request.json:
+                raise BadRequest("Missing 'id' or 'message' in request")
+
             id = request.json['id']
             message = request.json['message']
 
-            conversation = get_data()[id]
+            try:
+                conversation = get_data()[id]
+            except KeyError:
+                raise NotFound(f"Conversation with id {id} not found")
+
             conversation.channel.clear()
 
-            conversation.engine.execute_with_input(message)
+            try:
+                conversation.engine.execute_with_input(message)
+            except Exception as e:
+                raise InternalServerError(f"Error executing the engine: {str(e)}")
 
             chatbot_response = "\n".join(conversation.channel.responses)
             return jsonify({"id": id, "type": "chatbot_response", "message": chatbot_response})
