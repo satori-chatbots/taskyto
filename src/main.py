@@ -66,7 +66,7 @@ def main(chatbot_folder: str, configuration, recording_file_dump: str = None, mo
     channel = configuration.new_channel()
     engine.run_all(channel)
 
-    dump_test_recording(engine.recorded_interaction, file=recording_file_dump)
+    dump_test_recording(engine.recorded_interaction, file=recording_file_dump, trace=True)
 
     print()
     print("Bye!")

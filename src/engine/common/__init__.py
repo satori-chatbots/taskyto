@@ -128,6 +128,7 @@ def replace_values(response, data):
         response = response.replace("{" + k + "}", str(v))
     # now handle expressions
     string_eval = "f\""+response+"\""
+    print(string_eval)
     return eval(string_eval, data)
     #return response
 

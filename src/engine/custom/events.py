@@ -16,6 +16,9 @@ class Event(abc.ABC):
         assert value is not None
         return value
 
+    def to_dict(self):
+        return {"type": self.__class__.__name__}
+
 class ActivateModuleEventType(TriggerEvent):
     def __init__(self, module: spec.Module):
         self.module = module
@@ -36,11 +39,17 @@ class ActivateModuleEvent(Event):
     def __str__(self):
         return f"ActivateModule({self.module.name()}, {self.input})" #, {self.previous_answer})"
 
+    def to_dict(self):
+        return super().to_dict() | { "module": self.module.name(), "input": self.input,
+                                     "previous_answer": self.previous_answer.dict() }
+
 class AIResponseEvent(Event):
 
     def __init__(self, message: str):
         self.message = message
 
+    def to_dict(self):
+        return super().to_dict() | { "message": self.message }
 
 AIResponseEventType = TriggerEventMatchByClass(AIResponseEvent)
 
@@ -50,6 +59,8 @@ class UserInput(Event):
     def __init__(self, message):
         self.message = message
 
+    def to_dict(self):
+        return super().to_dict() | { "message": self.message }
 
 UserInputEventType = TriggerEventMatchByClass(UserInput)
 
@@ -59,6 +70,10 @@ class TaskInProgressEvent(Event):
     def __init__(self, memory: dict):
         self.memory = memory
 
+    def to_dict(self):
+        # Traverse memory and apply the dict method to each value
+        serialized = {k: v.dict() for k, v in self.memory.items()}
+        return super().to_dict() | { "memory": serialized }
 
 TaskInProgressEventType = TriggerEventMatchByClass(TaskInProgressEvent)
 
@@ -70,5 +85,7 @@ class TaskFinishEvent(Event):
         self.message = message
         self.memory = memory
 
+    def to_dict(self):
+        return super().to_dict() | { "message": self.message, "memory": self.memory }
 
 TaskFinishEventEventType = TriggerEventMatchByClass(TaskFinishEvent)

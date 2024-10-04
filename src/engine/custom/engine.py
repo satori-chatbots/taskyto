@@ -33,6 +33,8 @@ class RunModuleAction(Action):
         disabled = " , -" + ",".join(self.prompts_disabled) if len(self.prompts_disabled) > 0 else ""
         return f"RunModuleOnInput({self.runtime_module.module.name}{disabled})"
 
+    def to_dict(self):
+        return {"module": self.runtime_module.module.name, "prompts_disabled": self.prompts_disabled}
 
 class ApplyLLM(Action):
 
@@ -49,6 +51,9 @@ class ApplyLLM(Action):
         disabled = " , -" + ",".join(self.prompts_disabled) if len(self.prompts_disabled) > 0 else ""
         return f"ApplyLLM({self.tool.module.name}, {use_tools}{disabled})"
 
+    def to_dict(self):
+        return {"tool": self.tool.module.name, "allow_tools": self.allow_tools, "prompts_disabled": self.prompts_disabled}
+
 
 class SayAction(Action):
 
@@ -64,6 +69,8 @@ class SayAction(Action):
         execution_state.channel.output(self.message, who=who)
         # return ChatbotResult(self.message, DebugInfo(current_module=execution_state.current.name()))
 
+    def to_dict(self):
+        return {"message": self.message, "consume_event": self.consume_event}
 
 class RunTool(Action):
     def __init__(self, tool: RuntimeChatbotModule):
@@ -77,6 +84,8 @@ class RunTool(Action):
     def __str__(self):
         return f"RunTool({self.tool.module.name})"
 
+    def to_dict(self):
+        return {"tool": self.tool.module.name}
 
 class CompositeAction(Action):
     def __init__(self, actions):
@@ -95,6 +104,8 @@ class CompositeAction(Action):
     def __str__(self):
         return "\n".join([str(a) for a in self.actions])
 
+    def to_dict(self):
+        return {"actions": [a.to_dict() for a in self.actions]}
 
 class UpdateMemory(Action):
 
@@ -126,6 +137,10 @@ class UpdateMemory(Action):
         str_copy_from = f", from {self.copy_from.name}" if self.copy_from is not None else ""
         return f"UpdateMemory({self.module.name}{str_copy_from})"
 
+    def to_dict(self):
+        return {"module": self.module.name, "copy_from": self.copy_from.name if self.copy_from is not None else None}
+
+
 class PushEvent(Action):
     def __init__(self, event: Event):
         self.event = event
@@ -135,6 +150,9 @@ class PushEvent(Action):
 
     def __str__(self):
         return f"PushEvent({type(self.event).__name__})"
+
+    def to_dict(self):
+        return {"event": self.event.to_dict()}
 
 class StateMachineTransformer(Visitor):
 
@@ -374,6 +392,9 @@ class CustomPromptEngine(Visitor, Engine):
             else:
                 # Check transitions with empty events
                 transition = self.statemachine.transition_for(self.execution_state.current, event=event)
+
+            if event is not None:
+                self.recorded_interaction.append_trace(event)
 
             if transition is None:
                 if utils.DEBUG and event is not None:
