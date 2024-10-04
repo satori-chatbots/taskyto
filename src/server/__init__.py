@@ -93,6 +93,8 @@ class FlaskChatbotApp:
             try:
                 conversation.engine.execute_with_input(message)
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 raise InternalServerError(f"Error executing the engine: {str(e)}")
 
             chatbot_response = "\n".join(conversation.channel.responses)

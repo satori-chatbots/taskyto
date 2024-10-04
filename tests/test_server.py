@@ -14,7 +14,8 @@ def app():
     mock = MockedLLM()
     mock.ai_answer(input="Hi", output="Welcome to my bike shop", prefix="New input:")
     mock.module_activation(input="I need a repair", module="make_appointment", query="{'service': 'repair'}")
-    mock.ai_answer(input="Ask the Human to provide the missing data: date, time, service", output="Tell me the data!",
+    mock.ai_answer(input="Check in the previous conversation history, and if the data is not present, ask the Human to provide the missing data: date, time, service",
+                   output="Tell me the data!",
                    prefix="Instruction:")
 
     configuration = TestConfiguration(chatbot_folder, mock)
