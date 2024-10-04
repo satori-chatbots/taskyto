@@ -4,7 +4,7 @@ import spec
 from engine.common import prompts, Configuration
 from engine.custom.runtime import RuntimeChatbotModule
 from engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
-    SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule
+    SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule, RagRuntimeModule
 from spec import Visitor
 
 
@@ -59,6 +59,16 @@ class ModuleGenerator(Visitor):
                                               activation_prompt=activation_prompt,
                                               tools=[],
                                               configuration=self.configuration)
+
+    def visit_rag_module(self, module: spec.RagModule) -> RuntimeChatbotModule:
+        activation_prompt = module.description
+        task_prompt = "Answer the user's question using the RAG model."
+        return RagRuntimeModule(module=module,
+                                presentation_prompt=self.initial.presentation,
+                                activation_prompt=activation_prompt,
+                                task_prompt=task_prompt,
+                                tools=[],
+                                configuration=self.configuration)
 
     def visit_data_gathering_module(self, module: spec.DataGatheringModule) -> RuntimeChatbotModule:
         property_names = ", ".join([p.name for p in module.data_model.properties])

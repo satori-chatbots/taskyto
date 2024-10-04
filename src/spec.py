@@ -10,6 +10,8 @@ from typing import List, Any, Optional
 from typing import Literal, Union, Annotated
 import networkx as nx
 
+from utils import parse_obj_as_
+
 
 class Visitor(abc.ABC):
     pass
@@ -91,7 +93,7 @@ class BaseModule(BaseModel):
         return self.name == other.name
 
     @abstractmethod
-    def to_graph(self, g: nx.Graph):
+    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 
 
@@ -239,6 +241,16 @@ class DataGatheringModule(BaseModule, WithDataModel):
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_data_gathering_module(self)
 
+class RagModule(BaseModule):
+    kind: Literal["rag"] = "rag"
+    documents: List[str]
+    description: str = None  # should this be merged with presentation?
+
+    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
+        g.add_node(self)
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_rag_module(self)
 
 class ActionModule(BaseModule, WithDataModel):
     kind: Literal["action"] = "action"
@@ -278,7 +290,7 @@ class QuestionAnsweringModule(BaseModule):
 
 
 Module = Annotated[
-    Union[MenuModule, DataGatheringModule, QuestionAnsweringModule, SequenceModule, ActionModule], Field(
+    Union[MenuModule, DataGatheringModule, QuestionAnsweringModule, RagModule, SequenceModule, ActionModule], Field(
         discriminator='kind')]
 
 
@@ -303,12 +315,6 @@ class ChatbotModel(BaseModel):
         if resolved_module is None:
             raise ValueError(f"Module {reference} not found")
         return resolved_module
-
-
-# This is to imitate parse_obj_as but without warnings
-def parse_obj_as_(type_: type, obj: Any):
-    return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
-
 
 def parse_yaml(yaml_str) -> List[Module]:
     import yaml

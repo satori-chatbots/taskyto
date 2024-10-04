@@ -3,6 +3,8 @@ from typing import List, Any, Union
 import pydantic
 from pydantic import BaseModel, Field
 
+from utils import parse_obj_as_
+
 
 class LLMConfiguration(BaseModel):
     id: str
@@ -30,12 +32,6 @@ class ConfigurationModel(BaseModel):
             return LLMConfiguration(id=llm_config, temperature=0.0)
         else:
             return llm_config
-
-
-# This is to imitate parse_obj_as but without warnings
-def parse_obj_as_(type_: type, obj: Any):
-    # return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
-    return pydantic.TypeAdapter(type_).validate_python(obj)
 
 
 def read_configuration(configuration_file: str) -> ConfigurationModel:

@@ -58,3 +58,6 @@ ctparse==0.3.6
 alignment==1.0.10
 
 python-dateutil~=2.8.2
+
+llama-index==0.11.16
+llama-index-embeddings-huggingface==0.3.1

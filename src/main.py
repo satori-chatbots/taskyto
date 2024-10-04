@@ -46,7 +46,10 @@ def load_configuration_model(chatbot_folder, configuration_file: Optional[str] =
     if configuration_file is None:
         configuration_file = os.path.join(chatbot_folder, "configuration", "default.yaml")
         if not os.path.isfile(configuration_file):
-            return ConfigurationModel(default_llm="gpt-3.5-turbo-0613")
+            print("Using default configuration")
+            return ConfigurationModel(default_llm="gpt-4o-mini")
+        else:
+            print("Using configuration", configuration_file)
 
     # See OpenAI model table: https://platform.openai.com/docs/models
     return read_configuration(configuration_file)

@@ -1,7 +1,8 @@
 import configparser
 import os
+from typing import Any
 
-from engine.common import ChatbotResult
+import pydantic
 
 
 def check_keys(key_list: list):
@@ -20,7 +21,7 @@ def check_keys(key_list: list):
             raise Exception(f"{k} not found")
 
 
-def print_chatbot_answer(response: ChatbotResult):
+def print_chatbot_answer(response: "ChatbotResult"):
     module_name = response.debug_info.current_module
     print("Chatbot [" + module_name + "]: " + response.chatbot_msg)
 
@@ -45,6 +46,10 @@ def get_unparsed_output(message: str) -> str:
         return msg[1].strip("`")
     return message
 
+
+def parse_obj_as_(type_: type, obj: Any):
+    # return pydantic.type_adapter.TypeAdapter(type_).validate_python(obj)
+    return pydantic.TypeAdapter(type_).validate_python(obj)
 
 _debug_var = os.environ.get("DEBUG")
 DEBUG = _debug_var == "true" or _debug_var == "True" or _debug_var == "1"

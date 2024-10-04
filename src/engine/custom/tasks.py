@@ -9,6 +9,7 @@ from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateM
 from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, HUMAN_MESSAGE_TEMPLATE
 
 
+
 class MenuChatbotModule(RuntimeChatbotModule):
 
     def __init__(self, **kwargs):
@@ -146,6 +147,22 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                               if p.name not in data and param_predicate(p)]
         return ", ".join(missing_properties)
 
+from engine.rag.loader import InputLoader
+from engine.rag.embeddings import Indexer
+from functools import cached_property
+
+class RagRuntimeModule(RuntimeChatbotModule):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
+        response = self._index.query(tool_input)
+        print("Execute RAG module: ", response)
+
+    @cached_property
+    def _index(self):
+        loader = InputLoader(self.module.documents)
+        return Indexer(loader.load_data())
 
 class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
     def __init__(self, **kwargs):
