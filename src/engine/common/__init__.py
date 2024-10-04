@@ -126,11 +126,14 @@ def replace_values(response, data):
         # Handle both {{ }} and { }
         response = response.replace("{{" + k + "}}", str(v))
         response = response.replace("{" + k + "}", str(v))
-    # now handle expressions
-    string_eval = "f\""+response+"\""
-    print(string_eval)
-    return eval(string_eval, data)
-    #return response
+
+    def eval_expression(expr, data):
+        string_eval = "f\"" + expr + "\""
+        return eval(string_eval, data)
+
+    # We eval expressions line by line because the format trick only works line by line
+    response = "\n".join([eval_expression(line, data) for line in response.split("\n")])
+    return response
 
 
 def compute_init_module(chatbot_model: spec.ChatbotModel) -> spec.Module:
