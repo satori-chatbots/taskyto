@@ -32,7 +32,8 @@ class CustomConfiguration(Configuration):
         return Evaluator(load_path=[self.root_folder])
 
     def new_llm(self, module_name: Optional[str] = None):
-        from langchain.chat_models import ChatOpenAI
+        #from langchain.chat_models import ChatOpenAI
+        from langchain_openai import ChatOpenAI
         model = self.model.get_llm_for_module_or_default(module_name)
 
         llm = ChatOpenAI(temperature=model.temperature, model_name=model.id, verbose=True)
