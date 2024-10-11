@@ -147,6 +147,22 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                               if p.name not in data and param_predicate(p)]
         return ", ".join(missing_properties)
 
+
+def get_question(tool_input):
+    """
+    Extracts the question from the tool input. This is a helper function to be used by the RAG module and QA module.
+    """
+    if tool_input.startswith("Question:"):
+        return tool_input.replace("Question:", "").strip()
+    else:
+        import json
+        json_query = json.loads(tool_input)
+        if "question" in json_query:
+            return json_query["question"].strip()
+
+    raise ValueError("The query should start with \"Question:\" but it was: " + tool_input)
+
+
 from engine.rag.loader import InputLoader
 from engine.rag.embeddings import Indexer
 from functools import cached_property
@@ -156,7 +172,8 @@ class RagRuntimeModule(RuntimeChatbotModule):
         super().__init__(**kwargs)
 
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
-        response = self._index.query(tool_input)
+        question = get_question(tool_input)
+        response = self._index.query(question)
         print("Execute RAG module: ", response)
 
     @cached_property
@@ -171,7 +188,7 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
 
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         new_llm = self.configuration.new_llm(module_name=self.name())
-        question = self.get_question(tool_input)
+        question = get_question(tool_input)
 
         # prompt_template = ChatPromptTemplate.from_template(self.prompt)
         prompt_template = ChatPromptTemplate.from_template(self.presentation_prompt + "\n" + self.task_prompt)
@@ -194,17 +211,6 @@ class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
 
     def parse_LLM_output(self, output: str):
         return output.replace("ANSWER_IS:", '').strip()
-
-    def get_question(self, tool_input):
-        if tool_input.startswith("Question:"):
-            return tool_input.replace("Question:", "").strip()
-        else:
-            import json
-            json_query = json.loads(tool_input)
-            if "question" in json_query:
-                return json_query["question"].strip()
-
-        raise ValueError("The query should start with \"Question:\" but it was: " + tool_input)
 
 
 class SequenceChatbotModule(RuntimeChatbotModule):

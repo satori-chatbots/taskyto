@@ -61,7 +61,8 @@ class ModuleGenerator(Visitor):
                                               configuration=self.configuration)
 
     def visit_rag_module(self, module: spec.RagModule) -> RuntimeChatbotModule:
-        activation_prompt = module.description
+        activation_prompt = (module.description + "\n" +
+                            "Provide the question given by the user using the JSON format \"question\": <question>\".\n")
         task_prompt = "Answer the user's question using the RAG model."
         return RagRuntimeModule(module=module,
                                 presentation_prompt=self.initial.presentation,
