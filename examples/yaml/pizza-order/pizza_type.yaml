@@ -9,6 +9,7 @@ modules:
   - title: Order a predefined pizza (one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian), and drinks
     memory: full
     kind: sequence
+    goback: false
     references:
       - order_predefined_pizza
       - order_drinks

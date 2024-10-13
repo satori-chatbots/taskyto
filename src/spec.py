@@ -68,7 +68,9 @@ class SequenceItem(BaseItem):
     def get_sequence_module(self):
         if self.impl_module is None:
             module_name = f"sequence-{'-'.join(self.references)}"
-            self.impl_module = SequenceModule(name=module_name, description=self.title, references=self.references, memory=self.memory)
+            self.impl_module = SequenceModule(name=module_name, description=self.title,
+                                              references=self.references, memory=self.memory,
+                                              goback=self.goback)
         return self.impl_module
 
     def accept(self, visitor: Visitor) -> object:
