@@ -156,12 +156,21 @@ def get_question(tool_input):
         return tool_input.replace("Question:", "").strip()
     else:
         import json
+        tool_input = keep_until_last_brace(tool_input)  # remove the extra "\n'''\n" that sometimes this string has
         json_query = json.loads(tool_input)
         if "question" in json_query:
             return json_query["question"].strip()
 
     raise ValueError("The query should start with \"Question:\" but it was: " + tool_input)
 
+
+def keep_until_last_brace(s):
+    last_brace_index = s.rfind('}')
+
+    if last_brace_index != -1:
+        return s[:last_brace_index + 1]
+    else:
+        return s
 
 from engine.rag.loader import InputLoader
 from engine.rag.embeddings import Indexer
