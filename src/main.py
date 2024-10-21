@@ -21,6 +21,17 @@ class CustomConfiguration(Configuration):
         self.root_folder = root_folder
         self.model = model
 
+    @property
+    def initial_greeting(self):
+        if self.model.begin is not None:
+            return self.model.begin.greeting
+        return "Hello"
+
+    @property
+    def is_user_beginning(self):
+        return (self.model.begin is not None and
+                self.model.begin.with_ == 'user')
+
     def new_channel(self):
         from engine.custom.runtime import ConsoleChannel
         return ConsoleChannel()

@@ -163,6 +163,7 @@ class StateMachineTransformer(Visitor):
     def __init__(self, chatbot_model: spec.ChatbotModel, configuration: Configuration):
         self.sm = StateMachine()
         self.chatbot_model = chatbot_model
+        self.configuration = configuration
 
         self.initial = compute_init_module(chatbot_model)
         self.module_generator = ModuleGenerator(chatbot_model, configuration, initial=self.initial)
@@ -189,7 +190,11 @@ class StateMachineTransformer(Visitor):
 
         initial = Initial()
         self.sm.add_state(initial)
-        self.sm.add_transition(initial, initial_module_state, None, SayAction("Hello"))
+        if self.configuration.is_user_beginning:
+            self.sm.add_transition(initial, initial_module_state, None)
+        else:
+            self.sm.add_transition(initial, initial_module_state, None,
+                                   SayAction(self.configuration.initial_greeting))
 
         return self.sm
 

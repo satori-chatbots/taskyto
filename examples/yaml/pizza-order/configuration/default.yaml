@@ -4,3 +4,6 @@ default_llm:
   id: gpt-4o
   temperature: 0.0
 languages: English, Spanish
+begin:
+  with: user
+

@@ -1,4 +1,4 @@
-from typing import List, Any, Union
+from typing import List, Any, Union, Optional
 
 import pydantic
 from pydantic import BaseModel, Field
@@ -14,11 +14,15 @@ class ModuleConfiguration(BaseModel):
     name: str
     llm: Union[LLMConfiguration, str]
 
+class ConversationStart(BaseModel):
+    with_: str = Field(alias="with")
+    greeting: Union[str, List[str]]
 
 class ConfigurationModel(BaseModel):
     default_llm: Union[LLMConfiguration, str]
     languages: str = "any"
     modules: List[ModuleConfiguration] = []
+    begin: Optional[ConversationStart] = None
 
     def get_llm_for_module_or_default(self, module_name: str) -> LLMConfiguration:
         for module in self.modules:
