@@ -66,6 +66,10 @@ class SayAction(Action):
         if self.consume_event:
             self.message = event.message
 
+        # An activating message may decide to skip a SayAction by setting its message to None
+        if self.message is None:
+            return
+
         execution_state.channel.output(self.message, who=who)
         # return ChatbotResult(self.message, DebugInfo(current_module=execution_state.current.name()))
 
@@ -340,7 +344,8 @@ class StateMachineTransformer(Visitor):
             last_module = resolved_module
 
         # Or use a final state
-        composite.add_transition(last, composite, TaskFinishEventEventType, CompositeAction([SayAction(message=None, consume_event=True), RunTool(runtime_module)]))
+        composite.add_transition(last, composite, TaskFinishEventEventType,
+                                 CompositeAction([SayAction(message=None, consume_event=True), RunTool(runtime_module)]))
 
         self.sm = self.sm_stack.pop()
 
@@ -375,7 +380,7 @@ class CustomPromptEngine(Visitor, Engine):
             self.execute_with_input(inp)
 
     def record_output_interaction_(self, action):
-        if isinstance(action, SayAction):
+        if isinstance(action, SayAction) and action.message is not None:
             self.recorded_interaction.append(type="chatbot", message=action.message)
 
     def start(self, channel):

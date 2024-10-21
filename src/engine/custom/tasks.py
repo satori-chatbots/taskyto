@@ -228,7 +228,11 @@ class SequenceChatbotModule(RuntimeChatbotModule):
 
         if isinstance(activating_event, TaskFinishEvent):
             # To exit
-            state_manager.push_event(activating_event)
+            # We do not propagate this event as is because we do not want to use the response contained here
+            # in a SayAction, because this will cause the response to be repeated twice (it has already been said from
+            # the last state to the sequence state end state).
+            # state_manager.push_event(activating_event)
+            state_manager.push_event(TaskFinishEvent(None, memory=activating_event.memory))
         else:
             # To enter
             state_manager.push_event(ActivateModuleEvent(self.tools[0], tool_input, activating_event.previous_answer))

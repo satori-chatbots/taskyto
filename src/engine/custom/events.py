@@ -85,6 +85,10 @@ class TaskFinishEvent(Event):
         self.message = message
         self.memory = memory
 
+    @property
+    def has_message(self):
+        return self.message is not None
+
     def to_dict(self):
         return super().to_dict() | { "message": self.message, "memory": self.memory }
 
