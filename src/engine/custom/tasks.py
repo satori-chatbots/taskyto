@@ -183,7 +183,8 @@ class RagRuntimeModule(RuntimeChatbotModule):
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         question = get_question(tool_input)
         response = self._index.query(question)
-        print("Execute RAG module: ", response)
+        state.push_event(TaskFinishEvent(response))
+
 
     @cached_property
     def _index(self):
