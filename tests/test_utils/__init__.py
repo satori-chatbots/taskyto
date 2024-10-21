@@ -79,6 +79,14 @@ class TestConfiguration(BasicConfiguration):
         self.llm = mocked_llm
         self.model = ConfigurationModel(default_llm="mocked", languages="en")
 
+    @property
+    def is_user_beginning(self) -> bool:
+        return False
+
+    @property
+    def initial_greeting(self) -> str:
+        return "Hello"
+
     def new_channel(self):
         raise NotImplementedError("This is created separately by the test case")
 
