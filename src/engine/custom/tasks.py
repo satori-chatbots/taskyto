@@ -190,6 +190,29 @@ class RagRuntimeModule(RuntimeChatbotModule):
         loader = InputLoader(self.module.documents)
         return Indexer(loader.load_data())
 
+class OpenEndedConversationRuntimeModule(RuntimeChatbotModule):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def memory_types(self):
+        return {
+            'default': ['default'],
+            'instruction': ['instruction']
+        }
+
+    def get_human_prompt(self) -> prompts.Prompt:
+        default_ = prompts.section("default", HUMAN_MESSAGE_TEMPLATE).to_prompt()
+        instruction = prompts.section("instruction", "{instruction}")
+        return default_ + instruction
+
+    def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
+        self.run(state, tool_input)
+
+        #print("Open ended conversation: ", tool_input)
+        # This is a simple pass-through module
+        #state.push_event(TaskFinishEvent(tool_input))
+
+
 class QuestionAnsweringRuntimeModule(RuntimeChatbotModule):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

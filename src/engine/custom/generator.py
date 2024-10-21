@@ -4,8 +4,8 @@ import spec
 from engine.common import prompts, Configuration
 from engine.custom.runtime import RuntimeChatbotModule
 from engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
-    SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule, RagRuntimeModule
-from spec import Visitor
+    SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule, RagRuntimeModule, OpenEndedConversationRuntimeModule
+from spec import Visitor, OpenEndedConversationModule
 
 
 class ModuleGenerator(Visitor):
@@ -70,6 +70,18 @@ class ModuleGenerator(Visitor):
                                 task_prompt=task_prompt,
                                 tools=[],
                                 configuration=self.configuration)
+
+    def visit_open_ended_conversation_module(self, module: spec.OpenEndedConversationModule) -> RuntimeChatbotModule:
+        activation_prompt = (module.description + "\n" +
+                             "Provide the question given by the user using the JSON format \"question\": <question>\".\n")
+        prompt = "Engage in a conversation with the user. The conversation should be about: " + activation_prompt
+        tools = [i.accept(self) for i in module.items if isinstance(i, spec.ToolItem)]
+        return OpenEndedConversationRuntimeModule(module=module,
+                                   activation_prompt=activation_prompt,
+                                   presentation_prompt=self.initial.presentation,
+                                   task_prompt=prompt,
+                                   tools=tools,
+                                   configuration=self.configuration)
 
     def visit_data_gathering_module(self, module: spec.DataGatheringModule) -> RuntimeChatbotModule:
         property_names = ", ".join([p.name for p in module.data_model.properties])

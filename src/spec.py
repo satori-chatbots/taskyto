@@ -254,6 +254,18 @@ class RagModule(BaseModule):
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_rag_module(self)
 
+class OpenEndedConversationModule(BaseModule):
+    kind: Literal["open_ended_conversation"] = "open_ended_conversation"
+    description: str = None  # should this be merged with presentation?
+    items: List[Item]
+
+    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
+        g.add_node(self)
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_open_ended_conversation_module(self)
+
+
 class ActionModule(BaseModule, WithDataModel):
     kind: Literal["action"] = "action"
     data: list
@@ -292,8 +304,9 @@ class QuestionAnsweringModule(BaseModule):
 
 
 Module = Annotated[
-    Union[MenuModule, DataGatheringModule, QuestionAnsweringModule, RagModule, SequenceModule, ActionModule], Field(
-        discriminator='kind')]
+    Union[MenuModule, DataGatheringModule, QuestionAnsweringModule,
+            RagModule, SequenceModule, ActionModule, OpenEndedConversationModule],
+        Field(discriminator='kind')]
 
 
 class ChatbotModel(BaseModel):

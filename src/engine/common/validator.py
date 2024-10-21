@@ -28,6 +28,7 @@ class Formatter(ABC):
             'enum': EnumFormatter(),
             'integer': IdentityFormatter(),  # we could have formatters to convert numbers expressed in words into digit
             'str': IdentityFormatter(),
+            'string': IdentityFormatter(),
             'double': IdentityFormatter(),
             'float': IdentityFormatter()
         }

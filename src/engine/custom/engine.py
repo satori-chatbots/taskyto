@@ -13,6 +13,7 @@ from engine.custom.generator import ModuleGenerator
 from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, MemoryPiece
 from engine.custom.statemachine import StateMachine, State, CompositeState, Initial, TriggerEventMatchByClass, Action, \
     TriggerEvent
+from engine.custom.tasks import SequenceChatbotModule
 from recording import RecordedInteraction
 from spec import Visitor, ChatbotModel
 
@@ -251,6 +252,27 @@ class StateMachineTransformer(Visitor):
 
         return current_state
 
+    def visit_open_ended_conversation_module(self, module: spec.OpenEndedConversationModule) -> State:
+        current_state = self.new_state(self.sm, module)
+        self.sm.add_state(current_state)
+
+        for item_ in module.items:
+            state = item_.accept(self)
+            if state is None:
+                continue
+
+            if isinstance(state.runtime_module, SequenceChatbotModule):
+                raise ValueError(f"OpenEndedConversationModule cannot contain a sequence module: {state.runtime_module.name()}")
+
+            self.sm.add_transition(current_state, state, ActivateModuleEventType(state.module),
+                                   CompositeAction([RunTool(state.runtime_module), UpdateMemory(state.module)]))
+
+            self.sm.add_transition(state, current_state, TaskFinishEventEventType,
+                                   CompositeAction([UpdateMemory(current_state.module),
+                                                    ApplyLLM(current_state.runtime_module, allow_tools=False)]))
+        return current_state
+
+
     def visit_answer_item(self, item: spec.AnswerItem) -> Optional[State]:
         return None
 
@@ -262,6 +284,8 @@ class StateMachineTransformer(Visitor):
         if isinstance(resolved_module, spec.DataGatheringModule):
             return resolved_module.accept(self)
         elif isinstance(resolved_module, spec.MenuModule):
+            return resolved_module.accept(self)
+        elif isinstance(resolved_module, spec.OpenEndedConversationModule):
             return resolved_module.accept(self)
 
         # TODO: Handle homogeneously. There are modules like q&a for which we know that we only generate a state,
