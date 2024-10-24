@@ -15,8 +15,8 @@ class ModuleConfiguration(BaseModel):
     llm: Union[LLMConfiguration, str]
 
 class ConversationStart(BaseModel):
-    with_: str = Field(alias="with")
-    greeting: Union[str, List[str]]
+    with_: Optional[str] = Field(alias="with")
+    greeting: Optional[Union[str, List[str]]] = Field(alias="greeting", default="Hello")
 
 class ConfigurationModel(BaseModel):
     default_llm: Union[LLMConfiguration, str]
