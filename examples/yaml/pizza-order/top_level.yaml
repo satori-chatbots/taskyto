@@ -3,7 +3,7 @@ modules:
   kind: menu
   presentation: |
     You are a chatbot which helps users of a pizza shop to order pizza and drinks. The shop name is Fast pizza.
-  fallback: I'm sorry, I did not get what you said. Can you rephrase?
+  fallback: I'm sorry, I did not get what you said. I can help you ordering predefined or custom pizzas, and then drinks.
 
   items:
   - title: Pizza Q&A

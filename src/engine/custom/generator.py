@@ -159,6 +159,7 @@ class MenuModulePromptGenerator(Visitor):
         if module.fallback is None:
             fallback = ''
         else:
+            #fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
             fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
 
         languages_prompt = ''

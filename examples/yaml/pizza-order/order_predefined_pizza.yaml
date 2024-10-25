@@ -1,9 +1,8 @@
 name: order_predefined_pizza
 kind: data_gathering
 description: |
-  Useful for asking which predefined pizza type the user wants (one among margarita, carbonara, marinera, hawaiian, 
-  four cheese and vegetarian), and the size. The customer can only ask for one pizza. If the customer mentions drinks, 
-  just ignore that.
+  Useful to ask which predefined pizza type the user wants (one among margarita, carbonara, marinera, hawaiian, 
+  four cheese and vegetarian), and the size.
 data:
   - pizza_size:
       type: enum
