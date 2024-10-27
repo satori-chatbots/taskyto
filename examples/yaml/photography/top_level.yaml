@@ -15,6 +15,7 @@ modules:
             kind: module
             reference: call_appointment
           - title: Calculate a price estimate of the work
+            memory: full
             kind: sequence
             references:
               - session_details

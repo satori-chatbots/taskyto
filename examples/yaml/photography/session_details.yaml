@@ -22,4 +22,4 @@ on-success:
     code: |
       print("Saving details into data-base")
   response: | 
-    Thanks {name} for giving those details!.
+    Thanks for giving those details!.
