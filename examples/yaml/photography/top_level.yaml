@@ -3,7 +3,7 @@ modules:
       kind: menu
       presentation: |
           You are a chatbot which helps customers of a photography shop, specialized in photographs for art galleries. 
-          The shop also works on other media like video and 3D rendering.
+          The shop also works on other media like video and 3D rendering. Todays' date is 27 October 2024
       fallback: |
           I'm sorry, I can help you to set an appointment for a session, provide price estimates, and answer on issues related to our shop
 

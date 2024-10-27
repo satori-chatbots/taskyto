@@ -136,11 +136,13 @@ setattr(MenuModule, "to_dict", to_dict_menu_module)
 # mutation operators
 
 class BaseMutationOperator(ABC):
-    def __init__(self, chatbot_folder: str, mutants_folder: str):
+    def __init__(self, chatbot_folder: str, mutants_folder: str, max = 10000):
         self.counter = 1
         self.name = self.__class__.__name__
         self.chatbot_folder = chatbot_folder
         self.mutants_folder = mutants_folder
+        self.max = max
+        self.num_mutants = 0
 
     @abstractmethod
     def generate_mutants(self, modules: Dict[str, Module]) -> None:
@@ -148,6 +150,9 @@ class BaseMutationOperator(ABC):
 
     def persist(self, modules: Dict[str, Module], description: str = None) -> None:
         # copy original chatbot in output folder
+        self.num_mutants += 1
+        if self.num_mutants>self.max:
+            return
         output_folder = f"{self.mutants_folder}/{self.name}_{self.counter}"
         shutil.copytree(self.chatbot_folder, output_folder)
         # overwrite received modules in output folder
@@ -382,7 +387,7 @@ class ChangeMemoryScope(BaseMutationOperator):
 # --------------------------------------------------------------------------------------------
 
 
-def generate_mutants(chatbot_folder: str, mutants_folder: str):
+def generate_mutants(chatbot_folder: str, mutants_folder: str, max):
     if not os.path.exists(chatbot_folder):
         print(f"The folder {chatbot_folder} does not exist")
         exit(1)
@@ -400,17 +405,17 @@ def generate_mutants(chatbot_folder: str, mutants_folder: str):
 
     # generate mutants
     mutation_operators = [
-        DeleteEnumDataValue(chatbot_folder, mutants_folder),
-        ChangeRequiredData(chatbot_folder, mutants_folder),
-        DeleteQuestionAnswer(chatbot_folder, mutants_folder),
-        SwapQuestionAnswer(chatbot_folder, mutants_folder),
-        DeleteFallback(chatbot_folder, mutants_folder),
-        DeleteItemTopModule(chatbot_folder, mutants_folder),
-        DeleteSequenceStep(chatbot_folder, mutants_folder),
-        SwapSequenceStep(chatbot_folder, mutants_folder),
-        DeleteDataFromResponse(chatbot_folder, mutants_folder),
-        ChangeRephrase(chatbot_folder, mutants_folder),
-        ChangeMemoryScope(chatbot_folder, mutants_folder),
+        DeleteEnumDataValue(chatbot_folder, mutants_folder, max),
+        ChangeRequiredData(chatbot_folder, mutants_folder, max),
+        DeleteQuestionAnswer(chatbot_folder, mutants_folder, max),
+        SwapQuestionAnswer(chatbot_folder, mutants_folder, max),
+        DeleteFallback(chatbot_folder, mutants_folder, max),
+        DeleteItemTopModule(chatbot_folder, mutants_folder, max),
+        DeleteSequenceStep(chatbot_folder, mutants_folder, max),
+        SwapSequenceStep(chatbot_folder, mutants_folder, max),
+        DeleteDataFromResponse(chatbot_folder, mutants_folder, max),
+        ChangeRephrase(chatbot_folder, mutants_folder, max),
+        ChangeMemoryScope(chatbot_folder, mutants_folder, max),
     ]
     for operator in mutation_operators:
         operator.generate_mutants(modules)
@@ -420,5 +425,6 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Runner for a chatbot')
     parser.add_argument('--chatbot', required=True, help='Path to the chatbot specification')
     parser.add_argument('--output', required=True, help='Path to store the generated chatbot mutants')
+    parser.add_argument('--max', required=False, type=int, default=10000, help='Max number of mutants per type')
     args = parser.parse_args()
-    generate_mutants(args.chatbot, args.output)
+    generate_mutants(args.chatbot, args.output, args.max)

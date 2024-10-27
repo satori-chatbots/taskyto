@@ -1,6 +1,7 @@
 name: call_appointment
 kind: data_gathering
-description: Asks the client his contact information, so that the shop can contact the client before the photo session can take place.
+description: Asks the client his contact information, so that the shop can contact the client before the photo session 
+             can take place. The time of the appointment will be set by phone.
 data:
   - name: Person name
   - phone_number:
