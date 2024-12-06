@@ -1,0 +1,21 @@
+name: vetcen_qa
+kind: question_answering
+description: Useful for answering general questions about a veterinary center.
+questions:
+  - question: When are you open?
+    answer: Weekdays from 9am to 6pm
+  - question: How late are you open on weekends?
+    answer: <image>https://cdn.pixabay.com/photo/2023/01/04/11/59/sign-7696599_640.png</image>
+  - question: How much does a vet visit cost?
+    answer: Between $50 and $60
+  - question: What kind of animals do you accept?
+    answer: We are specialized in dogs, cats and birds. For other animals, please consult first.
+  - question: What can I do to take care of my pet?
+    answer: |
+      You should meet their basic needs: food, water, shelter, exercise, and love.
+      <image>https://cdn.pixabay.com/photo/2023/09/07/14/26/cat-8239223_1280.png</image>
+
+on-success:
+  response:
+    text: "{{result}}"
+    rephrase: simple

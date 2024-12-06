@@ -1,0 +1,31 @@
+name: make_appointment
+kind: data_gathering
+description: Useful for registering appointments.
+data:
+  - date: date
+  - time: time
+  - service:
+      type: enum
+      values:
+        - Physical examination
+        - Vaccination
+        - Dental health and cleaning
+        - Lab or diagnostic testing
+
+on-success:
+  execute:
+    language: python
+    code: |
+        import random
+      
+        images = ['https://cdn.pixabay.com/photo/2014/03/24/13/48/hand-294442_640.png',
+                 'https://cdn.pixabay.com/photo/2012/04/05/01/08/emoticon-25531_640.png',
+                 'https://cdn.pixabay.com/photo/2023/09/07/11/39/people-8238938_640.png',
+                 'https://cdn.pixabay.com/photo/2017/08/22/16/33/goodbye-2669587_640.png']
+        
+        return random.choice(images)
+
+  response: |
+    Ok, I have received your request to schedule an appointment for {{date}} at {{time}} for {{service}}. 
+    See you then!    
+    <image>{{result}}</image>

@@ -1,0 +1,35 @@
+date,time,service
+01/10/2023,09:00,Physical examination
+02/10/2023,14:30,Vaccination
+03/10/2023,10:45,Dental health and cleaning
+04/10/2023,11:15,Lab or diagnostic testing
+05/10/2023,15:20,Physical examination
+06/10/2023,08:30,Dental health and cleaning
+07/10/2023,13:00,Vaccination
+08/10/2023,10:00,Lab or diagnostic testing
+09/10/2023,16:15,Physical examination
+10/10/2023,09:45,Lab or diagnostic testing
+11/10/2023,14:10,Vaccination
+12/10/2023,11:30,Dental health and cleaning
+13/10/2023,07:20,Physical examination
+14/10/2023,14:45,Lab or diagnostic testing
+15/10/2023,10:15,Dental health and cleaning
+16/10/2023,15:30,Vaccination
+17/10/2023,08:50,Physical examination
+18/10/2023,12:30,Dental health and cleaning
+19/10/2023,13:15,Lab or diagnostic testing
+20/10/2023,09:10,Physical examination
+21/10/2023,16:45,Dental health and cleaning
+23/10/2023,12:00,Vaccination
+22/10/2023,10:20,Lab or diagnostic testing
+24/10/2023,17:00,Vaccination
+23/12/2023,15:00:00,Vaccination
+04/01/2024,16:00:00,Vaccination
+,,
+16/02/2024,15:00:00,Vaccination
+16/02/2024,16:00:00,Vaccination
+16/02/2024,10:00:00,Physical examination
+18/02/2024,10:00:00,Physical examination
+21/02/2024,10:00:00,Vaccination
+21/02/2024,12:00:00,Vaccination
+21/02/2024,14:00:00,Vaccination

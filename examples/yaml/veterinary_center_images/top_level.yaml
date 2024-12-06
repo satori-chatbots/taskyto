@@ -1,0 +1,25 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users of a veterinary center.
+      fallback: |
+          I'm sorry, but I did not understand the last sentence, can you say that again?
+
+      items:
+          - title: Hours. To answer questions about the opening hours.
+            kind: answer
+            answer: every weekday from 9am to 6pm
+          - title: Make Appointment
+            kind: module
+            reference: make_appointment
+          - title: Veterinary center Q&A
+            kind: module
+            reference: vetcen_qa
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              <image>https://cdn.pixabay.com/photo/2013/09/03/15/26/veterinary-178636_640.png</image>
+              Welcome to my veterinary center. I'm an assistant that can guide you through the vet services.
+              What can I do for you?
+              <image>https://cdn.pixabay.com/photo/2020/10/15/15/05/question-mark-5656992_640.png</image>
