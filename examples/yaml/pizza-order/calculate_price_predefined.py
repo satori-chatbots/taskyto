@@ -13,7 +13,7 @@ def main(pizza_size, pizza_type, num_drinks, drinks):
         "water": 1,
     }
     pizza_type_increment = {
-         "margarita" : 0,
+         "margherita" : 0,
          "carbonara" : 2.5,
          "marinera" : 2,
          "hawaiian" : 2,

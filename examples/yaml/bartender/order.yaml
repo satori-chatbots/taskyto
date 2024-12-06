@@ -1,0 +1,30 @@
+name: order
+kind: data_gathering
+description: Useful to order a cocktail, and provide the delivery address
+data:
+  - cocktail:
+      type: enum
+      values:
+        - classic mojito
+        - royal martini
+        - raspberry mojito
+        - daiquiri
+        - retro margarita
+        - dry fruit mojito
+        - classic margarita
+        - manhattan
+        - whiskey sour
+        - bourbon flip
+        - old fashined
+        - paper plane
+        - gin fizz
+        - gim gimlet
+
+  - address:
+      type: Address
+
+on-success:
+  execute:
+  response: | 
+    Ok, I we will be sending a {cocktail} to you address at {address}.
+    You'll pay to the deliveryman. Enjoy your cocktail.

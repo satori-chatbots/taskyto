@@ -1,0 +1,19 @@
+name: bar_qa
+kind: question_answering
+description: Useful for answering general questions about the cocktail bar.
+questions:
+  - question: What cocktails do you serve?
+    answer: |
+      All the cocktails are on our menu: <image>https://marketplace.canva.com/EAFCEzKBlVs/1/0/1131w/canva-yellow-cocktail-menu-template-j9lnMnVLSuE.jpg</image>
+  - question: What are the prices of the cocktails?
+    answer: |
+      The cocktail prices are on our menu: <image>https://marketplace.canva.com/EAFCEzKBlVs/1/0/1131w/canva-yellow-cocktail-menu-template-j9lnMnVLSuE.jpg</image>
+  - question: How do I get the cocktail?
+    answer: We deliver them to your address, which must be in Madrid
+  - question: Where do you operate?
+    answer: We only deliver to Madrid
+
+on-success:
+  response:
+    text: "{{result}}"
+    rephrase: simple

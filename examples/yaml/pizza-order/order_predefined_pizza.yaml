@@ -13,7 +13,7 @@ data:
   - pizza_type:
       type: enum
       values:
-        - margarita
+        - margherita
         - carbonara
         - marinera
         - hawaiian

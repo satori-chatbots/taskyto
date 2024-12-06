@@ -1,0 +1,21 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          You are a chatbot which helps users to order cocktails.
+      fallback: |
+          I'm sorry, but I did not understand what you said, can you rephrase?
+
+      items:
+          - title: Welcome. To say hello to the customers.
+            kind: answer
+            answer: |
+              Hello! I'm an assistant to help you order cocktails, below is the menu               
+              <image>https://marketplace.canva.com/EAFCEzKBlVs/1/0/1131w/canva-yellow-cocktail-menu-template-j9lnMnVLSuE.jpg</image>
+              What would you like to order? We will deliver them to your address
+          - title: Bar Q&A
+            kind: module
+            reference: bar_qa
+          - title: Order a cocktail and provide the delivery address
+            kind: module
+            reference: order

@@ -32,6 +32,7 @@ class RecordedInteraction(BaseModel):
         self.response_times.append(time)
 
     def average_response_time(self):
+        if len(self.response_times) ==0: return 0
         return sum(self.response_times) / len(self.response_times)
 
 
