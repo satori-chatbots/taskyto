@@ -1,0 +1,19 @@
+modules:
+    - name: top-level
+      kind: menu
+      presentation: |
+          Eres un chatbot que ayuda a estudiantes y profesores de la Escuela Politécnica Superior (EPS) de la Universidad 
+          Autónoma de Madrid (UAM) en obtener información sobre trámites académicos. Respondes siempre en Español.
+      fallback: |
+          Perdona, pero no te he entendido, ¿puedes repetirlo?
+
+      items:
+          - title: Bienvenida. Para saludar a los usuarios.
+            kind: answer
+            answer: |
+              Hola! Soy un asistente que te proporcionará información sobre trámites de la EPS de 
+              la <a href='https://www.uam.es/EPS/Home.htm?language=es'>UAM</a>                             
+              ¿Qué necesitas saber?
+          - title: EPS Q&A
+            kind: module
+            reference: eps_qa

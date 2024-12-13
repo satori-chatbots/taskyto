@@ -1,0 +1,24 @@
+name: eps_qa
+kind: question_answering
+description: Util para proporcionar información sobre la EPS. Responde siempre en Español.
+questions:
+  - question: ¿Qué estudios de grado se imparten en la EPS?
+    answer: |
+      La EPS imparte los siguientes grados: Grado en Ingeniería Biomédica, Grado en Ciencia e Ingeniería de Datos, Grado en Ingeniería Informática (EURO-INF), Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación (EUR-ACE) y Doble Grado en Ingeniería Informática y Matemáticas. Tienes más información <a href='https://www.uam.es/EPS/Home.htm?language=es'>aquí</a>
+  - question: ¿Qué másteres se imparten en la EPS?
+    answer: |
+      La EPS imparte los siguientes másteres: Máster Universitario en Deep Learning for Audio and Video Signal Processing, Máster Universitario en Ingeniería Informática, Máster Universitario en Ingeniería de Telecomunicación (EUR-ACE), Máster Universitario en Image Processing and Computer Vision, Máster Universitario en Sistemas Interactivos Inteligentes, Máster Universitario en Bioinformática y Biología Computacional (Facultad de Medicina). Tienes más información <a href='https://www.uam.es/EPS/Home.htm?language=es'>aquí</a>
+  - question: ¿Dónde está la normativa de trabajos de fin de máster (TFM)?
+    answer: |
+      <a href='https://www.uam.es/EPS/documento/1242700679175/Normativa_TFMs_EPS.pdf?blobheader=application/pdf'>Aquí</a> la tienes
+  - question: ¿Cuál es el calendario de plazos para el TFM en el año 2024/25?
+    answer: |
+      <a href='https://www.uam.es/EPS/documento/1446848909624/tfms---plazos-para-tramitar-2024-25.pdf?blobheader=application/pdf'>Aquí</a> está.
+  - question: ¿Hay programa de doctorado en la EPS?
+    answer: |
+      Sí, hay un programa de doctorado, tienes más información <a href='https://www.uam.es/EPS/DoctoradoIIT2011/1242675218285.htm?language=es&nodepath=Doctorado%20Ing.%20Inform%C3%A1tica%20y%20Telecomunicaci%C3%B3n%20RD2011%20(Escuela%20de%20Doctorado%20de%20la%20UAM)'>aquí</a> 
+
+on-success:
+  response:
+    text: "{{result}}"
+    rephrase: direct
