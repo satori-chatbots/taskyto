@@ -119,6 +119,10 @@ class DataGatheringChatbotModule(RuntimeChatbotModule):
                 return None
         except json.JSONDecodeError:
             pass
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise e
 
         collected_data = ",".join([f'{k} = {v}' for k, v in data.items()])
         instruction = ("Check in the previous conversation history, and if the data is not present, ask the Human to provide the missing data: " +
@@ -205,6 +209,13 @@ class OpenEndedConversationRuntimeModule(RuntimeChatbotModule):
         default_ = prompts.section("default", HUMAN_MESSAGE_TEMPLATE).to_prompt()
         instruction = prompts.section("instruction", "{instruction}")
         return default_ + instruction
+
+    def get_prompts_disabled(self, prompt_id):
+        if prompt_id == "input":
+            return ['instruction']
+        elif prompt_id == "reasoning":
+            return ['input']
+        return super().get_prompts_disabled(prompt_id)
 
     def run_as_tool(self, state: ExecutionState, tool_input: str, activating_event=None):
         self.run(state, tool_input)

@@ -76,9 +76,16 @@ class ModuleGenerator(Visitor):
                              "Provide the question given by the user using the JSON format \"question\": <question>\".\n")
         prompt = "Engage in a conversation with the user. The conversation should be about: " + activation_prompt
         tools = [i.accept(self) for i in module.items if isinstance(i, spec.ToolItem)]
+
+        presentation_prompt = (MenuModulePromptGenerator.to_presentation_prompt(self.configuration, module) +
+                               MenuModulePromptGenerator.to_fallback(module))
+
+        if self.initial != module:
+            presentation_prompt = self.initial.presentation + "\n" + presentation_prompt
+
         return OpenEndedConversationRuntimeModule(module=module,
                                    activation_prompt=activation_prompt,
-                                   presentation_prompt=self.initial.presentation,
+                                   presentation_prompt=presentation_prompt,
                                    task_prompt=prompt,
                                    tools=tools,
                                    configuration=self.configuration)
@@ -168,25 +175,9 @@ class MenuModulePromptGenerator(Visitor):
         options = options + '\n'.join(
             [f'{i + 1}: {item.title}. {item.accept(self)}' for i, item in enumerate(module.items)])
 
-        if module.fallback is None:
-            fallback = ''
-        else:
-            #fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
-            fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
+        fallback = self.to_fallback(module)
 
-        languages_prompt = ''
-        if self.config.model.languages is not None:
-            languages = self.config.model.languages
-            if len(languages.split(",")) > 1:
-                languages_prompt += '\nYou are only able to answer the user in the following languages: ' + languages + '\n'
-                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to some of these languages: {languages}'
-            elif languages.lower() != 'any':
-                languages_prompt += '\nYou are only able to answer in ' + languages + '\n'
-                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
-            elif languages.lower() == 'any':
-                languages_prompt += '\nYou can communicate with the user in any language.\n'
-
-        presentation_prompt = f'{module.presentation}\n{languages_prompt}\n'
+        presentation_prompt = self.to_presentation_prompt(self.config, module)
         task = f'{options}\n{fallback}'
 
         return presentation_prompt, task
@@ -200,3 +191,27 @@ class MenuModulePromptGenerator(Visitor):
     def visit_sequence_item(self, item: spec.SequenceItem) -> str:
         seq = item.get_sequence_module()
         return f'You have to use the tool "{seq.name}"'
+
+    @staticmethod
+    def to_fallback(module):
+        if module.fallback is None:
+            fallback = ''
+        else:
+            fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
+        return fallback
+
+    @staticmethod
+    def to_presentation_prompt(config, module):
+        languages_prompt = ''
+        if config.model.languages is not None:
+            languages = config.model.languages
+            if len(languages.split(",")) > 1:
+                languages_prompt += '\nYou are only able to answer the user in the following languages: ' + languages + '\n'
+                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to some of these languages: {languages}'
+            elif languages.lower() != 'any':
+                languages_prompt += '\nYou are only able to answer in ' + languages + '\n'
+                languages_prompt += f'\nIf the user uses a language different from {languages}, ask politely to switch to {languages}'
+            elif languages.lower() == 'any':
+                languages_prompt += '\nYou can communicate with the user in any language.\n'
+        presentation_prompt = f'{module.presentation}\n{languages_prompt}\n'
+        return presentation_prompt

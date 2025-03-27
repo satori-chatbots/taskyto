@@ -98,10 +98,7 @@ class BaseModule(BaseModel):
     def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
         pass
 
-
-class MenuModule(BaseModule):
-    kind: Literal["menu"] = "menu"
-
+class TopLevelModule(BaseModule, abc.ABC):
     presentation: str
     fallback: Optional[str] = None
     items: List[Item]
@@ -117,8 +114,20 @@ class MenuModule(BaseModule):
                 seq.to_graph(g, chatbot_model)
                 g.add_edge(self, seq)
 
+class MenuModule(TopLevelModule):
+    kind: Literal["menu"] = "menu"
+
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_menu_module(self)
+
+
+class OpenEndedConversationModule(TopLevelModule):
+    kind: Literal["open_ended_conversation"] = "open_ended_conversation"
+    description: str = None  # should this be merged with presentation?
+    presentation: Optional[str] = None # This is optional if it doesn't work as a top-level module
+
+    def accept(self, visitor: Visitor) -> object:
+        return visitor.visit_open_ended_conversation_module(self)
 
 class SequenceModule(BaseModule):
     kind: Literal["sequence"] = "sequence"
@@ -253,17 +262,6 @@ class RagModule(BaseModule):
 
     def accept(self, visitor: Visitor) -> object:
         return visitor.visit_rag_module(self)
-
-class OpenEndedConversationModule(BaseModule):
-    kind: Literal["open_ended_conversation"] = "open_ended_conversation"
-    description: str = None  # should this be merged with presentation?
-    items: List[Item]
-
-    def to_graph(self, g: nx.Graph, chatbot_model: "ChatbotModel"):
-        g.add_node(self)
-
-    def accept(self, visitor: Visitor) -> object:
-        return visitor.visit_open_ended_conversation_module(self)
 
 
 class ActionModule(BaseModule, WithDataModel):

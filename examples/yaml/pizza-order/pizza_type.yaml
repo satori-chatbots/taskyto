@@ -2,7 +2,9 @@ modules:
 - name: pizza_type
   kind: menu
   presentation: |
-    In this step, you should decide whether the customer wants to order a predefined pizza, or a custom one
+    In this step, you should decide whether the customer wants to order a predefined pizza, or a custom one.
+    A predefined pizza is one among margarita, carbonara, marinera, hawaiian, four cheese and vegetarian.
+    A custom pizza is one where the customer chooses the toppings.
   fallback: I'm sorry, I did not get what you said. Can you rephrase?
 
   items:
