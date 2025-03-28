@@ -141,11 +141,7 @@ def setup_configuration(args):
         if os.path.isfile(chatbot_folder):
             chatbot_folder = os.path.dirname(chatbot_folder)
 
-<<<<<<< HEAD
-        config_model = load_configuration_model(chatbot_folder, args.config)
-=======
-        config_model = load_configuration_model(chatbot_folder, module_path=module_path)
->>>>>>> 96cd7af (LLM can be loaded externally as plug-ins)
+        config_model = load_configuration_model(chatbot_folder, args.config, module_path=module_path)
         conf = CustomConfiguration(chatbot_folder, config_model)
     else:
         raise ValueError(f"Unknown engine: {args.engine}")
