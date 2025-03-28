@@ -13,7 +13,6 @@ class LLMConfiguration(BaseModel):
     id: str
     temperature: float = 0.0
 
-
 class ModuleConfiguration(BaseModel):
     name: str
     llm: Union[LLMConfiguration, str]
@@ -73,8 +72,7 @@ class ConfigurationModel(BaseModel):
             return llm_config
 
     def _create_llm_from_service(self, service: LLMService) -> LLM:
-        extension = self.extension_loader.load(service.extension, "llm")
-        extension.arguments = service.args
+        extension = self.extension_loader.load(service.extension, service.args, "llm")
         if extension is None:
             raise Exception("LLM extension not found: " + service.extension)
         return extension

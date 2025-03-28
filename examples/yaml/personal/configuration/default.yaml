@@ -1,11 +1,17 @@
-# We use gpt-3.5-turbo-1106 because it doesn't work, so we can test that the
-# the specification for the modules (below) actually works.
+
+#llm_services:
+#  - name: llama2chat_on_llm_server
+#    extension: 'llm_server/llm.py'
+#    args:
+#      model: "meta-llama/Llama-2-7b-chat-hf"
+
 llm_services:
-  - name: llama2chat_on_llm_server
-    extension: 'llm_server/llm.py'
+  - name: ollama-gemma
+    extension: 'ollama'
     args:
-      model: "meta-llama/Llama-2-7b-chat-hf"
+      model: "gemma3:4b"
+      host: "${OLLAMA_HOST}"
 
 default_llm:
-  id: llama2chat_on_llm_server
+  id: ollama-gemma
   temperature: 0.0

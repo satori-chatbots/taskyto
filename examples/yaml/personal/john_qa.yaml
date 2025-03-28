@@ -1,0 +1,10 @@
+name: john_qa
+kind: question_answering
+description: Useful for answering general questions about John.
+questions:
+  - question: How is John?
+    answer: He is a software engineer and he is looking for a job.
+  - question: Is John hardworking?
+    answer: Typically yes, but to be honest, it depends on the day.
+  - question: Which are John's skills?
+    answer: Java, Python, and JavaScript. Also some Docker.

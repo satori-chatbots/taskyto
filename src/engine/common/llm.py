@@ -47,9 +47,11 @@ class OpenAILLM(LLM):
         result = self.llm_model.invoke(langchain_input, stop=stop)
         return LLMResponse(result.content)
 
+class OllamaLLM(LLM):
+    pass
 
 class ExtensionLLM(LLM):
-    """An LLM dinamically loaded as an extension"""
+    """A LLM dinamically loaded as an extension"""
 
     def __init__(self, extension):
         self.extension = extension

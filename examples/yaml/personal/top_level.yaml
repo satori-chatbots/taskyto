@@ -11,3 +11,6 @@ items:
       kind: answer
       answer: |
         Welcome to John's personal page. I'm a chatbot. I can answer questions about John.
+    - title: Questions about John
+      kind: module
+      reference: john_qa
