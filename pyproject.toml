@@ -11,11 +11,13 @@ authors = [
     { name = "Juan de Lara", email = "juan.delara@uam.es" },
     { name = "Esther Guerra", email = "esther.guerra@uam.es" }
 ]
-dependencies = []  # Dependencies will be read from requirements.txt
+
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 keywords = ["chatbots", "AI", "tasks"]
+dynamic = ["dependencies"]
+#dependencies = []  # Dependencies will be read from requirements.txt
 
 [project.scripts]
 taskyto = "taskyto.main:main"  # Entry point for CLI
@@ -25,8 +27,14 @@ taskyto-serve = "taskyto.serve:execute_server"  # Entry point for server
 where = ["."]
 include = ["taskyto*"]  # Automatically finds all submodules
 
-[tool.setuptools.package-data]
-src = ["*.txt", "*.json"]  # Include additional data files if needed
+#[tool.setuptools.package-data]
+#src = ["*.txt", "*.json"]  # Include additional data files if needed
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {local = { file = ["requirements-local.txt"] }}
+# Explanation about how to handle dependencies
+# https://stackoverflow.com/questions/73600082/how-to-reference-a-requirements-txt-in-the-pyproject-toml-of-a-setuptools-projec
 
 #[tool.black]
 #line-length = 88
@@ -36,6 +44,3 @@ src = ["*.txt", "*.json"]  # Include additional data files if needed
 
 #[tool.mypy]
 #strict = true
-
-[tool.pip]
-requirement = "requirements.txt"
