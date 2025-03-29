@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taskyto"
+version = "0.1.0"
+description = "A tool to build chatbots"
+authors = [
+    { name = "Jesús Sánchez Cuadrado", email = "jesusc@um.es" },
+    { name = "Juan de Lara", email = "juan.delara@uam.es" },
+    { name = "Esther Guerra", email = "esther.guerra@uam.es" }
+]
+dependencies = []  # Dependencies will be read from requirements.txt
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["chatbots", "AI", "tasks"]
+
+[project.scripts]
+taskyto = "taskyto.main:main"  # Entry point for CLI
+taskyto-serve = "taskyto.serve:execute_server"  # Entry point for server
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["taskyto*"]  # Automatically finds all submodules
+
+[tool.setuptools.package-data]
+src = ["*.txt", "*.json"]  # Include additional data files if needed
+
+#[tool.black]
+#line-length = 88
+
+#[tool.isort]
+#profile = "black"
+
+#[tool.mypy]
+#strict = true
+
+[tool.pip]
+requirement = "requirements.txt"

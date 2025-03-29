@@ -72,7 +72,7 @@ def initialize_engine(chatbot_folder, configuration):
     return engine
 
 
-def main(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):
+def execute_chatbot(chatbot_folder: str, configuration, recording_file_dump: str = None, module_path=None):
     engine = initialize_engine(chatbot_folder, configuration)
 
     channel = configuration.new_channel()
@@ -148,8 +148,7 @@ def setup_configuration(args):
 
     return conf
 
-
-if __name__ == '__main__':
+def main():
     parser = ArgumentParser(description='Runner for a chatbot')
     parser.add_argument('--chatbot', required=True,
                         help='Path to the chatbot specification')
@@ -181,4 +180,8 @@ if __name__ == '__main__':
     if args.test:
         test(args.chatbot, args.test, configuration, args.dry_run, args.replay, args.dump, args.module_path)
     else:
-        main(args.chatbot, configuration, args.dump, args.module_path)
+        execute_chatbot(args.chatbot, configuration, args.dump, args.module_path)
+
+
+if __name__ == '__main__':
+    main()
