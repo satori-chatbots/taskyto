@@ -4,6 +4,10 @@
 #    extension: 'llm_server/llm.py'
 #    args:
 #      model: "meta-llama/Llama-2-7b-chat-hf"
+#
+# To load this you must use option --module-path examples/extensions
+# to give access to the folder in which the file is located.
+
 
 llm_services:
   - name: ollama-gemma
