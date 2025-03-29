@@ -1,8 +1,6 @@
 from typing import Callable
 
-from langchain.schema import OutputParserException
-
-import spec
+from taskyto import spec
 
 
 class Prompt:

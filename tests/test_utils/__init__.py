@@ -4,10 +4,10 @@ from typing import Optional, List, Any
 from langchain.callbacks.base import Callbacks
 from langchain.schema import BaseMessage
 
-import spec
-from engine.common import Configuration, Engine, BasicConfiguration
-from engine.common.configuration import ConfigurationModel
-from engine.custom.engine import CustomPromptEngine
+import taskyto.spec
+from taskyto.engine.common import Configuration, Engine, BasicConfiguration
+from taskyto.engine.common.configuration import ConfigurationModel
+from taskyto.engine.custom.engine import CustomPromptEngine
 
 
 class AIAnswer:

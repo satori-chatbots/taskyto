@@ -1,13 +1,11 @@
 import sys
-from abc import ABC, abstractmethod
-from typing import Literal, List, Dict, Any
+from abc import ABC
+from typing import List, Dict
 
-import pydantic
-from pydantic import BaseModel, Field
-from pydantic.json_schema import DEFAULT_REF_TEMPLATE
+from pydantic import BaseModel
 
-import utils
-from testing.test_config_model import default_test_configuration, TestConfigurationModel, SingleTestConfig
+from taskyto import utils
+from taskyto.testing.test_config_model import SingleTestConfig
 
 
 #from engine.common import Engine, ChatbotResult

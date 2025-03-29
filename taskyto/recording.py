@@ -1,8 +1,6 @@
-from typing import List, Optional
+from typing import List
 
 from pydantic import BaseModel
-
-from engine.custom.statemachine import Transition
 
 
 class InteractionItem(BaseModel):

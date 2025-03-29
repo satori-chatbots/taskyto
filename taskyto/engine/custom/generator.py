@@ -1,11 +1,11 @@
 from typing import List
 
-import spec
-from engine.common import prompts, Configuration
-from engine.custom.runtime import RuntimeChatbotModule
-from engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
+from taskyto import spec
+from taskyto.engine.common import prompts, Configuration
+from taskyto.engine.custom.runtime import RuntimeChatbotModule
+from taskyto.engine.custom.tasks import DataGatheringChatbotModule, QuestionAnsweringRuntimeModule, \
     SequenceChatbotModule, ActionChatbotModule, MenuChatbotModule, RagRuntimeModule, OpenEndedConversationRuntimeModule
-from spec import Visitor, OpenEndedConversationModule
+from taskyto.spec import Visitor, OpenEndedConversationModule
 
 
 class ModuleGenerator(Visitor):

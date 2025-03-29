@@ -2,11 +2,11 @@ from typing import Optional
 
 from langchain.prompts import ChatPromptTemplate
 
-from engine.common import get_property_value, prompts, logger
-from engine.common.memory import MemoryPiece
-from engine.common.validator import FallbackFormatter, Formatter
-from engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
-from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, HUMAN_MESSAGE_TEMPLATE
+from taskyto.engine.common import get_property_value, prompts, logger
+from taskyto.engine.common.memory import MemoryPiece
+from taskyto.engine.common.validator import FallbackFormatter, Formatter
+from taskyto.engine.custom.events import TaskInProgressEvent, TaskFinishEvent, ActivateModuleEvent
+from taskyto.engine.custom.runtime import RuntimeChatbotModule, ExecutionState, HUMAN_MESSAGE_TEMPLATE
 
 
 
@@ -176,8 +176,8 @@ def keep_until_last_brace(s):
     else:
         return s
 
-from engine.rag.loader import InputLoader
-from engine.rag.embeddings import Indexer
+from taskyto.engine.rag.loader import InputLoader
+from taskyto.engine.rag.embeddings import Indexer
 from functools import cached_property
 
 class RagRuntimeModule(RuntimeChatbotModule):

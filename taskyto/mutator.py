@@ -1,14 +1,14 @@
 import os.path
-from spec import (ResponseElement, ExecuteElement, Action, ActionModule, DataGatheringModule, QuestionAnswer,
+from taskyto.spec import (ResponseElement, ExecuteElement, Action, ActionModule, DataGatheringModule, QuestionAnswer,
                   QuestionAnsweringModule, SequenceItem, ToolItem, AnswerItem, MenuModule, Module, MemoryScope,
                   SequenceModule)
-from spec import parse_yaml
+from taskyto.spec import parse_yaml
 import yaml
 import glob
 import shutil
 import re
 from argparse import ArgumentParser
-from typing import Dict
+from typing import Dict, Union
 from abc import ABC, abstractmethod
 
 # --------------------------------------------------------------------------------------------
@@ -362,7 +362,7 @@ class ChangeRephrase(BaseMutationOperator):
 
 
 class ChangeMemoryScope(BaseMutationOperator):
-    def mutate(self, element_with_memory: SequenceItem | SequenceModule, module_file: str, module: Module) -> None:
+    def mutate(self, element_with_memory: Union[SequenceItem, SequenceModule], module_file: str, module: Module) -> None:
         if element_with_memory.memory:
             memory = element_with_memory.memory
             if element_with_memory.memory == MemoryScope.individual:

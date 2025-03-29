@@ -2,16 +2,16 @@ import os.path
 from argparse import ArgumentParser
 from typing import Optional, List
 
-import spec
-import utils
-from engine.common import Configuration, Engine
-from engine.common.configuration import ConfigurationModel, read_configuration
-from engine.common.evaluator import Evaluator
-from engine.custom.engine import CustomPromptEngine
-from engine.custom.runtime import CustomRephraser
-from recording import dump_test_recording
-from testing.reader import load_test_model
-from testing.test_engine import TestEngineConfiguration, run_test
+from taskyto import spec
+from taskyto import utils
+from taskyto.engine.common import Configuration, Engine
+from taskyto.engine.common.configuration import ConfigurationModel, read_configuration
+from taskyto.engine.common.evaluator import Evaluator
+from taskyto.engine.custom.engine import CustomPromptEngine
+from taskyto.engine.custom.runtime import CustomRephraser
+from taskyto.recording import dump_test_recording
+from taskyto.testing.reader import load_test_model
+from taskyto.testing.test_engine import TestEngineConfiguration, run_test
 
 
 class CustomConfiguration(Configuration):
@@ -35,7 +35,7 @@ class CustomConfiguration(Configuration):
                 self.model.begin.with_ == 'user')
 
     def new_channel(self):
-        from engine.custom.runtime import ConsoleChannel
+        from taskyto.engine.custom.runtime import ConsoleChannel
         return ConsoleChannel()
 
     def new_engine(self) -> Engine:
@@ -115,7 +115,7 @@ def test(chatbot, test_file, configuration, dry_run, replay=None, recording_file
             config.replay = replay
         completed_steps = run_test(test_model, engine, config)
         if not completed_steps:
-            from engine.custom.runtime import ConsoleChannel
+            from taskyto.engine.custom.runtime import ConsoleChannel
             channel = ConsoleChannel()
             engine.run_all(channel)
 

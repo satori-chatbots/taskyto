@@ -7,8 +7,8 @@ import pydantic
 
 import yaml
 
-from testing.test_config_model import TestConfigurationModel, default_test_configuration
-from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert, DataAssert
+from taskyto.testing.test_config_model import TestConfigurationModel, default_test_configuration
+from taskyto.testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert, DataAssert
 
 
 def to_model(filename, data, configuration: TestConfigurationModel) -> Interaction:

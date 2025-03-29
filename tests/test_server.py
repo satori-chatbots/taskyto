@@ -8,7 +8,7 @@ from test_utils import MockedLLM, TestConfiguration
 
 @pytest.fixture()
 def app():
-    from server import FlaskChatbotApp
+    from taskyto.server import FlaskChatbotApp
 
     chatbot_folder = "examples/yaml/bike-shop"
     mock = MockedLLM()

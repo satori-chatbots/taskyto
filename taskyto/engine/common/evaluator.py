@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from spec import ExecuteElement
+from taskyto.spec import ExecuteElement
 
 
 def find_file(filename, load_path):

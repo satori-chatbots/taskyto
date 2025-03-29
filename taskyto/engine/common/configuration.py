@@ -3,10 +3,10 @@ from typing import List, Any, Union, Optional
 import pydantic
 from pydantic import BaseModel, Field, ConfigDict
 
-from engine.common.llm import LLM, OpenAILLM, ExtensionLLM
-from extensions.extension import ExtensionLoader
+from taskyto.engine.common.llm import LLM, OpenAILLM, ExtensionLLM
+from taskyto.extensions.extension import ExtensionLoader
 
-from utils import parse_obj_as_
+from taskyto.utils import parse_obj_as_
 
 
 class LLMConfiguration(BaseModel):

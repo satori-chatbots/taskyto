@@ -1,7 +1,7 @@
 import abc
 
-import spec
-from engine.custom.statemachine import TriggerEventMatchByClass, TriggerEvent
+from taskyto import spec
+from taskyto.engine.custom.statemachine import TriggerEventMatchByClass, TriggerEvent
 
 
 class Event(abc.ABC):

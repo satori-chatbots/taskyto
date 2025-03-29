@@ -1,1 +1,1 @@
-python src/main.py --chatbot examples/yaml/%1
+python -m taskyto.main --chatbot examples/yaml/%1

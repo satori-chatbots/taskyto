@@ -5,8 +5,8 @@ from typing import Optional
 
 import networkx as nx
 
-import spec
-from engine.common.evaluator import Evaluator
+from taskyto import spec
+from taskyto.engine.common.evaluator import Evaluator
 
 class DebugInfo:
     def __init__(self, current_module: str):

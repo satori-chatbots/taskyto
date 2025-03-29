@@ -7,7 +7,7 @@ class InputLoader:
     def load_data(self):
         documents = []
         for f in self.input_files:
-            loader = PyPDFLoader(f);
+            loader = PyPDFLoader(f)
             docs = loader.load()
             documents.extend(docs)
 

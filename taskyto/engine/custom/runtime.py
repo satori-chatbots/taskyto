@@ -1,28 +1,20 @@
 import abc
 import re
-import uuid
-from abc import ABC
 from typing import List, Optional, Union
-from engine.custom.events import ActivateModuleEvent, AIResponseEvent, TaskFinishEvent
 
 from langchain.agents.conversational.output_parser import ConvoOutputParser
-from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain.prompts.chat import MessageLike
 from langchain.schema import AgentAction, OutputParserException, HumanMessage, AIMessage, AgentFinish
 from pydantic import BaseModel, ConfigDict
 
-import spec
-import utils
-from engine.common import Configuration, logger, get_property_value, replace_values, Rephraser
-from engine.common.prompts import FORMAT_INSTRUCTIONS
-from engine.common.validator import Formatter, FallbackFormatter
-from utils import get_unparsed_output
-
-from engine.common import Configuration, logger, get_property_value, replace_values, Rephraser, prompts
-from engine.common.memory import ConversationMemory, MemoryPiece
-from engine.common.prompts import FORMAT_INSTRUCTIONS, NO_TOOL_INSTRUCTIONS
-from engine.custom.events import ActivateModuleEvent, AIResponseEvent
+from taskyto import spec
+from taskyto import utils
+from taskyto.engine.common import Configuration, logger, replace_values, Rephraser, prompts
+from taskyto.engine.common.memory import ConversationMemory, MemoryPiece
+from taskyto.engine.common.prompts import FORMAT_INSTRUCTIONS, NO_TOOL_INSTRUCTIONS
+from taskyto.engine.custom.events import ActivateModuleEvent, AIResponseEvent
+from taskyto.utils import get_unparsed_output
 
 
 class ExecutionState:
@@ -90,7 +82,7 @@ class Channel(abc.ABC):
 class ConsoleChannel(Channel):
 
     def input(self):
-        import utils
+        from taskyto import utils
         user_prompt = utils.get_user_prompt()
         try:
             inp = input(user_prompt)

@@ -1,18 +1,17 @@
-from datetime import datetime
 from abc import abstractmethod, ABC
+from datetime import date
+from datetime import datetime
 from typing import List, Union
 
+from ctparse import ctparse
 from ctparse.types import Duration, Interval, DurationUnit
-#from duckling import DucklingWrapper
-
-from datetime import date
 from dateutil.relativedelta import relativedelta
 
-from engine.common import Configuration
-from spec import DataProperty, EnumValue
+from taskyto.engine.common import Configuration
+from taskyto.spec import DataProperty, EnumValue
 
-from datetime import datetime
-from ctparse import ctparse
+
+# from duckling import DucklingWrapper
 
 
 class Formatter(ABC):
@@ -68,16 +67,16 @@ class DateFormatter(Formatter):
             return timestamp.strftime('%d/%m/%Y')
         return "Invalid date"
 
-    def format_with_duckling(self, value: str):
-        duckling_wrapper = DucklingWrapper()
-        try:
-            parsed_value = duckling_wrapper.parse_time(value)
-            timestamp = datetime.fromisoformat(parsed_value[0]['value']['value'])
-            # Format the datetime object as a string in the desired format
-            formatted_date = timestamp.strftime('%d/%m/%Y')
-            return formatted_date
-        except ValueError:
-            return "Invalid date"
+    #def format_with_duckling(self, value: str):
+    #    duckling_wrapper = DucklingWrapper()
+    #    try:
+    #        parsed_value = duckling_wrapper.parse_time(value)
+    #        timestamp = datetime.fromisoformat(parsed_value[0]['value']['value'])
+    #        # Format the datetime object as a string in the desired format
+    #        formatted_date = timestamp.strftime('%d/%m/%Y')
+    #        return formatted_date
+    #    except ValueError:
+    #        return "Invalid date"
 
 
 class TimeFormatter(Formatter):
@@ -94,15 +93,15 @@ class TimeFormatter(Formatter):
             return time_str
         return "Invalid time"
 
-    def format_with_duckling(self, value: str):
-        duckling_wrapper = DucklingWrapper()
-        try:
-            parsed_value = duckling_wrapper.parse_time(value)
-            timestamp = datetime.fromisoformat(parsed_value[0]['value']['value'])
-            time_str = timestamp.strftime('%H:%M:%S')
-            return time_str
-        except ValueError:
-            return "Invalid time"
+    #def format_with_duckling(self, value: str):
+    #    duckling_wrapper = DucklingWrapper()
+    #    try:
+    #        parsed_value = duckling_wrapper.parse_time(value)
+    #        timestamp = datetime.fromisoformat(parsed_value[0]['value']['value'])
+    #        time_str = timestamp.strftime('%H:%M:%S')
+    #        return time_str
+    #    except ValueError:
+    #        return "Invalid time"
 
 
 class EnumFormatter(Formatter):

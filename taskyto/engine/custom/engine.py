@@ -2,20 +2,19 @@ import contextlib
 import time
 from typing import Optional, List
 
-import spec
-import utils
-from engine.common import Configuration, ChatbotResult, DebugInfo, compute_init_module, Engine
-from engine.common.memory import HumanMessage, AIResponse, DataMessage
-from engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
+from taskyto import spec
+from taskyto import utils
+from taskyto.engine.common import Configuration, compute_init_module, Engine
+from taskyto.engine.common.memory import HumanMessage, AIResponse, DataMessage, MemoryPiece
+from taskyto.engine.custom.events import ActivateModuleEventType, UserInput, UserInputEventType, ActivateModuleEvent, \
     TaskInProgressEventType, TaskInProgressEvent, AIResponseEventType, TaskFinishEventEventType, TaskFinishEvent, \
     AIResponseEvent, Event
-from engine.custom.generator import ModuleGenerator
-from engine.custom.runtime import RuntimeChatbotModule, ExecutionState, MemoryPiece
-from engine.custom.statemachine import StateMachine, State, CompositeState, Initial, TriggerEventMatchByClass, Action, \
-    TriggerEvent
-from engine.custom.tasks import SequenceChatbotModule
-from recording import RecordedInteraction
-from spec import Visitor, ChatbotModel
+from taskyto.engine.custom.generator import ModuleGenerator
+from taskyto.engine.custom.runtime import RuntimeChatbotModule, ExecutionState
+from taskyto.engine.custom.statemachine import StateMachine, State, CompositeState, Initial, Action
+from taskyto.engine.custom.tasks import SequenceChatbotModule
+from taskyto.recording import RecordedInteraction
+from taskyto.spec import Visitor, ChatbotModel
 
 
 class RunModuleAction(Action):

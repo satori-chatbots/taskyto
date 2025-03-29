@@ -1,7 +1,7 @@
 import base_test
-from engine.common import get_property_value
+from taskyto.engine.common import get_property_value
 
-from spec import DataProperty, EnumValue
+from taskyto.spec import DataProperty, EnumValue
 
 
 def test_get_property_simple_and_coercions():

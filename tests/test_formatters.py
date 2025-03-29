@@ -1,8 +1,8 @@
 import base_test
-from engine.common import get_property_value
-from engine.common.validator import EnumFormatter
+from taskyto.engine.common import get_property_value
+from taskyto.engine.common.validator import EnumFormatter
 
-from spec import DataProperty, EnumValue
+from taskyto.spec import DataProperty, EnumValue
 
 
 def test_format_single_enums():

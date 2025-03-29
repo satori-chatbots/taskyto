@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-import spec
-from testing.reader import load_test_set
+import taskyto.spec
+from taskyto.testing.reader import load_test_set
 
 
 @pytest.mark.parametrize("name", [
@@ -13,7 +13,7 @@ from testing.reader import load_test_set
 ])
 def test_chatbot_model(name):
     path = os.path.join("examples", "yaml", name)
-    model = spec.load_chatbot_model(path)
+    model = taskyto.spec.load_chatbot_model(path)
     assert model is not None
     assert len(model.modules) >= 1
 

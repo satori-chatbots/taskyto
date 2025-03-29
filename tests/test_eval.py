@@ -1,5 +1,5 @@
-from engine.common.evaluator import Evaluator
-from spec import ExecuteElement
+from taskyto.engine.common.evaluator import Evaluator
+from taskyto.spec import ExecuteElement
 
 evaluator = Evaluator()
 

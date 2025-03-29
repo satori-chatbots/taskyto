@@ -1,8 +1,8 @@
 import abc
-from typing import List, Optional, Union
+import time
+from typing import List, Union
 
 from pydantic import BaseModel, Field
-import time
 
 
 class Message(BaseModel, abc.ABC):

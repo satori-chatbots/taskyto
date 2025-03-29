@@ -1,12 +1,8 @@
-import sys
+from taskyto import utils
 
-import utils
-
-from engine.common import Engine
-from testing.test_model import Interaction, UserSays, ChatbotAnswer, ModuleAssert
-from engine.common import Engine, DebugInfo
-from engine.custom.runtime import Channel
-from testing.test_model import Interaction, UserSays, ChatbotAnswer
+from taskyto.engine.common import Engine, DebugInfo
+from taskyto.engine.custom.runtime import Channel
+from taskyto.testing.test_model import Interaction, UserSays, ChatbotAnswer
 
 class TestChannel(Channel):
 

@@ -5,7 +5,7 @@ from flask import Flask, jsonify
 from flask import request
 from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
 
-from engine.custom.runtime import Channel
+from taskyto.engine.custom.runtime import Channel
 
 
 class Conversation:

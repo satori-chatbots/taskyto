@@ -1,6 +1,6 @@
 import abc
 
-import spec
+from taskyto import spec
 import pydot
 
 

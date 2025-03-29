@@ -1,1 +1,1 @@
-python src/main.py --chatbot=examples/yaml/%1 --dump=%2
+python -m taskyto.main --chatbot=examples/yaml/%1 --dump=%2

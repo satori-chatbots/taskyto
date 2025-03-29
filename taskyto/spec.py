@@ -3,14 +3,13 @@ import glob
 import os
 from abc import abstractmethod
 from enum import Enum
-
-import pydantic
-from pydantic import BaseModel, Field
 from typing import List, Any, Optional
 from typing import Literal, Union, Annotated
-import networkx as nx
 
-from utils import parse_obj_as_
+import networkx as nx
+from pydantic import BaseModel, Field
+
+from taskyto.utils import parse_obj_as_
 
 
 class Visitor(abc.ABC):
