@@ -1,9 +1,6 @@
 import abc
 from typing import Union, List, Optional
 
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
-
 
 class Message:
     def __init__(self, content: str, type: str):
@@ -25,30 +22,37 @@ class LLM(abc.ABC):
     def __call__(self, input_: LLMInput) -> LLMResponse:
         raise NotImplementedError()
 
+from openai import OpenAI
 
 class OpenAILLM(LLM):
     def __init__(self, model_name: str, temperature: float = 0.0):
-        self.llm_model = ChatOpenAI(temperature=temperature, model_name=model_name, verbose=True)
+        self.model_name = model_name
+        self.temperature = temperature
+        self.client = OpenAI()
 
     def __call__(self, input_: LLMInput, stop: Optional[List[str]] = None) -> LLMResponse:
         return self.invoke(input_, stop)
 
     def invoke(self, input_: LLMInput, stop: Optional[List[str]] = None) -> LLMResponse:
+        llm_input_messages = []
         if isinstance(input_, str):
-            langchain_input = input_
+            llm_input_messages.append({ "role": "user", "content":input_ })
         else:
-            langchain_input = []
             for message in input_:
                 if message.type == "human":
-                    langchain_input.append(HumanMessage(content=message.content))
+                    llm_input_messages.append({ "role": "user", "content": message.content })
                 else:
-                    langchain_input.append(SystemMessage(content=message.content))
+                    llm_input_messages.append({ "role": "developer", "content": message.content })
+                # TODO: Identify assistant role
 
-        result = self.llm_model.invoke(langchain_input, stop=stop)
+        completion = self.client.chat.completions.create(model=self.model_name,
+                                                         temperature=self.temperature,
+                                                         messages=llm_input_messages,
+                                                         stop=stop)
+
+        result = completion.choices[0].message
         return LLMResponse(result.content)
 
-class OllamaLLM(LLM):
-    pass
 
 class ExtensionLLM(LLM):
     """A LLM dinamically loaded as an extension"""

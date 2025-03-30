@@ -1,6 +1,6 @@
 langchain==0.3.10
 langchain_community==0.3.10
-langchain-openai==0.2.2
+openai
 langchain_chroma
 networkx==3.1
 pydantic==2.9.2

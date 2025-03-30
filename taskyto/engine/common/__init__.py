@@ -37,7 +37,7 @@ class Configuration(abc.ABC):
 
     @abstractmethod
     def new_llm(self, module_name: Optional[str] = None):
-        """For now, the LLM follows Langchain BaseChatModel basic interface: __call__. This will probably change."""
+        """Creates a new object to invoke an LLM for the given module (according to the configuration) or the default one."""
         raise NotImplementedError()
 
     @abstractmethod

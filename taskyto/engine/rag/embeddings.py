@@ -7,10 +7,12 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+from taskyto.engine.common import Configuration
+
 
 class Indexer:
 
-    def __init__(self, documents):
+    def __init__(self, documents, configuration: Configuration):
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(documents)
 
@@ -27,8 +29,7 @@ class Indexer:
         def format_docs(docs):
             return "\n\n".join(doc.page_content for doc in docs)
 
-        from langchain_openai import ChatOpenAI
-        llm = ChatOpenAI(model="gpt-4o-mini")
+        llm = configuration.new_llm("rag")
 
         self.rag_chain = (
                 {"context": retriever | format_docs, "question": RunnablePassthrough()}

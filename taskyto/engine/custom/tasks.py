@@ -192,8 +192,8 @@ class RagRuntimeModule(RuntimeChatbotModule):
 
     @cached_property
     def _index(self):
-        loader = InputLoader(self.module.documents)
-        return Indexer(loader.load_data())
+        loader = InputLoader(self.module.documents, self.configuration)
+        return Indexer(loader.load_data(), self.configuration)
 
 class OpenEndedConversationRuntimeModule(RuntimeChatbotModule):
     def __init__(self, **kwargs):

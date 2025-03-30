@@ -1,8 +1,12 @@
 from langchain_community.document_loaders import PyPDFLoader
 
+from taskyto.engine.common import Configuration
+
+
 class InputLoader:
-    def __init__(self, input_files):
+    def __init__(self, input_files, configuration: Configuration):
         self.input_files = input_files
+        self.configuration = configuration
 
     def load_data(self):
         documents = []
