@@ -2,6 +2,7 @@ langchain==0.3.10
 langchain_community==0.3.10
 openai
 langchain_chroma
+langchain_openai
 networkx==3.1
 pydantic==2.9.2
 pytest==7.4.2
