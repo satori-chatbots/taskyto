@@ -79,9 +79,15 @@ class Channel(abc.ABC):
     pass
 
 
+from halo import Halo
+
 class ConsoleChannel(Channel):
 
+    def __init__(self):
+        self.spinner = None
+
     def input(self):
+        self.stop_thinking()
         from taskyto import utils
         user_prompt = utils.get_user_prompt()
         try:
@@ -95,6 +101,14 @@ class ConsoleChannel(Channel):
     def output(self, msg, who=None):
         utils.print_chatbot_answer2(msg, who)
 
+    def thinking(self, text: str):
+        self.stop_thinking()
+        self.spinner = Halo(text=text, spinner='dots')
+        self.spinner.start()
+
+    def stop_thinking(self):
+        if self.spinner:
+            self.spinner.stop()
 
 class ChatbotOutputParser(ConvoOutputParser):
 

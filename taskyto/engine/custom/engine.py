@@ -27,7 +27,9 @@ class RunModuleAction(Action):
         if not isinstance(event, UserInput):
             raise ValueError(f"Expected UserInput, but got {event}. No other event type is supported now.")
 
+        execution_state.channel.thinking("Thinking...")
         self.runtime_module.run(execution_state, event.message, prompts_disabled=self.prompts_disabled)
+        execution_state.channel.stop_thinking()
 
     def __str__(self):
         disabled = " , -" + ",".join(self.prompts_disabled) if len(self.prompts_disabled) > 0 else ""
@@ -44,7 +46,9 @@ class ApplyLLM(Action):
         self.prompts_disabled = prompts_disabled
 
     def execute(self, execution_state, event):
+        execution_state.channel.thinking("Thinking...")
         self.tool.run(execution_state, None, allow_tools=self.allow_tools, prompts_disabled=self.prompts_disabled)
+        execution_state.channel.stop_thinking()
 
     def __str__(self):
         use_tools = "with tools" if self.allow_tools else "without tools"

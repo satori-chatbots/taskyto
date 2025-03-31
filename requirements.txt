@@ -16,3 +16,5 @@ alignment==1.0.10
 python-dateutil~=2.8.2
 
 flask
+
+halo

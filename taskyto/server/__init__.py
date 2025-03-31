@@ -28,6 +28,11 @@ class FlaskChannel(Channel):
     def output(self, msg, who=None):
         self.responses.append(msg)
 
+    def thinking(self, text: str):
+        pass
+
+    def stop_thinking(self):
+        pass
 
 class FlaskChatbotApp:
     def __init__(self, configuration, app: Flask = None):
