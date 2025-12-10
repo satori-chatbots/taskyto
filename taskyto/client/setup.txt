@@ -1,0 +1,3 @@
+python -m venv venv_chatbot_client
+. venv_chatbot_client/bin/activate
+pip install -r requirements.txt

@@ -86,17 +86,43 @@ class ConsoleChannel(Channel):
     def __init__(self):
         self.spinner = None
 
+    # def input(self):
+    #     self.stop_thinking()
+    #     from taskyto import utils
+    #     user_prompt = utils.get_user_prompt()
+    #     try:
+    #         inp = input(user_prompt)
+    #         if inp == 'exit':
+    #             return None
+    #         return inp
+    #     except EOFError as e:
+    #         return None
+    
+   
     def input(self):
+        # using readline to handle input with a prompt that doesn't count towards line length
         self.stop_thinking()
-        from taskyto import utils
-        user_prompt = utils.get_user_prompt()
         try:
-            inp = input(user_prompt)
+            import readline
+            from colorama import Fore, Style
+            
+            # Use readline's invisible marker syntax to indicate actual prompt length
+            # \001 and \002 mark invisible characters that shouldn't count for line length
+            prompt = f"\001{Fore.GREEN}\002You: \001{Style.RESET_ALL}\002"
+            
+            # Get input with properly marked prompt
+            inp = input(prompt)
+            
             if inp == 'exit':
                 return None
             return inp
         except EOFError as e:
             return None
+        finally:
+            # Clean up
+            import readline
+            readline.set_startup_hook(None)
+            
 
     def output(self, msg, who=None):
         utils.print_chatbot_answer2(msg, who)

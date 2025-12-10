@@ -14,9 +14,22 @@ def find_file(filename, load_path):
     raise ValueError(f"File {filename} not found in load path")
 
 
+
 def eval_python_file(filename: str, data: dict):
     with open(filename) as f:
         code_to_execute = f.read()
+
+        ####################
+        # code_to_execute += f'\nimport sys\nsys.path.append("<path_to_your_modules>")\n'
+        # code_to_execute += f'\nprint(f"__file__: {__file__}")\n'
+        # code_to_execute += f'\nprint(f"globals: {str(globals().keys())}")\n'
+
+        # pillar valor de "load_path"
+
+        code_to_execute += f'\nimport sys\nsys.path.append(f"{os.path.dirname(os.path.dirname(globals().get("load_path")[0]))}")\n'
+        code_to_execute += f'\nprint(f"{os.path.dirname(os.path.dirname(globals().get("load_path")[0]))}")\n'
+        # code_to_execute += f'\nprint(f"globals: {str(globals().get("load_path"))}")\n'
+        ####################
         code_to_execute += f'\nglobals()["chatbot_llm_action_result_"] = main({", ".join(data.keys())})\n'
 
         compiled = compile(code_to_execute, filename, "exec")
@@ -31,6 +44,11 @@ def eval_python_inline(code: str, data: dict):
     code = "\t" + code.replace("\n", "\n\t")
     params = ", ".join(data.keys())
     code = f"""
+import sys
+# Now auxiliar python files can also be imported from the taskyto script. We assume they belong to the same project
+sys.path.append(f"{os.path.dirname(os.path.dirname(globals().get("load_path")[0]))}")
+print(f"{os.path.dirname(os.path.dirname(globals().get("load_path")[0]))}")
+
 def _eval({params}):
 {code}
 
@@ -47,12 +65,14 @@ globals()['chatbot_llm_action_result_'] = _eval({params})
 class Evaluator:
     def __init__(self, load_path: List[str] = []):
         self.load_path = load_path
+        globals()["load_path"] = load_path
 
     def eval_code(self, execution: ExecuteElement, data: dict):
         lang = execution.language.lower()
         if lang == "python":
 
             if execution.code.endswith(".py"):
+                ic(self.load_path)
                 filename = find_file(execution.code, self.load_path)
                 return eval_python_file(filename, data)
             else:

@@ -9,5 +9,5 @@ on-success:
     language: python
     code: recommender.py
   response:
-    text: "{{result}}"
+    text: "{{result}} || {genre}"
     rephrase: simple

@@ -1,0 +1,33 @@
+name: code_dg
+kind: data_gathering
+description: As a job interviewer, ask for contct user information
+data:
+  - name: Person name
+  - date_of_birth: date
+  - phone_number:
+      type: Phone number
+      examples:
+        - 555-123456
+        - +34 555 12 34 56
+  - email:
+      type: email
+      required: false
+
+on-success:
+  execute:
+    language: python
+    code: |
+      print(f"Your name is {name}")
+      print(f"You where born in {date_of_birth}")
+      print(f"Your phone number is {phone_number}")
+      
+      try:
+        print(f"Your email is {email}")
+      except NameError:
+        pass
+
+      return "Hello World"
+  response:
+    text: Thanks {name}! We'll contact you very soon for a codinng session. The result is {result}
+    # rephrase: in-caller
+    rephrase: simple

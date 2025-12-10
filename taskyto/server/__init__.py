@@ -3,9 +3,16 @@ import os
 
 from flask import Flask, jsonify
 from flask import request
-from werkzeug.exceptions import BadRequest, NotFound, InternalServerError
 
+import json
+
+## FABADA: Ver si el nuevo imort de abajo funciona
 from taskyto.engine.custom.runtime import Channel
+# from engine.custom.runtime import Channel
+
+import datetime
+
+SUCCESS, ERROR = 1, 0
 
 
 class Conversation:
@@ -40,7 +47,7 @@ class FlaskChatbotApp:
             app = Flask(__name__)
 
             # This is to setup the session, probably not the best way to do it
-            os.environ['FLASK_SECRET_KEY'] = str(uuid.uuid4())
+            os.environ["FLASK_SECRET_KEY"] = str(uuid.uuid4())
             # Load configuration from environment variables
             app.config.from_prefixed_env()
 
@@ -68,42 +75,107 @@ class FlaskChatbotApp:
 
             return jsonify({"id": id})
 
-        @app.post('/conversation/user_message')
+        @app.post("/conversation/user_message")
         def user_message():
-            try:
-                return _handle_user_message()
-            except BadRequest as e:
-                return jsonify({"error": str(e)}), 400
-            except NotFound as e:
-                return jsonify({"error": str(e)}), 404
-            except InternalServerError as e:
-                return jsonify({"error": str(e)}), 500
-            except Exception as e:
-                return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+            success = SUCCESS
+            debug_msg = ""
+            data = None
 
-        def _handle_user_message():
-            if not request.json or 'id' not in request.json or 'message' not in request.json:
-                raise BadRequest("Missing 'id' or 'message' in request")
+            if not request.is_json:
+                success = ERROR
 
-            id = request.json['id']
-            message = request.json['message']
+                no_json_request = "Request must be JSON"
+                debug_msg: str = " ".join([debug_msg, no_json_request]).strip()
 
-            try:
-                conversation = get_data()[id]
-            except KeyError:
-                raise NotFound(f"Conversation with id {id} not found")
+                print(no_json_request)
 
-            conversation.channel.clear()
+                response = _user_message_payload(request, debug_msg, success, data)
+                return jsonify(response)
 
-            try:
-                conversation.engine.execute_with_input(message)
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                raise InternalServerError(f"Error executing the engine: {str(e)}")
+            # They can be None
+            id = request.json.get("id")
+            message = request.json.get("message")
+
+            print(f"message: {message}")
+
+            import os
+
+            os.system(f"echo \"message: {message}\, id: {id}\" > /tmp/message.txt")
+
+
+            # At least one key (message, id) is None or is missing in the request
+            if None in (id, message):
+                success = ERROR
+                wrong_format = "At least one key (message, id) is None or is missing in the request."
+                debug_msg: str = " ".join([debug_msg, wrong_format]).strip()
+
+                print(wrong_format)
+
+            valid_id = id and (conversation := get_data().get(id))
+
+            if not valid_id:
+                success = ERROR
+                invalid_id = f"Invalid conversation id."
+                debug_msg: str = " ".join([debug_msg, invalid_id]).strip()
+
+                print(invalid_id)
+
+            if success == ERROR:
+                response = _user_message_payload(request, debug_msg, success, data)
+                return jsonify(response)
+
+            # Success if we reach this point
+
+            # FABADA: UNABLE TO get the stderr in case the chatbot, for watever reason fails.
+
+            a = conversation.channel.clear()
+            os.system(f"echo \"{a}\" > /tmp/debug.txt")
+            b = conversation.engine.execute_with_input(message)
+            os.system(f"echo \"b-> {b}\" > /tmp/debug.txt")
+
 
             chatbot_response = "\n".join(conversation.channel.responses)
-            return jsonify({"id": id, "type": "chatbot_response", "message": chatbot_response})
+            
+            data = {
+                "id": id, 
+                "type": "chatbot_response", 
+                "message": chatbot_response,
+                "timestamp": datetime.datetime.now().strftime("%d/%m/%Y, %H:%M:%S")
+            }
 
-    def run(self):
-        self.app.run()
+
+            response = _user_message_payload(request, debug_msg, success, data)
+
+            return jsonify(response)
+
+        def _user_message_payload(
+            request, debug_msg: str, success: int, data: None | dict
+        ) -> dict:
+            debug_dict = _user_msg_debug_dict(request, debug_msg)
+
+            debug_dict = json.dumps(debug_dict, indent=4)
+
+            response = {
+                "success": success,
+                "debug_msg": debug_dict,
+                "data": data,
+            }
+
+            return response
+
+        def _user_msg_debug_dict(request, debug_msg: str) -> dict:
+            expected_body = {"id": "<conversation id>", "message": "<message>"}
+
+            your_request = {"your_URL": request.base_url, "your_body": request.json}
+
+            debug_dict = {
+                "your_request": your_request,
+                "expected_body": expected_body,
+                "debug_msg": debug_msg if debug_msg else "All Ok :)",
+            }
+
+            return debug_dict
+
+    def run(self, host, port, debug=True):
+
+        self.app.run(debug=debug, host=host, port=port)

@@ -1,4 +1,4 @@
-name: calculate_ticket_predefined
+name: calculate_price
 kind: action
 data:
   - pizza_size:
@@ -16,19 +16,11 @@ data:
         - hawaiian
         - four cheese
         - vegetarian
-  - num_drinks:
-      type: integer
-  - drinks:
-      type: enum
-      values:
-        - coke
-        - sprite
-        - water
 
 on-success:
   execute:
     language: python
-    code: calculate_ticket_predefined.py
+    code: calculate_price.py
   response:
-    text: "Your order will be ready in 15 minutes: come to our shop (23 Main Street, NY). Your order ID is {{result}}"
+    text: "{{result}}"
     rephrase: simple

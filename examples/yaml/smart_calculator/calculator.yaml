@@ -26,7 +26,9 @@ on-success:
         return left / right
       else:
         return "I don't know how to do that."
+  # response:
+  #   text: The result of {left} {operation} {right} is {result}
   response:
-    #text: The result of {left} {operation} {right} is {result}
+    # text: The result of {left} {operation} {right} is {result}
     text: "The result is {result}"
     rephrase: in-caller

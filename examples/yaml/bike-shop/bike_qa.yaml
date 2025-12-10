@@ -19,6 +19,15 @@ questions:
 # - etc.
 
 on-success:
+  execute:
+    language: python
+    code: test.py
+    # # code: |
+    # #   print(f"The answer to the question {question} is {result}")
+    # #   return result
+    # code: |
+    #   print("Hello World")
+    #   return result
   response:
     text: "The answer to the question {{question}} is {{result}}"
     rephrase: simple

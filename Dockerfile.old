@@ -1,0 +1,40 @@
+FROM python:3.10-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends python3-pip zlib1g-dev libjpeg-dev gcc && rm -rf /var/lib/apt/lists/*
+
+COPY ./requirements.txt .
+RUN pip install pipenv && PIPENV_VENV_IN_PROJECT=1 pipenv install -r requirements.txt && rm Pipfile* && find /.venv -name "*.pyc" -delete
+
+FROM python:3.10-slim AS chatbot_llm_img
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Madrid
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends tzdata net-tools vim file wget tar sudo adduser nano htop netstat-nat net-tools curl less procps \
+	&& rm -rf /var/lib/apt/lists/* && pip install --upgrade pip
+
+# Create user ubuntu
+RUN useradd -m -s /bin/bash ubuntu && usermod -aG sudo ubuntu && echo "ubuntu ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/ubuntu \
+	&& chmod 044 /etc/sudoers.d/ubuntu && echo 'ubuntu:ubuntu' | chpasswd
+
+USER ubuntu:ubuntu
+
+COPY --from=base --chown=ubuntu:ubuntu /.venv /.venv
+ENV PATH="/.venv/bin:$PATH"
+
+# # WORKDIR /home/ubuntu
+
+# # RUN echo "PYTHON_BIN_PATH=\"/.venv/bin\"" >> /home/ubuntu/.bashrc \
+# # 	&& echo "export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib" >> /home/ubuntu/.bashrc \
+# # 	&& echo "export SETUPTOOLS_USE_DISTUTILS=stdlib" >> /home/ubuntu/.bashrc
+
+
+WORKDIR /home/ubuntu/chatbot-llm
+
+ENTRYPOINT ["/bin/bash"]
+
+# ENTRYPOINT bash -c "/.venv/bin/python taskyto/serve.py --chatbot chatbots/alpha-bot/ --port 5001 & /.venv/bin/python taskyto/server/cb_orchestrator.py --port 5000"
+
+# ENTRYPOINT bash -c "/.venv/bin/python taskyto/server/cb_orchestrator.py --port 5000"

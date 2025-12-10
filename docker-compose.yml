@@ -1,0 +1,53 @@
+services:
+
+  chatbot:
+    build:
+      context: .
+      args:
+        - USER_UID=${UID:-1000}
+        - USER_GID=${UID:-1000}
+    image: chatbot_llm_img
+
+    stdin_open: true
+    tty: true
+    
+    volumes:
+      - .:/home/ubuntu/chatbot-llm
+      - ./../backend/backend-flask/user_projects:/home/ubuntu/chatbot-llm/chatbots # New mapping
+
+    hostname: twp-chatbot-llm
+    container_name: twp-chatbot-llm
+
+    restart: unless-stopped
+    ports:
+      - 5000:5000    
+
+    # Used api ports listening range
+      # see taskyto/server/cb_orchestrator.py
+        # STARTING_PORT = 5001
+        # ENDING_PORT = 5999
+
+# volumes:
+#   chatbot-llm:
+#     name: chatbot-llm
+
+
+# /.venv/bin/python taskyto/main.py --chatbot examples/yaml/bike-shop/
+
+# docker exec -it twp-chatbot-llm watch -n 0.1 "netstat -nlp"
+
+# curl -X POST -H "Content-Type: application/json" -d '{"cmd": "msg", "chatbot":"alpha-bot", "data":"Hello"}' http://150.244.56.99:5000/chatbot_manage/ctrl
+# curl -X POST -H "Content-Type: application/json" -d '{"cmd": "msg", "chatbot":"alpha-bot", "data":"Hello"}' http://0.0.0.0:5000/chatbot_manage/ctrl
+
+# curl -X POST -H "Content-Type: application/json" -d '{"cmd": "power", "chatbot":"alpha-bot", "data":"on"}' http://150.244.56.99:5000/chatbot_manage/ctrl
+# curl -X POST -H "Content-Type: application/json" -d '{"cmd": "power", "chatbot":"alpha-bot", "data":"on"}' http://0.0.0.0:5000/chatbot_manage/ctrl
+
+# New Message Format
+# curl -X POST -H "Content-Type: application/json" -d '{"cmd": "msg", "chatbot":"alpha-bot", "data":{"message": "Hello", "conversation_id": "patata"}}' http://0.0.0.0:5000/chatbot_manage/ctrl
+
+
+# Talk to the chatbot server directly:
+
+# curl -X POST -H "Content-Type: application/json" -d '{"id":"b9390f5b-474f-4791-85ee-d46d47df2a1c", "message": "List with bullet points the requests I said before"}' http://0.0.0.0:5001/conversation/new
+
+# curl -X POST -H "Content-Type: application/json" -d '{"id":"b9390f5b-474f-4791-85ee-d46d47df2a1c", "message": "List with bullet points the requests I said before"}' http://0.0.0.0:5001/conversation/user_message

@@ -1,0 +1,15 @@
+modules:
+  - name: top-level
+    kind: menu
+    presentation: |
+        You are a python expert. Your purpose is to generate whatever code is requested by the user. You can generate code for different purposes like web development, data analysis, etc. You can also answer questions about python programming.
+    fallback: I'm not sure if I can answer that. Can you ask me something else?
+
+    items:
+      # - title: Hours. To answer questions about the opening hours.
+      - title: Talk about your favorite color
+        kind: answer
+        answer: My favourite color is orange
+      - title: Request user contact information
+        kind: module
+        reference: code_dg

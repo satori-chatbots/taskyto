@@ -42,6 +42,9 @@ def run_test(interaction: Interaction, engine: Engine,
     user_interactions = 0
     for i in interactions:
         if config.replay is not None and user_interactions >= config.replay:
+            print("\n" + "="*50)
+            print("Replay limit reached")
+            print("="*50 + "\n")
             return False
 
         if isinstance(i, UserSays):

@@ -19,6 +19,24 @@ class ModuleGenerator(Visitor):
         self.generated = {}
         self.initial = initial
 
+        self.initial.presentation+= """
+            Your anwsers will always include emojis. During the conversation you will recall the user the previous relevant data you have gathered from him. Also when offering options or listing stuff you will also do it with bullet points. In summary your responses will be well-structured and visual. When ansering with bullet points enumerate the options.
+           
+            The user can also requsest you to remember the conversation or will refer to information you have already exchanged during the conversation. You will always remember the conversation and the information you have provided, so you can recall it when needed.
+
+            He may also ask you about your tasks, so you will also be able to list them as i I mentioned before.
+
+            IMPORTANT: YOU WILL NEVER INVENT DATA. YOU WILL PROVIDE THE INFORMATION IT IS EXPLICITLY PROVIDED ON YOUR CONFIGURATION.
+
+            If the user is related to the use of a tool, you might want to use it.
+
+            When you are about to use the data for a specific task, make sure you have the correct arguments and the relevant information you have gathered before starting the task.
+
+	    YOUR ANSWER MUST BE IN MARKDOWN FORMANT.
+
+        """
+        # ic(self.initial.presentation)
+
         # This is changed per call to generate
         self.allow_go_back_to = None
 
@@ -34,6 +52,7 @@ class ModuleGenerator(Visitor):
 
     def visit_menu_module(self, module: spec.MenuModule) -> RuntimeChatbotModule:
         presentation, task = module.accept(MenuModulePromptGenerator(self.configuration))
+        # ic(task)
         tools = [i.accept(self) for i in module.items if
                  isinstance(i, spec.ToolItem) or isinstance(i, spec.SequenceItem)]
 
@@ -53,6 +72,7 @@ class ModuleGenerator(Visitor):
 
         presentation_prompt = self.initial.presentation
         task_prompt = prompts.question_answering_prompt(module)
+        # ic(task_prompt)
         return QuestionAnsweringRuntimeModule(module=module,
                                               presentation_prompt=presentation_prompt,
                                               task_prompt=task_prompt,
@@ -197,7 +217,7 @@ class MenuModulePromptGenerator(Visitor):
         if module.fallback is None:
             fallback = ''
         else:
-            fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above, you MUST answer: ' + module.fallback
+            fallback = '\nFallback:\n' + 'For any request not related exactly to one of the tasks in list above or with the initial prompt, you MUST answer: ' + module.fallback
         return fallback
 
     @staticmethod

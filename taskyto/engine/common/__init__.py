@@ -122,6 +122,7 @@ def get_property_value(p: spec.DataProperty, data):
 
 
 def replace_values(response, data):
+
     for k, v in data.items():
         # Handle both {{ }} and { }
         response = response.replace("{{" + k + "}}", str(v))

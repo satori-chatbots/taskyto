@@ -12,9 +12,11 @@ colorama==0.4.6
 duckling==1.8.0
 ctparse==0.3.6
 alignment==1.0.10
-
+flask-cors==4.0.1
 python-dateutil~=2.8.2
-
+requests==2.31.0
+icecream==2.1.4
+pyreadline3
 flask
 
 halo

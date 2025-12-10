@@ -2,6 +2,15 @@ import os.path
 from argparse import ArgumentParser
 from typing import Optional, List
 
+from icecream import install
+install()
+
+import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.dirname(SCRIPT_DIR)
+sys.path.append(SRC_DIR)
+
 from taskyto import spec
 from taskyto import utils
 from taskyto.engine.common import Configuration, Engine
